@@ -16,6 +16,9 @@ Výstup:
 """
 import base64, json, os, re, shutil, sys, time
 
+# Adresa webu: pro vyhledávače (sitemap.xml, kanonické odkazy). Při přesunu na vlastní doménu stačí změnit tady.
+SITE = 'https://andytoolbox.github.io/3d-nastroje/'
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, 'src')
 DOCS = os.path.join(ROOT, 'docs')
@@ -102,11 +105,26 @@ TOOLS = {
         'page': 'kontrola.html', 'title': 'Kontrola STL',
         'parts': {'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'kontrola-app.js'},
     },
+    'zavity': {
+        'page': 'zavity.html', 'title': 'Závity',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'zavity-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},
     },
 }
+
+def tool_texts():
+    """Názvy a popisy nástrojů z rozcestníku (src/hub/nastroje.js) pro vyhledávače."""
+    js = rd('hub', 'nastroje.js'); out = {}
+    for blk in re.findall(r'\{[^{}]*\}', js):
+        i, n, p = (re.search(r"%s:\s*'((?:[^'\\]|\\.)*)'" % k, blk) for k in ('id', 'nazev', 'popis'))
+        if i and n and p: out[i.group(1)] = (n.group(1), p.group(1))
+    return out
+
+def esc(t): return t.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;')
 
 def build_tool(tid, cfg, stamp):
     page = rd(tid, cfg['page'])
@@ -144,6 +162,12 @@ def build_tool(tid, cfg, stamp):
            '<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">\n<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">\n'
            '<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="%s">\n' % cfg['title'])
     web = doc.replace('<meta name="author" content="Julius Andy Antoš">', '<meta name="author" content="Julius Andy Antoš">\n' + pwa, 1)
+    # vyhledávače: popis, kanonická adresa a náhled při sdílení
+    nm, ds = tool_texts().get(tid, (cfg['title'], ''))
+    seo = ('<meta name="description" content="%s">\n<link rel="canonical" href="%s%s/">\n'
+           '<meta property="og:title" content="%s">\n<meta property="og:description" content="%s">\n'
+           '<meta property="og:image" content="%simg/%s.jpg">\n<meta property="og:type" content="website">\n' % (esc(ds), SITE, tid, esc(nm), esc(ds), SITE, tid))
+    web = web.replace('<meta name="author" content="Julius Andy Antoš">', '<meta name="author" content="Julius Andy Antoš">\n' + seo, 1)
     out = os.path.join(DOCS, tid)
     shutil.rmtree(out, ignore_errors=True); os.makedirs(out)
     with open(os.path.join(out, 'index.html'), 'w', encoding='utf-8') as f: f.write(web)
@@ -162,6 +186,14 @@ def build_hub():
         if os.path.isdir(s): shutil.rmtree(d, ignore_errors=True); shutil.copytree(s, d)
         else: shutil.copy(s, d)
     open(os.path.join(DOCS, '.nojekyll'), 'w').close()  # GitHub Pages: soubory brát tak, jak jsou
+    # mapa webu pro Google a další vyhledávače
+    day = time.strftime('%Y-%m-%d')
+    urls = [SITE] + [SITE + t + '/' for t in TOOLS]
+    with open(os.path.join(DOCS, 'sitemap.xml'), 'w', encoding='utf-8') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                + ''.join('  <url><loc>%s</loc><lastmod>%s</lastmod></url>\n' % (u, day) for u in urls) + '</urlset>\n')
+    with open(os.path.join(DOCS, 'robots.txt'), 'w', encoding='utf-8') as f:
+        f.write('User-agent: *\nAllow: /\nSitemap: %ssitemap.xml\n' % SITE)
     print('  rozcestník')
 
 if __name__ == '__main__':

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://andytoolbox.github.io/3d-nastroje/sitemap.xml

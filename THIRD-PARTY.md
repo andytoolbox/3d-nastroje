@@ -1,7 +1,7 @@
 # Knihovny a písma třetích stran
 
 Tyto soubory nejsou dílem autora 3D nástrojů a platí pro ně jejich vlastní licence.
-Ve složce `src/vendor/` jsou přibalené beze změn, aby nástroje fungovaly i bez internetu.
+Ve složce `src/vendor/` jsou přibalené beze změn (jen `manifold.js` je upravený na běžný skript), aby nástroje fungovaly i bez internetu.
 
 ## Knihovny (`src/vendor/`)
 
@@ -12,6 +12,7 @@ Ve složce `src/vendor/` jsou přibalené beze změn, aby nástroje fungovaly i 
 | `clipper.min.js` | [clipper-lib](https://www.npmjs.com/package/clipper-lib) (Clipper, Angus Johnson) | 6.4.2 | Boost Software License 1.0 |
 | `qrcode.min.js` | [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (Kazuhiko Arase) | 1.4.4 | MIT |
 | `jsQR.js` | [jsQR](https://github.com/cozmo/jsQR) | 1.4.0 | Apache License 2.0 |
+| `manifold.js`, `manifold.wasm` | [Manifold](https://github.com/elalish/manifold) (geometrické operace) | 3.2.1 | Apache License 2.0 |
 
 ## Písma (`src/fonts/`)
 

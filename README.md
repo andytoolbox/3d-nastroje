@@ -18,6 +18,7 @@ Bezplatné nástroje pro 3D tisk v češtině. Všechno se počítá přímo v p
 | <img src="docs/img/cookie-cutter-studio-ikona.png" width="32"> | **Cookie Cutter Studio** | Vykrajovátka na cukroví z tvarů, obrázku, SVG nebo textu, k tomu razítko s reliéfem. |
 | <img src="docs/img/krabicky-ikona.png" width="32"> | **Krabičky a organizéry** | Krabička s přihrádkami a nasazovacím nebo posuvným víčkem (i s nápisem), Gridfinity boxy a podložky do šuplíku. |
 | <img src="docs/img/vazy-ikona.png" width="32"> | **Vázy a lampy** | Vázy, květináče s podmiskou a stínidla s vlnami, žebry a zkroucením, pro režim váza nebo se stěnou. |
+| <img src="docs/img/zavity-ikona.png" width="32"> | **Závity a šrouby** | Šrouby, matice, podložky a závitové tyče s metrickým (M2–M30) i trapézovým závitem, různé hlavy a drážky, závit do vlastního STL. |
 | <img src="docs/img/kalibrace-ikona.png" width="32"> | **Kalibrační testy** | Kostka, teplotní věž, převisy, mosty, vůle a vlasení, s návodem na vyhodnocení. |
 | <img src="docs/img/kontrola-stl-ikona.png" width="32"> | **Kontrola STL** | Prohlížeč STL, OBJ a 3MF: rozměry, hmotnost, cena, kontrola děr a převisů, oprava modelu a nejlepší natočení k tisku. |
 | <img src="docs/img/kalkulacka-tisku-ikona.png" width="32"> | **Kalkulačka ceny tisku** | Cena výtisku včetně vícebarevného tisku: filament, odpad z výměn barev, elektřina, opotřebení, práce, marže a DPH. Načte čas a gramy z G-code nebo .gcode.3mf. |
@@ -37,7 +38,7 @@ build.py               sestavení webu a offline verzí
 src/
   hub/                 rozcestník (index.html, nastroje.js = seznam nástrojů, styl.css, img/)
   shared/              společný kód: geometrie, převody obrázků, litofánie
-  vendor/              přibalené knihovny (three.js, opentype.js, Clipper, qrcode, jsQR)
+  vendor/              přibalené knihovny (three.js, opentype.js, Clipper, qrcode, jsQR, Manifold)
   fonts/               písma (zmenšená na české znaky)
   <nástroj>/           stránka nástroje (*.html), jeho kód (*-app.js), pwa/ (ikony, manifest, offline režim)
 docs/                  sestavený web (vzniká příkazem python build.py)
@@ -54,6 +55,10 @@ python build.py qr-klicenky       # jen jeden nástroj
 ```
 
 Po úpravě v `src/` spusťte `python build.py`, zkontrolujte `docs/` v prohlížeči a změny nahrajte (commit + push). GitHub Pages se aktualizují samy.
+
+### Vyhledávače
+
+`build.py` vytvoří `docs/sitemap.xml` (mapu webu pro Google) a do každého nástroje doplní popis a kanonickou adresu z `src/hub/nastroje.js`. Adresa webu je v `build.py` v proměnné `SITE`. Při přesunu na vlastní doménu ji stačí změnit a web znovu sestavit.
 
 ### Přidání nového nástroje
 

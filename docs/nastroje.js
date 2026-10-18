@@ -86,6 +86,15 @@ window.NASTROJE = [
     novinka: true
   },
   {
+    id: 'zavity',
+    nazev: 'Závity a šrouby',
+    popis: 'Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Závit vloží i do vašeho modelu.',
+    kategorie: 'Díly',
+    stitky: ['šroub', 'matice', 'závit', 'trapézový závit', 'motýlková matice'],
+    odkaz: 'zavity/',
+    novinka: true
+  },
+  {
     id: 'kalibrace',
     nazev: 'Kalibrační testy',
     popis: 'Kostka, teplotní věž, převisy, mosty, vůle a vlasení. Ke každému testu návod, jak ho vyhodnotit, a u kostky výpočet odchylek.',
