@@ -1,0 +1,15 @@
+QR KLÍČENKY – QR kód na destičce pro 3D tisk
+Created by Julius Andy Antoš
+
+NAHRÁNÍ NA WEB
+  Složku "qr-klicenky" nahrajte přes FTP vedle složek "pismo-do-stl" a "svitici-fotky",
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/qr-klicenky/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá (ani hesla k Wi-Fi).

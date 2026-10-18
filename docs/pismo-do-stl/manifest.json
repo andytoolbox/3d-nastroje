@@ -1,0 +1,19 @@
+{
+  "name": "Písmo do STL",
+  "short_name": "Písmo STL",
+  "description": "Text z libovolného fontu jako 3D model STL pro 3D tiskárnu. Created by Julius Andy Antoš.",
+  "lang": "cs",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e9eef0",
+  "theme_color": "#0b7a72",
+  "categories": ["utilities", "productivity", "design"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

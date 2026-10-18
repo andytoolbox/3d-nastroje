@@ -1,0 +1,45 @@
+PÍSMO DO STL – webová verze
+Created by Julius Andy Antoš
+=====================================
+
+OBSAH SLOŽKY
+  index.html      celá aplikace (funguje i bez internetu)
+  manifest.json   popis aplikace pro instalaci na telefon/počítač
+  sw.js           offline režim nainstalované aplikace
+  icons/          ikony aplikace
+  fonts/          sem nahrávejte fonty, které mají mít všichni k dispozici
+  fonts/list.php  vypisuje aplikaci fonty ve složce – neupravujte ani nemažte
+
+NAHRÁNÍ NA WEB
+  1. Celou složku "pismo-do-stl" nahrajte přes FTP na server,
+     např. do /nastroje/ → adresa bude https://www.vasweb.cz/nastroje/pismo-do-stl/
+  2. Otevřete adresu v prohlížeči (nejlépe Chrome nebo Edge).
+
+PŘIDÁNÍ FONTŮ PRO VŠECHNY
+  - Nahrajte soubory .ttf, .otf nebo .woff do složky fonts/ (přes FTP).
+  - Po obnovení stránky se fonty objeví v seznamu, seskupené podle rodin
+    (normální, tučné, kurzíva… se zobrazí jako řezy jedné rodiny).
+  - Formáty .woff2 a .ttc nejsou podporované – převeďte je na .ttf.
+  - Dejte pozor na licenci: zveřejnit na webu smíte fonty s licencí OFL
+    (Google Fonts) nebo jinou, která to výslovně dovoluje. Fonty z Windows
+    (Arial, Calibri…) zveřejňovat nesmíte.
+
+INSTALACE JAKO APLIKACE (Android, počítač)
+  - Android (Chrome): otevřete adresu aplikace → v aplikaci klepněte na
+    „Nainstalovat aplikaci“, nebo v menu ⋮ → „Nainstalovat aplikaci“.
+    Objeví se ikona na ploše; aplikace běží na celou obrazovku a funguje i offline.
+  - Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  - iPhone (Safari): Sdílet → „Přidat na plochu“.
+  - Po nahrání nové verze na web se aplikace aktualizuje sama při dalším
+    spuštění s internetem. Fonty ze složky fonts/ si pamatuje i offline.
+  - Při aktualizaci nahrajte vždy index.html i sw.js (sw.js nese číslo verze).
+
+KDYŽ SERVER NEUMÍ PHP
+  Vytvořte ve složce fonts/ soubor fonts.json se seznamem souborů, např.:
+    ["Roboto-Regular.ttf", "Roboto-Bold.ttf"]
+  Aplikace ho použije automaticky.
+
+POZNÁMKY
+  - Fonty z počítače (tlačítka Nahrát soubory / složku) zůstávají jen
+    v prohlížeči uživatele, na server se nic neodesílá.
+  - Tlačítko "Fonty z Windows" funguje jen v Chrome/Edge a jen přes HTTPS.

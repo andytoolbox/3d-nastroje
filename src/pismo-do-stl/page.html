@@ -1,0 +1,862 @@
+<title>Písmo do STL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Rozvržení: dílenský pracovní stůl — vlevo „karta tisku“ s parametry, vpravo tisková plocha s 3D náhledem a porovnáním fontů */
+:root {
+  --bg: #e9eef0; --panel: #fbfcfc; --ink: #1b2428; --muted: #5a6970; --line: #d2dade;
+  --accent: #0b7a72; --accent-ink: #ffffff; --accent-soft: #d9efec;
+  --warn: #9a5200; --warn-soft: #fbecd8; --bad: #b0271f; --bad-soft: #f8dedb; --ok: #1d7536; --ok-soft: #dcefe1;
+  --view: #dde4e7; --grid: #b9c5ca; --grid-major: #93a3aa; --text3d: #0b7a72; --base3d: #aab6bc;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --text3d: #3cbfb2; --base3d: #6d7c83; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --text3d: #3cbfb2; --base3d: #6d7c83; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--f-ui); }
+.app { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; padding-inline: 16px; padding-block: 16px; min-height: 100%; }
+header.top { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+header.top h1 { margin: 0; font: 600 20px/1.2 var(--f-label); letter-spacing: .01em; }
+header.top p { margin: 0; color: var(--muted); font-size: 13px; }
+header.top .install { margin-left: auto; align-self: center; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.card h2 { margin: 0; font: 600 11px/1 var(--f-label); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+label.f { display: grid; grid-template-columns: 1fr 96px; align-items: center; gap: 8px; font-size: 13px; }
+label.f small { display: block; color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.num { position: relative; }
+.num input { width: 100%; padding: 5px 30px 5px 8px; text-align: right; font: 13px var(--f-num); font-variant-numeric: tabular-nums; }
+.num span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font: 11px var(--f-num); pointer-events: none; }
+input, textarea, select { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, .seg label:focus-within, .fontrow:focus-visible, .cmp-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+textarea { width: 100%; min-height: 64px; resize: vertical; padding: 8px; font-size: 16px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg label { position: relative; flex: 1; white-space: nowrap; text-align: center; padding: 5px 8px; cursor: pointer; font-size: 12.5px; border-left: 1px solid var(--line); user-select: none; }
+.seg label:first-child { border-left: 0; }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.check { display: flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mode { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 8px; cursor: pointer; display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; font-size: 12.5px; line-height: 1.25; }
+.mode input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.mode svg { width: 34px; height: 26px; }
+.mode svg .t { fill: var(--muted); } .mode svg .b { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+.mode:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.mode:has(input:checked) svg .t { fill: var(--accent); } .mode:has(input:checked) svg .b { stroke: var(--accent); }
+.mode:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+button { font: 500 13px var(--f-ui); border-radius: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); padding: 9px 14px; font-weight: 600; }
+button.primary:hover { filter: brightness(1.08); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.icons { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.ic { aspect-ratio: 1; max-width: 100%; padding: 0; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); font-size: 11px; }
+.ic svg { width: 62%; height: 62%; } .ic svg path { fill: currentColor; }
+.ic[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.seg.small label { padding: 5px 6px; font-size: 12px; }
+.lblrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.styles { display: flex; flex-wrap: wrap; gap: 4px; }
+.stc { padding: 3px 8px; font-size: 12px; border-radius: 12px; }
+.cats { display: flex; flex-wrap: wrap; gap: 4px; }
+.cats button { padding: 2px 8px; font-size: 11.5px; border-radius: 12px; }
+.cats button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.stc[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+footer.sig { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 10px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+footer.sig strong { font: 600 12.5px var(--f-label); color: var(--ink); letter-spacing: .02em; }
+.fontcur { font: 600 14px var(--f-label); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.fontcur span { font: 11px var(--f-num); color: var(--muted); font-weight: 400; }
+.fontlist { max-height: 190px; overflow-y: auto; border: 1px solid var(--line); border-radius: 4px; }
+.fontrow { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; cursor: pointer; font-size: 13px; border-top: 1px solid var(--line); }
+.fontrow:first-child { border-top: 0; }
+.fontrow:hover { background: var(--accent-soft); }
+.fontrow.sel { background: var(--accent); color: var(--accent-ink); }
+.fontrow .src { font: 10.5px var(--f-num); color: var(--muted); white-space: nowrap; }
+.fontrow.sel .src { color: inherit; opacity: .8; }
+.fontrow.err { color: var(--muted); text-decoration: line-through; cursor: default; }
+.fontrow .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hint { font-size: 12px; color: var(--muted); margin: 0; }
+.hint.err { color: var(--bad); }
+
+main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 8px 12px; color: var(--muted); font-weight: 600; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.viewer { position: relative; background: var(--view); border: 1px solid var(--line); border-radius: var(--r); height: min(62vh, 620px); min-height: 320px; overflow: hidden; touch-action: none; }
+.viewer canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.viewer canvas:active { cursor: grabbing; }
+.hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px; font: 12px var(--f-num); font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 500; color: var(--accent); }
+.vbtns { position: absolute; right: 10px; top: 10px; display: flex; gap: 4px; }
+.vbtns button { padding: 4px 8px; font-size: 12px; }
+.legend { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 10px; font-size: 12px; color: var(--muted); pointer-events: none; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.help { position: absolute; right: 10px; bottom: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; text-align: right; }
+.msgs { display: flex; flex-direction: column; gap: 6px; }
+.msg { border-radius: 4px; padding: 7px 10px; font-size: 13px; border-left: 3px solid; }
+.msg.warn { background: var(--warn-soft); border-color: var(--warn); }
+.msg.bad { background: var(--bad-soft); border-color: var(--bad); }
+.msg.ok { background: var(--ok-soft); border-color: var(--ok); }
+.export { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.export .note { font-size: 12px; color: var(--muted); flex: 1; min-width: 200px; }
+
+.cmp-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.cmp-tools input[type=search] { padding: 6px 8px; min-width: 0; flex: 1 1 180px; max-width: 280px; }
+.cmp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.cmp-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cmp-card:hover { border-color: var(--accent); }
+.cmp-card.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.cmp-card canvas { width: 100%; height: 64px; display: block; }
+.cmp-card .nm { font: 600 12.5px var(--f-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.badge { font: 11px var(--f-num); padding: 1px 6px; border-radius: 3px; }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.bad { background: var(--bad-soft); color: var(--bad); }
+.progress { font: 12px var(--f-num); color: var(--muted); }
+
+/* sbalitelné sekce nastavení */
+aside .card > h2 { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+aside .card > h2::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s; }
+aside .card.collapsed > h2::after { transform: rotate(-45deg); }
+aside .card.collapsed > :not(h2) { display: none !important; }
+aside .card > h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.pane { display: flex; flex-direction: column; gap: 12px; }
+
+/* počítač: parametry se posouvají samostatně, náhled zůstává na místě a vyplní výšku okna */
+@media (min-width: 861px) {
+  html, body { height: 100%; overflow: hidden; }
+  .app { height: 100%; grid-template-rows: auto minmax(0, 1fr) auto; }
+  aside, main { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+  aside { padding-right: 6px; scrollbar-gutter: stable; }
+  #pane-3d { flex: 1 1 auto; min-height: 0; }
+  #pane-3d .viewer { flex: 1 1 auto; height: auto; min-height: 300px; }
+}
+/* telefon: náhled přichycený nahoře, parametry se posouvají pod ním */
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  main, #pane-3d:not([hidden]) { display: contents !important; }
+  header.top { order: -3; }
+  .tabs { order: -2; }
+  .viewer { order: -1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; height: 40vh; min-height: 230px; box-shadow: 0 6px 12px -8px rgba(0,0,0,.35); }
+  #pane-3d > .msgs, #pane-3d > .card, #pane-cmp { order: 0; }
+  aside { order: 1; }
+  aside * { scroll-margin-top: calc(max(40vh, 230px) + 12px); }
+  footer.sig { order: 2; }
+}
+@media (max-width: 560px) { .help { display: none; } .vbtns { top: auto; bottom: 10px; } .inset { bottom: 46px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Písmo do STL</h1>
+    <p>Text z libovolného fontu jako 3D model pro tiskárnu. Rozměry jsou v milimetrech.</p>
+    <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
+  </header>
+
+  <aside>
+    <section class="card">
+      <h2>Text</h2>
+      <textarea id="txt" spellcheck="false" aria-label="Text k tisku">Ahoj</textarea>
+      <div class="row">
+        <div class="seg" role="radiogroup" aria-label="Zarovnání řádků">
+          <label><input type="radio" name="align" id="al-left" value="left">Vlevo</label>
+          <label><input type="radio" name="align" id="al-center" value="center" checked>Střed</label>
+          <label><input type="radio" name="align" id="al-right" value="right">Vpravo</label>
+        </div>
+        <label class="check"><input type="checkbox" id="mirror">Zrcadlit (razítko)</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Symbol nebo logo</h2>
+      <div class="icons" id="iconGrid" role="radiogroup" aria-label="Symbol"></div>
+      <div class="row"><button id="btnSvg" type="button">Nahrát logo (SVG)</button><span class="hint" id="symName">Bez symbolu</span></div>
+      <input type="file" id="inSvg" accept=".svg,image/svg+xml" hidden>
+      <div id="grp-sym" hidden style="display:flex;flex-direction:column;gap:10px">
+        <div class="seg small" role="radiogroup" aria-label="Poloha symbolu">
+          <label><input type="radio" name="symPos" id="sp-left" value="left" checked>Vlevo</label>
+          <label><input type="radio" name="symPos" id="sp-above" value="above">Nad</label>
+          <label><input type="radio" name="symPos" id="sp-right" value="right">Vpravo</label>
+          <label><input type="radio" name="symPos" id="sp-below" value="below">Pod</label>
+          <label><input type="radio" name="symPos" id="sp-only" value="only">Bez textu</label>
+        </div>
+        <label class="f"><span>Výška symbolu</span><span class="num"><input type="number" id="symH" min="2" max="300" step="1" value="20"><span>mm</span></span></label>
+        <label class="f"><span>Mezera od textu</span><span class="num"><input type="number" id="symGap" min="-20" max="50" step="0.5" value="3"><span>mm</span></span></label>
+        <label class="check" id="wrapWhite"><input type="checkbox" id="ignoreWhite" checked>Vynechat bílé plochy loga</label>
+      </div>
+      <p class="hint">Logo musí být vektorové SVG. Obrázek PNG nebo JPG převedete na SVG třeba v Inkscapu (Cesta → Vektorizovat bitmapu).</p>
+    </section>
+
+    <section class="card">
+      <h2>Font</h2>
+      <div class="fontcur"><span id="fontName" style="font:600 14px var(--f-label);color:var(--ink)">–</span><span id="fontCount"></span></div>
+      <div class="styles" id="styleChips" role="radiogroup" aria-label="Řez písma"></div>
+      <div class="cats" id="fontCats" role="group" aria-label="Kategorie fontů"></div>
+      <input type="search" id="fontSearch" placeholder="Hledat font…" aria-label="Hledat font" style="padding:6px 8px">
+      <div class="fontlist" id="fontList" role="listbox" aria-label="Seznam fontů"></div>
+      <div class="row">
+        <button id="btnFiles" type="button">Nahrát soubory</button>
+        <button id="btnFolder" type="button">Nahrát složku</button>
+        <button id="btnSystem" type="button">Fonty z Windows</button>
+      </div>
+      <input type="file" id="inFiles" accept=".ttf,.otf,.woff" multiple hidden>
+      <input type="file" id="inFolder" webkitdirectory multiple hidden>
+      <label class="f"><span>Zesílení tahu<small>kladné = tučnější, záporné = tenčí</small></span><span class="num"><input type="number" id="embolden" min="-1" max="2" step="0.1" value="0"><span>mm</span></span></label>
+      <label class="check"><input type="checkbox" id="slant">Umělá kurzíva (sklon 12°)</label>
+      <p class="hint" id="fontHint">Podporované formáty: TTF, OTF a WOFF. Fonty zůstávají ve vašem počítači, nikam se neodesílají.</p>
+    </section>
+
+    <section class="card">
+      <h2>Typ výrobku</h2>
+      <div class="modes" role="radiogroup" aria-label="Typ výrobku">
+        <label class="mode"><input type="radio" name="mode" id="m-text" value="text" checked>
+          <svg viewBox="0 0 34 26" aria-hidden="true"><text class="t" x="17" y="19" text-anchor="middle" font-size="17" font-weight="700" font-family="Arial">Ab</text></svg>Samotný text</label>
+        <label class="mode"><input type="radio" name="mode" id="m-offset" value="offset">
+          <svg viewBox="0 0 34 26" aria-hidden="true"><path class="b" d="M5 7c0-3 3-4 6-4h12c3 0 6 1 6 4v10c0 4-3 6-6 6H11c-3 0-6-2-6-6z"/><text class="t" x="17" y="18" text-anchor="middle" font-size="13" font-weight="700" font-family="Arial">Ab</text></svg>Text s obrysem</label>
+        <label class="mode"><input type="radio" name="mode" id="m-plate" value="plate">
+          <svg viewBox="0 0 34 26" aria-hidden="true"><rect class="b" x="2" y="4" width="30" height="18" rx="3"/><text class="t" x="17" y="18" text-anchor="middle" font-size="12" font-weight="700" font-family="Arial">Ab</text></svg>Text na podložce</label>
+        <label class="mode"><input type="radio" name="mode" id="m-stand" value="stand">
+          <svg viewBox="0 0 34 26" aria-hidden="true"><text class="t" x="17" y="17" text-anchor="middle" font-size="15" font-weight="700" font-family="Arial">Ab</text><rect class="b" x="3" y="18" width="28" height="5" rx="1"/></svg>Text na stojato</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Rozměry</h2>
+      <label class="f"><span>Výška písma<small>výška velkého písmene</small></span><span class="num"><input type="number" id="size" min="2" max="300" step="1" value="20"><span>mm</span></span></label>
+      <label class="f"><span id="heightLbl">Tloušťka písma</span><span class="num"><input type="number" id="height" min="0.4" max="100" step="0.5" value="5"><span>mm</span></span></label>
+      <label class="f"><span>Rozestup písmen<small>záporný = sevřenější</small></span><span class="num"><input type="number" id="spacing" min="-20" max="50" step="0.5" value="0"><span>mm</span></span></label>
+      <label class="f"><span>Řádkování</span><span class="num"><input type="number" id="lineH" min="0.6" max="3" step="0.05" value="1.2"><span>×</span></span></label>
+
+      <div id="grp-offset" hidden>
+        <label class="f"><span>Šířka obrysu</span><span class="num"><input type="number" id="offW" min="0.4" max="30" step="0.5" value="3"><span>mm</span></span></label>
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="fillHoles" checked>Vyplnit otvory v obrysu (o, a, e…)</label>
+      </div>
+      <div id="grp-plate" hidden>
+        <label class="f"><span>Okraj kolem textu</span><span class="num"><input type="number" id="padW" min="0" max="50" step="0.5" value="5"><span>mm</span></span></label>
+        <label class="f"><span>Zaoblení rohů</span><span class="num"><input type="number" id="radius" min="0" max="50" step="0.5" value="3"><span>mm</span></span></label>
+      </div>
+      <div id="grp-relief" hidden>
+        <div class="lblrow"><span>Provedení textu</span>
+          <div class="seg" role="radiogroup" aria-label="Provedení textu">
+            <label><input type="radio" name="relief" id="rl-raised" value="raised" checked>Vystouplý</label>
+            <label><input type="radio" name="relief" id="rl-engraved" value="engraved">Rytý</label>
+          </div>
+        </div>
+      </div>
+      <div id="grp-base" hidden>
+        <label class="f"><span>Tloušťka podkladu</span><span class="num"><input type="number" id="baseT" min="0.4" max="30" step="0.2" value="2"><span>mm</span></span></label>
+      </div>
+      <div id="grp-stand" hidden>
+        <label class="f"><span>Výška podstavce</span><span class="num"><input type="number" id="footH" min="1" max="30" step="0.5" value="3"><span>mm</span></span></label>
+        <label class="f"><span>Hloubka podstavce<small>pro stabilitu</small></span><span class="num"><input type="number" id="footD" min="2" max="80" step="1" value="12"><span>mm</span></span></label>
+        <label class="f"><span>Přesah do stran</span><span class="num"><input type="number" id="footOver" min="0" max="50" step="0.5" value="4"><span>mm</span></span></label>
+      </div>
+    </section>
+
+    <section class="card" id="card-hole" hidden>
+      <h2>Klíčenka</h2>
+      <label class="check"><input type="checkbox" id="hole">Dírka na kroužek</label>
+      <div id="grp-hole" hidden style="display:flex;flex-direction:column;gap:10px">
+        <div class="lblrow"><span>Umístění</span>
+          <div class="seg" role="radiogroup" aria-label="Umístění dírky">
+            <label><input type="radio" name="holePos" id="hp-left" value="left" checked>Vlevo</label>
+            <label><input type="radio" name="holePos" id="hp-top" value="top">Nahoře</label>
+            <label><input type="radio" name="holePos" id="hp-right" value="right">Vpravo</label>
+          </div>
+        </div>
+        <label class="f"><span>Průměr dírky<small>kroužek 1–1,5 mm → 4–5 mm</small></span><span class="num"><input type="number" id="holeD" min="1" max="30" step="0.5" value="4.5"><span>mm</span></span></label>
+        <label class="f"><span>Síla okraje kolem dírky</span><span class="num"><input type="number" id="holeRim" min="1" max="20" step="0.5" value="2.5"><span>mm</span></span></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Tiskárna</h2>
+      <label class="f"><span>Nejtenčí tah<small>asi 2× průměr trysky (0,4 mm → 0,8 mm)</small></span><span class="num"><input type="number" id="minStroke" min="0.2" max="5" step="0.1" value="0.8"><span>mm</span></span></label>
+      <label class="f"><span>Tisková plocha X</span><span class="num"><input type="number" id="bedX" min="50" max="1000" step="1" value="220"><span>mm</span></span></label>
+      <label class="f"><span>Tisková plocha Y</span><span class="num"><input type="number" id="bedY" min="50" max="1000" step="1" value="220"><span>mm</span></span></label>
+    </section>
+  </aside>
+
+  <main>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-3d" aria-selected="true" aria-controls="pane-3d" type="button">3D náhled</button>
+      <button role="tab" id="tab-cmp" aria-selected="false" aria-controls="pane-cmp" type="button">Porovnání fontů</button>
+    </div>
+
+    <div id="pane-3d" class="pane" role="tabpanel" aria-labelledby="tab-3d">
+      <div class="viewer" id="viewer">
+        <canvas id="cv" aria-label="3D náhled modelu"></canvas>
+        <div class="hud"><span class="chip" id="dims">–</span><span class="chip" id="tris"></span></div>
+        <div class="vbtns"><button type="button" id="vTop">Shora</button><button type="button" id="vPersp">Šikmo</button><button type="button" id="vFit">Vycentrovat</button></div>
+        <div class="legend"><span id="lgTwrap"><i id="lgT"></i><span id="lgTname">Písmo</span></span><span id="lgBwrap"><i id="lgB"></i>Podklad</span></div>
+        <div class="help">Táhnutím otáčíte · kolečkem nebo dvěma prsty přibližujete · pravým tlačítkem posouváte</div>
+      </div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <section class="card">
+        <div class="export">
+          <button class="primary" type="button" id="btnSave">Stáhnout STL</button>
+          <label class="check"><input type="checkbox" id="split"><span id="splitLbl">Písmo a podklad zvlášť (vícebarevný tisk)</span></label>
+          <span class="note" id="saveNote"></span>
+        </div>
+      </section>
+    </div>
+
+    <div id="pane-cmp" role="tabpanel" aria-labelledby="tab-cmp" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="cmp-tools">
+        <input type="search" id="cmpSearch" placeholder="Filtrovat podle názvu…" aria-label="Filtrovat fonty">
+        <label class="check"><input type="checkbox" id="cmpOnlyOk">Jen vhodné pro tisk</label>
+        <span class="progress" id="cmpProg"></span>
+      </div>
+      <p class="hint">Náhled ukazuje první řádek vašeho textu (nejvýše 24 znaků) ve výšce a s nejtenčím tahem nastaveným vlevo. Kontroluje se i česká diakritika. Kliknutím font vyberete.</p>
+      <div class="cmp-grid" id="cmpGrid"></div>
+    </div>
+  </main>
+
+  <footer class="sig"><strong>Created by Julius Andy Antoš</strong><span>Písmo do STL · výpočet běží ve vašem prohlížeči, nic se neodesílá</span></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipper-lib@6.4.2/clipper.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/SVGLoader.js"></script>
+<script>
+/*__FONTS__*/
+/*__CORE__*/
+
+/* ===== Stav ===== */
+const $ = (id) => document.getElementById(id);
+const S = { text: 'Ahoj', align: 'center', mirror: false, mode: 'text', size: 20, height: 5, spacing: 0, lineH: 1.2,
+  offW: 3, fillHoles: true, padW: 5, radius: 3, baseT: 2, footH: 3, footD: 12, footOver: 4, minStroke: 0.8, bedX: 220, bedY: 220, split: false, font: 'Poppins Bold',
+  symKind: 'none', symId: '', symName: '', svgText: '', symPos: 'left', symH: 20, symGap: 3, ignoreWhite: true,
+  relief: 'raised', engDepth: 1.2, embolden: 0, fontCat: 'Vše', slant: false, hole: false, holePos: 'left', holeD: 4.5, holeRim: 2.5 };
+const NUMS = ['size', 'height', 'spacing', 'lineH', 'offW', 'padW', 'radius', 'baseT', 'footH', 'footD', 'footOver', 'minStroke', 'bedX', 'bedY', 'symH', 'symGap', 'holeD', 'holeRim', 'embolden'];
+const STORE = 'pismo-do-stl-v1';
+try { Object.assign(S, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) {}
+const saveState = () => { try { const o = Object.assign({}, S); if (o.svgText.length > 300000) { o.svgText = ''; o.symKind = o.symKind === 'svg' ? 'none' : o.symKind; } localStorage.setItem(STORE, JSON.stringify(o)); } catch (e) {} };
+
+/* ===== Fonty ===== */
+const FONTS = []; let cur = null;
+const b64buf = (b) => { const s = atob(b); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; };
+const plural = (n, one, few, many) => `${n.toLocaleString('cs-CZ')} ${n === 1 ? one : n >= 2 && n <= 4 ? few : many}`;
+const pickName = (o) => o && (o.en || o[Object.keys(o)[0]]);
+function fontLabel(f, fallback) {
+  const n = f.names || {};
+  return pickName(n.fullName) || [pickName(n.fontFamily), pickName(n.fontSubfamily)].filter(Boolean).join(' ') || fallback;
+}
+const WEIGHTS = [[/thin|hairline/i, 100, 'Vlasové'], [/extra.?light|ultra.?light/i, 200, 'Extra tenké'], [/light/i, 300, 'Tenké'], [/semi.?bold|demi.?bold/i, 600, 'Polotučné'],
+  [/extra.?bold|ultra.?bold/i, 800, 'Extra tučné'], [/black|heavy/i, 900, 'Černé'], [/bold/i, 700, 'Tučné'], [/medium/i, 500, 'Střední']];
+function setMeta(e, family, style) {
+  e.family = (family || e.name).trim(); e.style = (style || 'Regular').trim();
+  let w = 400, lbl = 'Normální';
+  for (const [re, ww, l] of WEIGHTS) if (re.test(e.style)) { w = ww; lbl = l; break; }
+  const it = /italic|oblique/i.test(e.style);
+  e.w = w; e.it = it; e.label = it ? (w === 400 ? 'Kurzíva' : lbl.replace(/é$/, 'á') + ' kurzíva') : lbl;
+}
+function addFont(e) { e.id = FONTS.length; if (!e.family) setMeta(e, e.name, ''); FONTS.push(e); return e; }
+async function ensure(e) {
+  if (e.font || e.error) return e.font;
+  try {
+    const f = opentype.parse(await e.getBuffer());
+    if (!f.supported) throw new Error('nepodporovaný formát');
+    e.font = f;
+    if (e.source !== 'systém') {
+      e.name = fontLabel(f, e.name);
+      const n = f.names || {};
+      setMeta(e, pickName(n.preferredFamily) || pickName(n.fontFamily), pickName(n.preferredSubfamily) || pickName(n.fontSubfamily));
+    }
+  } catch (err) { e.error = String(err.message || err).includes('ttcf') ? 'kolekce TTC není podporovaná' : 'soubor nelze načíst'; }
+  return e.font;
+}
+for (const [name, b] of Object.entries(BUILTIN)) addFont({ name, source: 'vestavěný', cat: BUILTIN_CAT[name] || 'Klasické', getBuffer: async () => b64buf(b) });
+const CATS = ['Vše', 'Klasické', 'Ručně psané', 'Dětské', 'Ozdobné', 'Titulkové', 'Šablonové', 'Vlastní'];
+function renderCats() {
+  const box = $('fontCats'); box.textContent = '';
+  const present = new Set(FONTS.filter(f => !f.error).map(f => f.cat || 'Vlastní'));
+  for (const c of CATS) {
+    if (c !== 'Vše' && !present.has(c)) continue;
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = c;
+    b.setAttribute('aria-pressed', String(S.fontCat === c));
+    b.onclick = () => { S.fontCat = c; saveState(); renderCats(); renderFontList(); };
+    box.append(b);
+  }
+}
+
+function families() {
+  const m = new Map();
+  for (const f of FONTS) {
+    let g = m.get(f.family); if (!g) m.set(f.family, g = { family: f.family, entries: [], sources: new Set() });
+    if (!f.error && g.entries.some(x => x.style === f.style && !x.error)) continue; // stejný řez z jiného zdroje
+    g.entries.push(f); g.sources.add(f.source);
+  }
+  for (const g of m.values()) { g.cat = g.entries[0].cat || 'Vlastní'; g.entries.sort((a, b) => (a.it - b.it) || (a.w - b.w)); g.ok = g.entries.filter(e => !e.error); }
+  return [...m.values()].sort((a, b) => a.family.localeCompare(b.family, 'cs'));
+}
+function pickInFamily(g) {
+  const ok = g.ok; if (!ok.length) return null;
+  const wantW = cur ? cur.w : 400, wantIt = cur ? cur.it : false;
+  return ok.slice().sort((a, b) => ((a.it !== wantIt) - (b.it !== wantIt)) || (Math.abs(a.w - wantW) - Math.abs(b.w - wantW)))[0];
+}
+function renderFontList() {
+  const q = $('fontSearch').value.trim().toLowerCase();
+  const fams = families();
+  const list = fams.filter(g => (S.fontCat === 'Vše' || g.cat === S.fontCat) && (!q || g.family.toLowerCase().includes(q) || g.cat.toLowerCase().includes(q) || g.entries.some(e => e.name.toLowerCase().includes(q))));
+  const box = $('fontList'); box.textContent = '';
+  for (const g of list.slice(0, 400)) {
+    const sel = cur && cur.family === g.family, err = !g.ok.length;
+    const row = document.createElement('div');
+    row.className = 'fontrow' + (sel ? ' sel' : '') + (err ? ' err' : '');
+    row.setAttribute('role', 'option'); row.tabIndex = err ? -1 : 0; row.setAttribute('aria-selected', String(!!sel));
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = g.family;
+    const src = document.createElement('span'); src.className = 'src';
+    src.textContent = err ? g.entries[0].error : `${g.ok.length > 1 ? plural(g.ok.length, 'řez', 'řezy', 'řezů') + ' · ' : ''}${g.sources.has('vestavěný') ? g.cat.toLowerCase() : [...g.sources].join(', ')}`;
+    row.append(nm, src);
+    if (!err) { const go = () => { const e = pickInFamily(g); if (e) selectFont(e); }; row.onclick = go; row.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } }; }
+    box.append(row);
+  }
+  if (list.length > 400) { const more = document.createElement('div'); more.className = 'fontrow'; more.style.cursor = 'default'; more.textContent = `…a dalších ${list.length - 400}. Upřesněte hledání.`; box.append(more); }
+  const okFonts = FONTS.filter(f => !f.error).length;
+  $('fontCount').textContent = `${plural(fams.filter(g => g.ok.length).length, 'rodina', 'rodiny', 'rodin')} · ${plural(okFonts, 'řez', 'řezy', 'řezů')}`;
+  renderStyles(fams);
+  renderCats();
+}
+function renderStyles(fams) {
+  const box = $('styleChips'); box.textContent = '';
+  if (!cur) return;
+  const g = (fams || families()).find(x => x.family === cur.family); if (!g) return;
+  for (const e of g.ok) {
+    const dup = g.ok.filter(x => x.label === e.label).length > 1;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'stc';
+    b.textContent = dup ? e.style : e.label; b.title = e.name;
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(e === cur));
+    b.onclick = () => selectFont(e);
+    box.append(b);
+  }
+}
+async function selectFont(f) {
+  const font = await ensure(f);
+  if (!font) { hint(`Font „${f.name}“ se nepodařilo načíst (${f.error}).`, true); renderFontList(); return; }
+  cur = f; S.font = f.name; $('fontName').textContent = f.family; $('fontName').title = f.name; saveState();
+  renderFontList(); rebuild(); markCmpSelection();
+}
+
+async function addFiles(fileList) {
+  const files = [...fileList].filter(f => /\.(ttf|otf|woff)$/i.test(f.name));
+  const skipped = [...fileList].filter(f => /\.(woff2|ttc|fon)$/i.test(f.name)).length;
+  if (!files.length) { hint(skipped ? `Vybrané soubory nemají podporovaný formát (WOFF2, TTC a FON nejsou podporované).` : 'Ve výběru nejsou žádné soubory fontů.', true); return; }
+  const added = files.map(file => addFont({ name: file.name.replace(/\.[^.]+$/, ''), source: 'soubor', getBuffer: () => file.arrayBuffer() }));
+  renderFontList();
+  let bad = 0;
+  for (let i = 0; i < added.length; i++) {
+    await ensure(added[i]); if (added[i].error) bad++;
+    if (i % 10 === 9) { hint(`Načítám fonty ${i + 1}/${added.length}…`); renderFontList(); await new Promise(r => setTimeout(r)); }
+  }
+  hint(`Přidáno ${added.length - bad} fontů` + (bad ? `, ${bad} se nepodařilo načíst` : '') + (skipped ? `, ${skipped} přeskočeno (WOFF2/TTC)` : '') + '.');
+  renderFontList(); cmpDirty = true; if (cmpVisible()) runCompare();
+  if (added[0] && !added[0].error) selectFont(added[0]);
+}
+function hint(t, err) { const h = $('fontHint'); h.textContent = t; h.classList.toggle('err', !!err); }
+
+$('btnFiles').onclick = () => $('inFiles').click();
+$('btnFolder').onclick = () => $('inFolder').click();
+$('inFiles').onchange = (e) => { addFiles(e.target.files); e.target.value = ''; };
+$('inFolder').onchange = (e) => { addFiles(e.target.files); e.target.value = ''; };
+$('btnSystem').onclick = async () => {
+  if (!('queryLocalFonts' in window)) { hint('Načtení fontů z Windows umí jen Chrome nebo Edge a jen když je aplikace otevřená jako soubor z vašeho počítače. Tady použijte „Nahrát složku“ a vyberte C:\\Windows\\Fonts.', true); return; }
+  try {
+    const list = await window.queryLocalFonts();
+    const known = new Set(FONTS.filter(f => f.source === 'systém').map(f => f.name));
+    let n = 0;
+    for (const fd of list) { if (known.has(fd.fullName)) continue; const e = addFont({ name: fd.fullName, source: 'systém', getBuffer: async () => (await fd.blob()).arrayBuffer() }); setMeta(e, fd.family, fd.style); n++; }
+    hint(n ? `Načteno ${n} fontů z Windows. Vyhledejte je podle názvu.` : 'Žádné nové fonty z Windows nepřibyly.');
+    renderFontList(); cmpDirty = true; if (cmpVisible()) runCompare();
+  } catch (err) {
+    hint('Přístup k fontům z Windows prohlížeč nepovolil. Použijte „Nahrát složku“ a vyberte C:\\Windows\\Fonts.', true);
+  }
+};
+$('fontSearch').oninput = renderFontList;
+
+/* ===== Ovládání ===== */
+function setRadio(name, val) { const r = document.querySelector(`input[name=${name}][value=${val}]`); if (r) r.checked = true; }
+function syncInputs() {
+  $('txt').value = S.text; $('mirror').checked = S.mirror; $('split').checked = S.split; $('fillHoles').checked = S.fillHoles;
+  $('hole').checked = S.hole; $('ignoreWhite').checked = S.ignoreWhite; $('slant').checked = S.slant;
+  setRadio('align', S.align); setRadio('mode', S.mode); setRadio('symPos', S.symPos); setRadio('relief', S.relief); setRadio('holePos', S.holePos);
+  for (const k of NUMS) $(k).value = S[k];
+  updateModeUI(); $('height').value = engraved() ? S.engDepth : S.height;
+}
+const hasBase = () => S.mode === 'offset' || S.mode === 'plate';
+const engraved = () => hasBase() && S.relief === 'engraved';
+function updateModeUI() {
+  $('grp-offset').hidden = S.mode !== 'offset';
+  $('grp-plate').hidden = S.mode !== 'plate';
+  $('grp-base').hidden = !hasBase();
+  $('grp-relief').hidden = !hasBase();
+  $('card-hole').hidden = !hasBase();
+  $('grp-hole').hidden = !S.hole;
+  $('grp-stand').hidden = S.mode !== 'stand';
+  $('grp-sym').hidden = S.symKind === 'none';
+  $('wrapWhite').hidden = S.symKind !== 'svg';
+  $('heightLbl').textContent = S.mode === 'stand' ? 'Tloušťka písma (hloubka)' : S.mode === 'text' ? 'Tloušťka písma' : engraved() ? 'Hloubka rytí' : 'Výška písma nad podkladem';
+  $('split').disabled = S.mode === 'text';
+  $('splitLbl').textContent = engraved() ? 'Přidat výplň rytí jako samostatný díl (vícebarevný tisk)' : 'Písmo a podklad zvlášť (vícebarevný tisk)';
+  $('lgBwrap').hidden = S.mode === 'text';
+  $('lgTname').textContent = engraved() ? 'Výplň rytí' : 'Písmo';
+}
+let tmr = 0; const later = () => { clearTimeout(tmr); tmr = setTimeout(() => { rebuild(); saveState(); cmpDirty = true; if (cmpVisible()) runCompare(); }, 160); };
+$('txt').oninput = () => { S.text = $('txt').value; later(); };
+$('mirror').onchange = () => { S.mirror = $('mirror').checked; later(); };
+$('fillHoles').onchange = () => { S.fillHoles = $('fillHoles').checked; later(); };
+$('slant').onchange = () => { S.slant = $('slant').checked; later(); };
+$('hole').onchange = () => { S.hole = $('hole').checked; updateModeUI(); later(); };
+$('split').onchange = () => { S.split = $('split').checked; saveState(); applyVisibility(); };
+$('ignoreWhite').onchange = () => { S.ignoreWhite = $('ignoreWhite').checked; refreshSymbol(); later(); };
+const onRadio = (name, key, extra) => document.querySelectorAll(`input[name=${name}]`).forEach(r => r.onchange = () => { S[key] = r.value; if (extra) extra(); updateModeUI(); later(); });
+const syncHeight = () => { if (engraved() && S.baseT < 2.4) { S.baseT = 3; $('baseT').value = 3; } $('height').value = engraved() ? S.engDepth : S.height; };
+onRadio('align', 'align'); onRadio('mode', 'mode', () => { fitNext = true; syncHeight(); }); onRadio('symPos', 'symPos', () => { fitNext = true; });
+onRadio('relief', 'relief', syncHeight); onRadio('holePos', 'holePos');
+for (const k of NUMS) $(k).oninput = () => { const v = parseFloat($(k).value); if (isFinite(v)) { S[k === 'height' && engraved() ? 'engDepth' : k] = v; later(); } };
+
+/* ===== Symbol a logo ===== */
+let SYM = null, symErr = '';
+function refreshSymbol() {
+  SYM = null; symErr = '';
+  try {
+    if (S.symKind === 'icon') { const ic = ICONS.find(i => i.id === S.symId); if (ic) SYM = svgToSymbol(ic.svg, false); }
+    else if (S.symKind === 'svg' && S.svgText) { SYM = svgToSymbol(S.svgText, S.ignoreWhite); if (!SYM) symErr = 'V logu nejsou žádné vyplněné plochy ani čáry, které by šly převést do 3D.'; }
+  } catch (e) { SYM = null; symErr = 'Soubor SVG se nepodařilo přečíst. Zkuste ho v Inkscapu uložit jako „Prosté SVG“.'; }
+  const nm = S.symKind === 'icon' ? (ICONS.find(i => i.id === S.symId) || {}).name : S.symKind === 'svg' ? S.symName : '';
+  $('symName').textContent = nm ? `Vybráno: ${nm}` : 'Bez symbolu';
+}
+function renderIcons() {
+  const g = $('iconGrid'); g.textContent = '';
+  const mk = (id, title, inner, on) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'ic'; b.title = title; b.setAttribute('aria-label', title);
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(on)); b.innerHTML = inner;
+    b.onclick = () => { if (id === 'none') { S.symKind = 'none'; S.symId = ''; } else { S.symKind = 'icon'; S.symId = id; } refreshSymbol(); renderIcons(); updateModeUI(); fitNext = true; later(); };
+    g.append(b);
+  };
+  mk('none', 'Bez symbolu', 'Žádný', S.symKind === 'none');
+  for (const ic of ICONS) mk(ic.id, ic.name, `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ic.d}"${ic.rule ? ` fill-rule="${ic.rule}"` : ''}/></svg>`, S.symKind === 'icon' && S.symId === ic.id);
+}
+$('btnSvg').onclick = () => $('inSvg').click();
+$('inSvg').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  S.svgText = await f.text(); S.symKind = 'svg'; S.symName = f.name; S.symId = '';
+  refreshSymbol(); renderIcons(); updateModeUI(); fitNext = true; later();
+};
+
+/* ===== 3D scéna ===== */
+const cv = $('cv');
+let renderer = null, scene, camera, meshT = null, meshB = null, bedGroup = null, model = null, fitNext = true;
+const orbit = { theta: -Math.PI / 2, phi: 0.95, r: 250, target: new THREE.Vector3() };
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function initGL() {
+  try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true }); }
+  catch (e) { renderer = null; return; }
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(35, 1, 0.5, 5000); camera.up.set(0, 0, 1);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x445055, 0.75));
+  const d1 = new THREE.DirectionalLight(0xffffff, 0.65); d1.position.set(-120, -200, 300); scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xffffff, 0.3); d2.position.set(200, 150, 120); scene.add(d2);
+  meshT = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.05 }));
+  meshB = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ roughness: 0.7, metalness: 0.02 }));
+  scene.add(meshT, meshB);
+  applyTheme();
+  new ResizeObserver(resize).observe($('viewer'));
+}
+function makeBed() {
+  if (bedGroup) { scene.remove(bedGroup); bedGroup.traverse(o => o.geometry && o.geometry.dispose()); }
+  bedGroup = new THREE.Group();
+  const X = S.bedX, Y = S.bedY, minor = [], major = [];
+  for (let x = -X / 2; x <= X / 2 + 0.01; x += 10) (Math.round(x) % 50 === 0 ? major : minor).push(x, -Y / 2, 0, x, Y / 2, 0);
+  for (let y = -Y / 2; y <= Y / 2 + 0.01; y += 10) (Math.round(y) % 50 === 0 ? major : minor).push(-X / 2, y, 0, X / 2, y, 0);
+  for (const [arr, col] of [[minor, css('--grid')], [major, css('--grid-major')]]) {
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+    bedGroup.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: new THREE.Color(col) })));
+  }
+  const edge = new THREE.BufferGeometry(); edge.setAttribute('position', new THREE.Float32BufferAttribute([-X/2,-Y/2,0, X/2,-Y/2,0, X/2,-Y/2,0, X/2,Y/2,0, X/2,Y/2,0, -X/2,Y/2,0, -X/2,Y/2,0, -X/2,-Y/2,0], 3));
+  bedGroup.add(new THREE.LineSegments(edge, new THREE.LineBasicMaterial({ color: new THREE.Color(css('--muted')) })));
+  bedGroup.position.z = -0.05;
+  scene.add(bedGroup);
+}
+function applyTheme() {
+  if (!renderer) return;
+  scene.background = new THREE.Color(css('--view'));
+  meshT.material.color.set(css('--text3d')); meshB.material.color.set(css('--base3d'));
+  $('lgT').style.background = css('--text3d'); $('lgB').style.background = css('--base3d');
+  makeBed(); draw();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+function resize() {
+  const r = $('viewer').getBoundingClientRect(); if (!r.width) return;
+  renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); draw();
+}
+let raf = 0;
+function draw() {
+  if (!renderer || raf) return;
+  raf = requestAnimationFrame(() => {
+    raf = 0; const t = orbit.target, s = Math.sin(orbit.phi);
+    camera.position.set(t.x + orbit.r * s * Math.cos(orbit.theta), t.y + orbit.r * s * Math.sin(orbit.theta), t.z + orbit.r * Math.cos(orbit.phi));
+    camera.lookAt(t); renderer.render(scene, camera);
+  });
+}
+function fit(view) {
+  if (!model) return;
+  const s = model.size; orbit.target.set(0, 0, s.z / 2);
+  const span = Math.max(s.x, s.y, s.z, 20);
+  orbit.r = span / (2 * Math.tan(THREE.MathUtils.degToRad(35) / 2)) * Math.max(0.85, 1.3 / camera.aspect);
+  if (view === 'top') { orbit.phi = 0.001; orbit.theta = -Math.PI / 2; }
+  else if (view === 'persp') { orbit.phi = S.mode === 'stand' ? 1.2 : 0.95; orbit.theta = -Math.PI / 2 - 0.45; }
+  draw();
+}
+$('vTop').onclick = () => fit('top'); $('vPersp').onclick = () => fit('persp'); $('vFit').onclick = () => fit();
+
+/* ovládání myší a dotykem */
+const ptrs = new Map(); let pinch0 = 0, r0 = 0;
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, b: e.button, shift: e.shiftKey });
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); r0 = orbit.r; } });
+cv.addEventListener('pointermove', e => {
+  const p = ptrs.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch0) orbit.r = r0 * pinch0 / d; }
+  else if (p.b === 2 || p.shift) {
+    const k = orbit.r * 0.0016; const right = new THREE.Vector3(), up = new THREE.Vector3();
+    camera.matrixWorld.extractBasis(right, up, new THREE.Vector3());
+    orbit.target.addScaledVector(right, -dx * k).addScaledVector(up, dy * k);
+  } else { orbit.theta -= dx * 0.008; orbit.phi = Math.min(Math.PI - 0.05, Math.max(0.001, orbit.phi - dy * 0.008)); }
+  draw();
+});
+const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+cv.addEventListener('wheel', e => { e.preventDefault(); orbit.r = Math.min(4000, Math.max(5, orbit.r * Math.exp(e.deltaY * 0.0012))); draw(); }, { passive: false });
+
+/* ===== Sestavení modelu ===== */
+function fmt(v) { return v.toLocaleString('cs-CZ', { maximumFractionDigits: 1, minimumFractionDigits: 1 }); }
+function showMsgs(list) {
+  const box = $('msgs'); box.textContent = '';
+  for (const m of list) { const d = document.createElement('div'); d.className = 'msg ' + m.lvl; d.textContent = m.msg; box.append(d); }
+}
+function rebuild() {
+  if (!cur || !cur.font) return;
+  const msgs = [];
+  if (symErr) msgs.push({ lvl: 'bad', msg: symErr });
+  let parts;
+  try { parts = buildParts(cur.font, S, SYM); } catch (e) { showMsgs([{ lvl: 'bad', msg: 'Model se nepodařilo sestavit: ' + e.message }]); return; }
+  if (parts.missing.length) msgs.push({ lvl: 'bad', msg: `Font „${cur.name}“ neobsahuje znaky: ${parts.missing.join(' ')}. Tyto znaky v modelu chybí, zvolte jiný font.` });
+  if (parts.empty) { model = null; $('dims').textContent = 'Napište text'; $('tris').textContent = ''; $('btnSave').disabled = true;
+    if (meshT) { meshT.geometry.dispose(); meshT.geometry = new THREE.BufferGeometry(); meshB.geometry.dispose(); meshB.geometry = new THREE.BufferGeometry(); draw(); }
+    showMsgs(msgs); return; }
+  const loss = thinLoss(parts.textEx, S.minStroke);
+  if (loss >= 0.1) msgs.push({ lvl: 'bad', msg: `Velká část tahů je tenčí než ${fmt(S.minStroke)} mm a tiskárna je nevytiskne. Zvětšete písmo nebo zvolte tučnější řez.` });
+  else if (loss >= 0.03) msgs.push({ lvl: 'warn', msg: `Některé tahy nebo špičky jsou tenčí než ${fmt(S.minStroke)} mm a nemusí se vytisknout čistě. Pomůže větší písmo nebo tučnější řez.` });
+  msgs.push(...parts.warnings);
+  model = buildGeometry(parts, S);
+  const sz = model.size;
+  const fits = (sz.x <= S.bedX && sz.y <= S.bedY) || (sz.y <= S.bedX && sz.x <= S.bedY);
+  if (!fits) msgs.push({ lvl: 'bad', msg: `Model (${fmt(sz.x)} × ${fmt(sz.y)} mm) se nevejde na tiskovou plochu ${S.bedX} × ${S.bedY} mm. Zmenšete písmo nebo text rozdělte na víc řádků.` });
+  if (!msgs.length) msgs.push({ lvl: 'ok', msg: 'Model je připravený k tisku.' });
+  showMsgs(msgs);
+  const triCount = exportGeoms().reduce((s, g) => s + g.attributes.position.count, 0) / 3;
+  $('dims').innerHTML = `<b>${fmt(sz.x)}</b> × <b>${fmt(sz.y)}</b> × <b>${fmt(sz.z)}</b> mm`;
+  $('tris').textContent = `${triCount.toLocaleString('cs-CZ')} trojúhelníků`;
+  $('btnSave').disabled = false;
+  if (renderer) {
+    meshT.geometry.dispose(); meshT.geometry = model.text;
+    meshB.geometry.dispose(); meshB.geometry = model.base || new THREE.BufferGeometry();
+    applyVisibility(false);
+    if (fitNext) { fit('persp'); fitNext = false; } else draw();
+  }
+}
+
+function applyVisibility(redraw = true) {
+  if (!meshT) return;
+  meshT.visible = !(model && model.inlay && !S.split);
+  $('lgTwrap').hidden = !meshT.visible;
+  if (model) $('tris').textContent = `${(exportGeoms().reduce((s, g) => s + g.attributes.position.count, 0) / 3).toLocaleString('cs-CZ')} trojúhelníků`;
+  if (redraw) draw();
+}
+function exportGeoms() { return model.inlay && !S.split ? [model.base] : [model.text, model.base].filter(Boolean); }
+
+/* ===== Stažení ===== */
+const inViewer = !!(window.claude && typeof window.claude.use === 'function');
+let dlCap = null;
+if (inViewer) { window.claude.use('downloads').then(d => { dlCap = d; updateSaveNote(); }); }
+function updateSaveNote() {
+  $('saveNote').textContent = inViewer
+    ? (dlCap ? 'Tady se STL stáhne zabalené v ZIP souboru. Po rozbalení ho otevřete ve sliceru (Creality Print, Cura, PrusaSlicer).' : 'Stahování je v tomto zobrazení nedostupné.')
+    : 'Soubor STL otevřete ve sliceru (Creality Print, Cura, PrusaSlicer). Jednotky jsou milimetry.';
+  if (inViewer && !dlCap) $('btnSave').disabled = true;
+}
+function slug(t) { return (t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 30) || 'text'); }
+$('btnSave').onclick = async () => {
+  if (!model) return;
+  const base = `${slug(S.symPos === 'only' && S.symKind !== 'none' ? (S.symKind === 'icon' ? S.symId : S.symName.replace(/\.svg$/i, '')) : S.text)}${model.inlay ? '_ryty' : ''}_${{ text: 'text', offset: 'obrys', plate: 'podlozka', stand: 'stojan' }[S.mode]}`;
+  let files;
+  if (model.inlay) files = S.split
+    ? [{ name: base + '_podklad.stl', data: stlBinary([model.base]) }, { name: base + '_vypln.stl', data: stlBinary([model.text]) }]
+    : [{ name: base + '.stl', data: stlBinary([model.base]) }];
+  else files = (S.split && model.base)
+    ? [{ name: base + '_pismo.stl', data: stlBinary([model.text]) }, { name: base + '_podklad.stl', data: stlBinary([model.base]) }]
+    : [{ name: base + '.stl', data: stlBinary([model.text, model.base].filter(Boolean)) }];
+  if (inViewer) {
+    if (!dlCap) return;
+    try { await dlCap.save({ filename: base + '.zip', data: makeZip(files) }); $('saveNote').textContent = 'ZIP je uložený. Rozbalte ho a STL otevřete ve sliceru.'; }
+    catch (err) { if (err && err.code !== 'declined') $('saveNote').textContent = err.code === 'rate_limited' ? 'Počkejte chvíli a zkuste to znovu.' : 'Soubor se nepodařilo uložit.'; }
+  } else {
+    for (const f of files) {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([f.data], { type: 'model/stl' })); a.download = f.name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+};
+
+/* ===== Porovnání fontů ===== */
+let cmpDirty = true, cmpRun = 0; const cmpRes = new Map();
+const cmpVisible = () => !$('pane-cmp').hidden;
+function setTab(which) {
+  const c = which === 'cmp';
+  $('tab-3d').setAttribute('aria-selected', String(!c)); $('tab-cmp').setAttribute('aria-selected', String(c));
+  $('pane-3d').hidden = c; $('pane-cmp').hidden = !c;
+  if (c && cmpDirty) runCompare(); if (!c) { resize(); }
+}
+$('tab-3d').onclick = () => setTab('3d'); $('tab-cmp').onclick = () => setTab('cmp');
+function drawPreview(canvas, exs) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth || 220, h = 64;
+  canvas.width = w * dpr; canvas.height = h * dpr; const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+  if (!exs.length) return;
+  const bb = boundsEx(exs), bw = bb.x1 - bb.x0, bh = bb.y1 - bb.y0;
+  const k = Math.min((w - 12) / bw, (h - 10) / bh);
+  const ox = (w - bw * k) / 2 - bb.x0 * k, oy = (h + bh * k) / 2 + bb.y0 * k;
+  ctx.fillStyle = css('--ink'); ctx.beginPath();
+  for (const p of exToPaths(exs)) { p.forEach((q, i) => { const x = ox + q.X / SC * k, y = oy - q.Y / SC * k; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath(); }
+  ctx.fill('evenodd');
+}
+function sampleText() { return (S.text.split('\n').find(l => l.trim()) || 'Ahoj').slice(0, 24); }
+async function runCompare() {
+  const run = ++cmpRun; cmpDirty = false; cmpRes.clear();
+  const grid = $('cmpGrid'); grid.textContent = '';
+  const sample = sampleText(); const opts = { size: S.size, spacing: S.spacing, lineH: 1, align: 'left', mirror: false };
+  const list = FONTS.filter(f => !f.error);
+  for (let i = 0; i < list.length; i++) {
+    if (run !== cmpRun) return;
+    const f = list[i]; const font = await ensure(f);
+    if (!font) continue;
+    let exs = [], missing = [], loss = 0;
+    try {
+      const L = layoutText(font, sample, opts); exs = L.paths.length ? unionEx(L.paths) : [];
+      missing = [...new Set([...L.missing, ...[...CZ_TEST].filter(ch => font.charToGlyphIndex(ch) === 0)])];
+      loss = exs.length ? thinLoss(exs, S.minStroke) : 0;
+    } catch (e) { continue; }
+    const ok = !missing.length && loss < 0.03;
+    cmpRes.set(f.id, { ok });
+    const card = document.createElement('div'); card.className = 'cmp-card' + (f === cur ? ' sel' : ''); card.dataset.id = f.id; card.dataset.ok = ok ? '1' : '0';
+    card.dataset.name = f.name.toLowerCase(); card.tabIndex = 0; card.setAttribute('role', 'button');
+    const cvs = document.createElement('canvas'); const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = f.name;
+    const bd = document.createElement('div'); bd.className = 'badges';
+    const badge = (cls, t) => { const s = document.createElement('span'); s.className = 'badge ' + cls; s.textContent = t; bd.append(s); };
+    if (ok) badge('ok', 'vhodný');
+    if (missing.length) badge('bad', 'chybí ' + missing.slice(0, 6).join(' ') + (missing.length > 6 ? ' …' : ''));
+    if (loss >= 0.1) badge('bad', 'příliš tenké tahy'); else if (loss >= 0.03) badge('warn', 'tenké tahy');
+    card.append(cvs, nm, bd);
+    const pick = () => { selectFont(f); setTab('3d'); };
+    card.onclick = pick; card.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(); } };
+    grid.append(card); drawPreview(cvs, exs); filterCmp(card);
+    if (i % 4 === 3) { $('cmpProg').textContent = `Připravuji ${i + 1} / ${list.length}`; await new Promise(r => setTimeout(r)); }
+  }
+  if (run === cmpRun) { const okN = [...cmpRes.values()].filter(r => r.ok).length; $('cmpProg').textContent = `${cmpRes.size} fontů, z toho ${okN} vhodných`; }
+}
+function filterCmp(card) {
+  const q = $('cmpSearch').value.trim().toLowerCase(), only = $('cmpOnlyOk').checked;
+  const apply = (c) => { c.hidden = (q && !c.dataset.name.includes(q)) || (only && c.dataset.ok !== '1'); };
+  if (card) apply(card); else document.querySelectorAll('.cmp-card').forEach(apply);
+}
+function markCmpSelection() { document.querySelectorAll('.cmp-card').forEach(c => c.classList.toggle('sel', cur && +c.dataset.id === cur.id)); }
+$('cmpSearch').oninput = () => filterCmp(); $('cmpOnlyOk').onchange = () => filterCmp();
+
+/* ===== Fonty ze serveru: složka fonts/ vedle aplikace ===== */
+async function loadServerFonts() {
+  if (inViewer || !/^https?:$/.test(location.protocol)) return;
+  const tryJson = async (u) => { try { const r = await fetch(u, { cache: 'no-cache' }); if (!r.ok) return null; const j = await r.json(); return Array.isArray(j) ? j : null; } catch (e) { return null; } };
+  let files = await tryJson('fonts/list.php') || await tryJson('fonts/fonts.json');
+  if (!files) { // záloha: výpis složky, pokud ho server povoluje
+    try { const r = await fetch('fonts/', { cache: 'no-cache' }); if (r.ok) { const html = await r.text(); files = [...html.matchAll(/href="([^"?#]+\.(?:ttf|otf|woff))"/gi)].map(m => decodeURIComponent(m[1].split('/').pop())); } } catch (e) {}
+  }
+  files = [...new Set((files || []).map(String).filter(f => /^[^\/]+\.(ttf|otf|woff)$/i.test(f)))];
+  if (!files.length) return;
+  hint(`Načítám ${plural(files.length, 'font', 'fonty', 'fontů')} ze serveru…`);
+  const added = files.map(name => addFont({ name: name.replace(/\.[^.]+$/, ''), source: 'server',
+    getBuffer: async () => { const r = await fetch('fonts/' + encodeURIComponent(name)); if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); } }));
+  let bad = 0;
+  for (let i = 0; i < added.length; i++) {
+    await ensure(added[i]); if (added[i].error) bad++;
+    if (i % 5 === 4) { renderFontList(); await new Promise(r => setTimeout(r)); }
+  }
+  hint(`Ze serveru ${added.length - bad === 1 ? 'načten' : 'načteno'} ${plural(added.length - bad, 'font', 'fonty', 'fontů')}` + (bad ? `, ${bad} se nepodařilo načíst` : '') + '. Další přidáte nahráním do složky fonts na serveru.');
+  renderFontList(); cmpDirty = true; if (cmpVisible()) runCompare();
+  const want = FONTS.find(f => f.name === wantedFont && f.source === 'server' && !f.error);
+  if (want && cur !== want) selectFont(want);
+}
+
+/* ===== Instalace jako aplikace (PWA) a mobilní zařízení ===== */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; $('btnInstall').hidden = false; });
+window.addEventListener('appinstalled', () => { installEvt = null; $('btnInstall').hidden = true; });
+$('btnInstall').onclick = async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; $('btnInstall').hidden = true; };
+if (!inViewer && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {}); // bez souboru sw.js (např. offline verze) se nic nestane
+}
+// Na telefonu nejde nahrát složku ani číst fonty systému: tlačítka skryjeme
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+if (isMobile || !('webkitdirectory' in document.createElement('input'))) $('btnFolder').hidden = true;
+if (isMobile || !('queryLocalFonts' in window)) $('btnSystem').hidden = true;
+
+/* ===== Sbalitelné sekce ===== */
+(function () {
+  const KEY = 'pismo-do-stl-sbaleno';
+  let closed; try { closed = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { closed = null; }
+  if (!Array.isArray(closed)) closed = ['Symbol nebo logo', 'Tiskárna']; // výchozí: méně používané sekce sbalené
+  document.querySelectorAll('aside section.card > h2').forEach(h => {
+    const card = h.parentElement, name = h.textContent.trim();
+    h.tabIndex = 0; h.setAttribute('role', 'button');
+    const apply = () => { const c = closed.includes(name); card.classList.toggle('collapsed', c); h.setAttribute('aria-expanded', String(!c)); };
+    const toggle = () => { closed = closed.includes(name) ? closed.filter(n => n !== name) : closed.concat(name); try { localStorage.setItem(KEY, JSON.stringify(closed)); } catch (e) {} apply(); };
+    h.onclick = toggle; h.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } };
+    apply();
+  });
+})();
+
+/* ===== Pojistka proti posunutí celé stránky na počítači ===== */
+const deskMQ = matchMedia('(min-width: 861px)');
+const pinTop = () => { if (deskMQ.matches && (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop)) { window.scrollTo(0, 0); document.body.scrollTop = 0; } };
+window.addEventListener('scroll', pinTop, { passive: true }); document.body.addEventListener('scroll', pinTop, { passive: true });
+document.addEventListener('focusin', () => requestAnimationFrame(pinTop));
+
+/* ===== Start ===== */
+refreshSymbol(); renderIcons(); syncInputs(); initGL(); updateSaveNote();
+if (!renderer) showMsgs([{ lvl: 'warn', msg: 'Prohlížeč nepodporuje WebGL, 3D náhled se nezobrazí. Stažení STL funguje dál.' }]);
+const wantedFont = S.font;
+Promise.all(FONTS.map(ensure)).then(() => selectFont(FONTS.find(f => f.name === S.font) || FONTS.find(f => f.name === 'Poppins Bold') || FONTS[0])).then(loadServerFonts);
+</script>

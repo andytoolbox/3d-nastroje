@@ -1,0 +1,6 @@
+# Sestavené soubory, které se dají kdykoli vytvořit znovu (python build.py)
+dist/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

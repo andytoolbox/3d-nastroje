@@ -1,0 +1,84 @@
+/* =====================================================================
+   3D nástroje – společný vzhled rozcestníku (stejné barvy a písmo jako nástroje)
+   Created by Julius Andy Antoš
+   Pro další stránky webu stačí připojit tento soubor a použít stejné třídy.
+   ===================================================================== */
+:root {
+  --bg: #e9eef0; --panel: #fbfcfc; --ink: #1b2428; --muted: #5a6970; --line: #d2dade;
+  --accent: #0b7a72; --accent-ink: #ffffff; --accent-soft: #d9efec; --view: #dde4e7; --new: #e07a3f;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37; --view: #0e1316; --new: #ff9a60; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37; --view: #0e1316; --new: #ff9a60; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-ui); }
+a { color: var(--accent); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+/* Horní lišta */
+.topbar { border-bottom: 1px solid var(--line); background: var(--panel); }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; }
+.topbar .home { color: var(--muted); text-decoration: none; font-size: 14px; }
+.topbar .home:hover { color: var(--ink); }
+.brand { display: flex; align-items: center; gap: 10px; font: 600 16px var(--f-label); letter-spacing: .02em; color: var(--ink); text-decoration: none; }
+.brand .cube { width: 26px; height: 26px; }
+
+/* Úvod */
+.hero { padding: 40px 0 26px; }
+.hero h1 { margin: 0 0 8px; font: 600 clamp(28px, 5vw, 42px)/1.1 var(--f-label); letter-spacing: .005em; }
+.hero p { margin: 0; color: var(--muted); font-size: 17px; max-width: 64ch; }
+.facts { display: flex; gap: 8px 18px; flex-wrap: wrap; margin-top: 16px; font-size: 13.5px; color: var(--muted); }
+.facts span { display: inline-flex; align-items: center; gap: 6px; }
+.facts svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 2; }
+
+/* Hledání a filtry */
+.tools-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 18px; }
+.search { position: relative; flex: 1 1 260px; max-width: 420px; }
+.search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 2; pointer-events: none; }
+.search input { width: 100%; font: inherit; padding: 9px 12px 9px 38px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink); outline: none; }
+.search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13.5px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* Karty nástrojů */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.tool { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; text-decoration: none; color: inherit; transition: border-color .15s, transform .15s, box-shadow .15s; }
+.tool:hover, .tool:focus-visible { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 24px -16px rgba(0,0,0,.45); outline: none; }
+.tool .shot { position: relative; aspect-ratio: 16 / 10; background: var(--view); overflow: hidden; }
+.tool .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tool .badge { position: absolute; left: 10px; top: 10px; background: var(--new); color: #fff; font: 600 11px var(--f-label); text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; border-radius: 4px; }
+.tool .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.tool .head { display: flex; align-items: center; gap: 10px; }
+.tool .head img { width: 34px; height: 34px; border-radius: 8px; flex: none; }
+.tool h2 { margin: 0; font: 600 19px/1.2 var(--f-label); }
+.tool .cat { font: 600 11px var(--f-label); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.tool p { margin: 0; color: var(--muted); font-size: 14px; flex: 1; }
+.tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tags span { font-size: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 1px 7px; color: var(--muted); }
+.open { align-self: flex-start; margin-top: 4px; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 6px; }
+.empty { color: var(--muted); padding: 30px 0; text-align: center; grid-column: 1 / -1; }
+
+/* Informační sekce */
+section.info { margin: 44px 0 0; }
+section.info h2 { font: 600 13px var(--f-label); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin: 0 0 12px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+.step b { display: flex; align-items: center; gap: 8px; font: 600 15px var(--f-label); margin-bottom: 4px; }
+.step b i { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-style: normal; font-size: 12px; }
+.step p { margin: 0; color: var(--muted); font-size: 14px; }
+
+footer.sig { margin-top: 44px; border-top: 1px solid var(--line); padding: 14px 0 28px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; }
+footer.sig strong { font: 600 13px var(--f-label); color: var(--ink); letter-spacing: .02em; }
+
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } .hero { padding-top: 26px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

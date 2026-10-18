@@ -1,0 +1,333 @@
+<title>Svítící fotky</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Rozvržení: stejná dílna jako Písmo do STL — vlevo průvodce v krocích, vpravo náhled, který lze „rozsvítit“ */
+:root {
+  --bg: #e9eef0; --panel: #fbfcfc; --ink: #1b2428; --muted: #5a6970; --line: #d2dade;
+  --accent: #0b7a72; --accent-ink: #ffffff; --accent-soft: #d9efec;
+  --warn: #9a5200; --warn-soft: #fbecd8; --bad: #b0271f; --bad-soft: #f8dedb; --ok: #1d7536; --ok-soft: #dcefe1;
+  --view: #dde4e7; --grid: #b9c5ca; --grid-major: #93a3aa; --model: #f2efe8; --night: #121518; --glow: #ffd9a0;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --model: #d8d4cb; --night: #07090a; --glow: #ffd9a0; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --model: #d8d4cb; --night: #07090a; --glow: #ffd9a0; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--f-ui); }
+.app { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 16px; padding-inline: 16px; padding-block: 16px; min-height: 100%; }
+header.top { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+header.top h1 { margin: 0; font: 600 20px/1.2 var(--f-label); letter-spacing: .01em; }
+header.top p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+header.top .install { margin-left: auto; align-self: center; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.card h2 { margin: 0; font: 600 11px/1 var(--f-label); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.card h2 .step { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 10.5px; margin-right: 6px; letter-spacing: 0; }
+label.f { display: grid; grid-template-columns: 1fr 104px; align-items: center; gap: 8px; font-size: 13px; }
+label.f small, .lblrow small { display: block; color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.num { position: relative; }
+.num input { width: 100%; padding: 5px 34px 5px 8px; text-align: right; font: 13px var(--f-num); font-variant-numeric: tabular-nums; }
+.num span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font: 11px var(--f-num); pointer-events: none; }
+input, select, textarea { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+select { padding: 5px 6px; width: 100%; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+input:focus-visible, select:focus-visible, button:focus-visible, .seg label:focus-within, .shape:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lblrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg label { position: relative; flex: 1; text-align: center; padding: 5px 8px; cursor: pointer; font-size: 12.5px; border-left: 1px solid var(--line); user-select: none; white-space: nowrap; }
+.seg label:first-child { border-left: 0; }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.seg.wide { width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.slider { display: grid; grid-template-columns: 1fr 52px; gap: 4px 8px; align-items: center; font-size: 13px; }
+.slider input { grid-column: 1 / -1; }
+.slider output { font: 12px var(--f-num); text-align: right; color: var(--muted); }
+button { font: 500 13px var(--f-ui); border-radius: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); padding: 9px 14px; font-weight: 600; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.hint { font-size: 12px; color: var(--muted); margin: 0; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 14px; text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.drop b { color: var(--accent); }
+.photos { display: flex; flex-direction: column; gap: 6px; }
+.ph { display: grid; grid-template-columns: 22px 52px minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 4px; padding: 5px; }
+.ph .no { font: 600 12px var(--f-num); color: var(--muted); text-align: center; }
+.ph canvas { width: 52px; height: 38px; border-radius: 3px; display: block; object-fit: cover; }
+.ph .nm { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph select { font-size: 11.5px; padding: 2px 4px; margin-top: 2px; width: auto; }
+.ph .btns { display: flex; gap: 2px; }
+.ph .btns button { padding: 2px 7px; font-size: 12px; }
+.ph.unused { opacity: .45; }
+
+.shapes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.shape { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 8px 4px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; text-align: center; line-height: 1.2; }
+.shape input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.shape svg { width: 44px; height: 36px; }
+.shape svg .o { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linejoin: round; }
+.shape svg .f { fill: var(--muted); opacity: .25; }
+.shape:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.shape:has(input:checked) svg .o { stroke: var(--accent); }
+.shape:has(input:checked) svg .f { fill: var(--accent); opacity: .35; }
+.explain { background: var(--bg); border-radius: 4px; padding: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.explain b { font-weight: 600; }
+.explain ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.guide { font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+.guide h3 { margin: 0; font: 600 12.5px var(--f-label); }
+.guide ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.guide .safety { border-left: 3px solid var(--bad); background: var(--bad-soft); padding: 6px 8px; border-radius: 3px; }
+
+aside .card > h2 { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+aside .card > h2::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s; flex: none; }
+aside .card.collapsed > h2::after { transform: rotate(-45deg); }
+aside .card.collapsed > :not(h2) { display: none !important; }
+
+main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.viewer { position: relative; background: var(--view); border: 1px solid var(--line); border-radius: var(--r); height: min(62vh, 620px); min-height: 300px; overflow: hidden; touch-action: none; transition: background .3s; }
+.viewer.lit { background: var(--night); }
+.viewer canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px; font: 12px var(--f-num); font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 500; color: var(--accent); }
+.vbtns { position: absolute; right: 10px; top: 10px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.vbtns button { padding: 4px 8px; font-size: 12px; }
+.vbtns .light { font-weight: 600; }
+.vbtns .light[aria-pressed="true"] { background: var(--glow); border-color: var(--glow); color: #3a2a00; }
+.help { position: absolute; right: 10px; bottom: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; text-align: right; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--view) 60%, transparent); font: 600 13px var(--f-ui); color: var(--ink); pointer-events: none; }
+.msgs { display: flex; flex-direction: column; gap: 6px; }
+.msg { border-radius: 4px; padding: 7px 10px; font-size: 13px; border-left: 3px solid; }
+.msg.warn { background: var(--warn-soft); border-color: var(--warn); }
+.msg.bad { background: var(--bad-soft); border-color: var(--bad); }
+.msg.ok { background: var(--ok-soft); border-color: var(--ok); }
+.msg.info { background: var(--panel); border-color: var(--accent); }
+.export { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.export .note { font-size: 12px; color: var(--muted); flex: 1; min-width: 200px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.stat { border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.stat span { font: 600 10.5px var(--f-label); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.stat b { font: 500 16px var(--f-num); font-variant-numeric: tabular-nums; }
+footer.sig { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 10px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+footer.sig strong { font: 600 12.5px var(--f-label); color: var(--ink); letter-spacing: .02em; }
+
+@media (min-width: 861px) {
+  html, body { height: 100%; overflow: hidden; }
+  .app { height: 100%; grid-template-rows: auto minmax(0, 1fr) auto; }
+  aside, main { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+  aside { padding-right: 6px; scrollbar-gutter: stable; }
+  .viewer { flex: 1 1 auto; height: auto; min-height: 300px; }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  main { display: contents; }
+  header.top { order: -3; }
+  .viewer { order: -1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; height: 40vh; min-height: 230px; box-shadow: 0 6px 12px -8px rgba(0,0,0,.35); }
+  .msgs, #card-export { order: 0; }
+  aside { order: 1; }
+  aside * { scroll-margin-top: calc(max(40vh, 230px) + 12px); }
+  footer.sig { order: 2; }
+}
+@media (max-width: 560px) { .help { display: none; } .vbtns { top: auto; bottom: 10px; } .shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Svítící fotky</h1>
+    <p>Litofánie: tenký bílý výtisk, ve kterém se fotka objeví až proti světlu. Světlá místa jsou tenká a propouštějí světlo, tmavá jsou silná.</p>
+    <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
+  </header>
+
+  <aside>
+    <section class="card">
+      <h2><span><span class="step">1</span>Fotky</span></h2>
+      <div class="drop" id="drop" tabindex="0" role="button"><b>Vyberte fotky</b> nebo je sem přetáhněte<br><small>JPG, PNG nebo WEBP · u válce, srdce a stínítka každá fotka = jeden díl dokola</small></div>
+      <input type="file" id="inPh" accept="image/*" multiple hidden>
+      <div class="photos" id="photos"></div>
+      <div class="row"><button type="button" id="btnSamples">Vložit ukázkové fotky</button><button type="button" id="btnClear">Odebrat všechny</button></div>
+    </section>
+
+    <section class="card">
+      <h2><span><span class="step">2</span>Tvar</span></h2>
+      <div class="shapes" role="radiogroup" aria-label="Tvar">
+        <label class="shape"><input type="radio" name="shape" value="flat"><svg viewBox="0 0 44 36" aria-hidden="true"><rect class="f" x="8" y="4" width="28" height="22"/><rect class="o" x="8" y="4" width="28" height="22"/><path class="o" d="M4 31h36"/><path class="o" d="M8 26v5M36 26v5"/></svg>Rovná</label>
+        <label class="shape"><input type="radio" name="shape" value="arc"><svg viewBox="0 0 44 36" aria-hidden="true"><path class="f" d="M5 10q17-8 34 0v20q-17-8-34 0z"/><path class="o" d="M5 10q17-8 34 0v20q-17-8-34 0z"/></svg>Prohnutá</label>
+        <label class="shape"><input type="radio" name="shape" value="shaped"><svg viewBox="0 0 44 36" aria-hidden="true"><path class="f" d="M22 32S6 22 6 12a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 10-16 20-16 20z"/><path class="o" d="M22 32S6 22 6 12a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 10-16 20-16 20z"/></svg>Srdce, kruh…</label>
+        <label class="shape"><input type="radio" name="shape" value="cyl"><svg viewBox="0 0 44 36" aria-hidden="true"><rect class="f" x="10" y="6" width="24" height="24"/><ellipse class="o" cx="22" cy="6" rx="12" ry="3"/><path class="o" d="M10 6v24a12 3 0 0 0 24 0V6M18 9v23M26 9v23"/></svg>Válec – lucerna</label>
+        <label class="shape"><input type="radio" name="shape" value="heartL"><svg viewBox="0 0 44 36" aria-hidden="true"><path class="o" d="M22 14s-9-6-9-11M22 14s9-6 9-11"/><path class="f" d="M13 8v20l9 6 9-6V8"/><path class="o" d="M13 3v25l9 6 9-6V3M22 14v20"/></svg>Srdcová lucerna</label>
+        <label class="shape"><input type="radio" name="shape" value="shade"><svg viewBox="0 0 44 36" aria-hidden="true"><path class="f" d="M9 8h26l2 24H7z"/><path class="o" d="M9 8h26l2 24H7zM22 8V3M14 8l8-3 8 3"/></svg>Stínítko na lampu</label>
+      </div>
+      <div class="explain" id="explain" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h2><span><span class="step">3</span>Rozměry</span></h2>
+      <div data-show="shaped" class="lblrow"><span>Obrys</span>
+        <div class="seg" role="radiogroup" aria-label="Obrys">
+          <label><input type="radio" name="outline" value="heart">Srdce</label>
+          <label><input type="radio" name="outline" value="circle">Kruh</label>
+          <label><input type="radio" name="outline" value="oval">Ovál</label>
+          <label><input type="radio" name="outline" value="star">Hvězda</label>
+        </div>
+      </div>
+      <div data-show="shade" class="lblrow"><span>Průřez<small>pohled shora</small></span>
+        <div class="seg" role="radiogroup" aria-label="Průřez stínítka">
+          <label><input type="radio" name="shadeProfile" value="cyl">Kulatý</label>
+          <label><input type="radio" name="shadeProfile" value="wave">Vlnitý</label>
+        </div>
+      </div>
+      <div data-show="shade" style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px">Boční tvar</span>
+        <div class="seg wide" role="radiogroup" aria-label="Boční tvar stínítka">
+          <label><input type="radio" name="shadeSide" value="straight">Rovný</label>
+          <label><input type="radio" name="shadeSide" value="cone">Kužel</label>
+          <label><input type="radio" name="shadeSide" value="waist">V pase</label>
+          <label><input type="radio" name="shadeSide" value="bell">Oblý kužel</label>
+        </div>
+        <p class="hint" id="sideHint"></p>
+      </div>
+      <label class="f" data-show="flat arc"><span>Šířka</span><span class="num"><input type="number" data-k="width" min="30" max="300" step="5"><span>mm</span></span></label>
+      <label class="check" data-show="flat arc"><input type="checkbox" data-k="autoH">Výška podle poměru fotky</label>
+      <label class="f" data-show="flat arc" id="rowH"><span>Výška</span><span class="num"><input type="number" data-k="height" min="30" max="300" step="5"><span>mm</span></span></label>
+      <label class="f" data-show="arc"><span>Prohnutí<small>větší = víc do oblouku</small></span><span class="num"><input type="number" data-k="curveDeg" min="20" max="200" step="10"><span>°</span></span></label>
+      <label class="check" data-show="flat arc"><input type="checkbox" data-k="stand">Podstavec, aby stála sama</label>
+      <label class="f" data-show="shaped"><span>Velikost<small>delší strana</small></span><span class="num"><input type="number" data-k="shapedSize" min="40" max="250" step="5"><span>mm</span></span></label>
+      <label class="check" data-show="shaped"><input type="checkbox" data-k="hang">Očko na zavěšení</label>
+      <label class="f" data-show="cyl"><span>Průměr</span><span class="num"><input type="number" data-k="diameter" min="40" max="250" step="5"><span>mm</span></span></label>
+      <label class="f" data-show="heartL"><span>Šířka srdce</span><span class="num"><input type="number" data-k="heartW" min="60" max="250" step="5"><span>mm</span></span></label>
+      <label class="f" data-show="cyl heartL"><span>Výška</span><span class="num"><input type="number" data-k="lanternH" min="30" max="250" step="5"><span>mm</span></span></label>
+      <label class="check" data-show="cyl heartL"><input type="checkbox" data-k="floor">Dno (lucerna na LED svíčku)</label>
+      <label class="f" data-show="shade"><span id="lblShadeD">Průměr</span><span class="num"><input type="number" data-k="shadeD" min="60" max="300" step="5"><span>mm</span></span></label>
+      <label class="f" data-show="sideTop"><span>Průměr nahoře</span><span class="num"><input type="number" data-k="shadeDTop" min="40" max="300" step="5"><span>mm</span></span></label>
+      <label class="f" data-show="sideWaist"><span>Zúžení v pase<small>o kolik mm se zúží poloměr</small></span><span class="num"><input type="number" data-k="waist" min="2" max="60" step="1"><span>mm</span></span></label>
+      <label class="f" data-show="sideBell"><span>Vyklenutí<small>kladné ven, záporné dovnitř</small></span><span class="num"><input type="number" data-k="bow" min="-40" max="40" step="1"><span>mm</span></span></label>
+      <label class="f" data-show="shade"><span>Výška</span><span class="num"><input type="number" data-k="shadeH" min="60" max="300" step="5"><span>mm</span></span></label>
+      <label class="f" data-show="wave"><span>Počet vln<small>ideálně stejně jako fotek</small></span><span class="num"><input type="number" data-k="lobes" min="3" max="16" step="1"><span>×</span></span></label>
+      <label class="f" data-show="wave"><span>Hloubka vln</span><span class="num"><input type="number" data-k="waveDepth" min="2" max="40" step="1"><span>mm</span></span></label>
+    </section>
+
+    <section class="card" data-show="shade">
+      <h2><span>Kříž pro objímku</span></h2>
+      <label class="check"><input type="checkbox" data-k="cross">Středový kříž s kroužkem na objímku</label>
+      <div data-show="cross" style="display:flex;flex-direction:column;gap:10px">
+        <div class="lblrow"><span>Umístění</span>
+          <div class="seg" role="radiogroup" aria-label="Umístění kříže">
+            <label><input type="radio" name="crossPos" value="top">Nahoře</label>
+            <label><input type="radio" name="crossPos" value="bottom">Dole</label>
+          </div>
+        </div>
+        <label class="f"><span>Objímka</span><select data-k="socket"><option value="E27">E27 – velký závit (40 mm)</option><option value="E14">E14 – malý závit (29 mm)</option><option value="custom">vlastní průměr</option></select></label>
+        <label class="f" data-show="customSocket"><span>Průměr otvoru</span><span class="num"><input type="number" data-k="socketD" min="10" max="80" step="0.5"><span>mm</span></span></label>
+        <label class="f"><span>Počet ramen</span><select data-k="spokes"><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></label>
+        <label class="f"><span>Šířka ramen</span><span class="num"><input type="number" data-k="spokeW" min="3" max="12" step="0.5"><span>mm</span></span></label>
+        <label class="f"><span>Tloušťka kříže</span><span class="num"><input type="number" data-k="crossH" min="3" max="12" step="0.5"><span>mm</span></span></label>
+        <p class="hint">Otvor změřte posuvkou na kroužku objímky, který stínítko drží. Kříž se tiskne na podložce, takže aplikace stínítko pro tisk sama otočí.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span><span class="step">4</span>Úprava fotek</span></h2>
+      <div class="lblrow"><span>Výřez</span>
+        <div class="seg" role="radiogroup" aria-label="Výřez">
+          <label><input type="radio" name="fit" value="cover">Vyplnit</label>
+          <label><input type="radio" name="fit" value="contain">Celá fotka</label>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" data-k="autoLevels">Automaticky vyrovnat jas (doporučeno)</label>
+      <div class="slider"><label for="sBright">Jas</label><output id="oBright"></output><input type="range" id="sBright" data-k="bright" min="-0.3" max="0.3" step="0.02"></div>
+      <div class="slider"><label for="sContrast">Kontrast</label><output id="oContrast"></output><input type="range" id="sContrast" data-k="contrast" min="0.6" max="1.8" step="0.05"></div>
+      <label class="check"><input type="checkbox" data-k="invert">Negativ (obrácené světlé a tmavé)</label>
+    </section>
+
+    <section class="card">
+      <h2><span>Tloušťka a jemnost</span></h2>
+      <label class="f"><span>Nejtenčí místo<small>nejsvětlejší části fotky</small></span><span class="num"><input type="number" data-k="tMin" min="0.4" max="3" step="0.1"><span>mm</span></span></label>
+      <label class="f"><span>Nejsilnější místo<small>nejtmavší části fotky</small></span><span class="num"><input type="number" data-k="tMax" min="1.5" max="6" step="0.1"><span>mm</span></span></label>
+      <label class="f"><span>Rámeček a mezery</span><span class="num"><input type="number" data-k="frame" min="0" max="15" step="0.5"><span>mm</span></span></label>
+      <label class="f"><span>Jemnost<small>body na milimetr</small></span><select data-k="res"><option value="2.5">hrubá (rychlé)</option><option value="3">střední</option><option value="4">jemná</option><option value="5">velmi jemná</option></select></label>
+      <p class="hint">Výchozí hodnoty 0,8 a 3,0 mm se hodí pro bílé PLA a trysku 0,4 mm. Větší rozdíl dává víc kontrastu, ale delší tisk.</p>
+    </section>
+
+    <section class="card">
+      <h2><span>Tiskárna</span></h2>
+      <label class="f"><span>Tisková plocha X</span><span class="num"><input type="number" data-k="bedX" min="50" max="1000" step="1"><span>mm</span></span></label>
+      <label class="f"><span>Tisková plocha Y</span><span class="num"><input type="number" data-k="bedY" min="50" max="1000" step="1"><span>mm</span></span></label>
+      <label class="f"><span>Max. výška Z</span><span class="num"><input type="number" data-k="bedZ" min="50" max="1000" step="1"><span>mm</span></span></label>
+    </section>
+
+    <section class="card">
+      <h2><span>Rady k tisku a výběru fotek</span></h2>
+      <div class="guide">
+        <h3>Jaká fotka se hodí</h3>
+        <ul>
+          <li>Ostrá, s výraznými rozdíly světla a stínu. Rozmazané a šedivé fotky vyjdou mdle.</li>
+          <li>Obličeje ať jsou velké: portrét nebo dvojice, ne celá skupina z dálky.</li>
+          <li>Klidné pozadí. Drobné detaily (text, listí v dálce) se v plastu ztratí.</li>
+          <li>Příliš tmavou fotku zesvětlete posuvníkem Jas, jinak bude výtisk silný a málo prosvítí.</li>
+        </ul>
+        <h3>Nastavení tisku</h3>
+        <ul>
+          <li><b>Materiál:</b> bílé PLA (ne průhledné, ne šedé).</li>
+          <li><b>Výplň 100 %</b> a výška vrstvy 0,1–0,15 mm.</li>
+          <li><b>Rychlost</b> spíš pomalejší (kolem 40 mm/s), rozhoduje o kvalitě detailů.</li>
+          <li>Rovné a prohnuté destičky, válce a stínítka se tisknou <b>nastojato</b>, tak jak je vidíte v náhledu. Přidejte límec (brim), aby nespadly.</li>
+          <li>Tvarované destičky (srdce, kruh) se tisknou naležato, fotka se pak vytiskne do výšky vrstev.</li>
+          <li>Podpěry nejsou potřeba.</li>
+        </ul>
+        <h3>Světlo</h3>
+        <ul>
+          <li>Destičky prosvítí okno, lampička nebo LED pásek 5–15 cm za nimi.</li>
+          <li>Do lucerny patří LED čajová svíčka na baterie, nikdy skutečná svíčka.</li>
+        </ul>
+        <p class="safety"><b>Bezpečnost u stínítek:</b> používejte jen LED žárovky (nejvýš asi 7 W, „teplá bílá“). Klasické a halogenové žárovky hřejí a plast by změkl nebo začal hořet. Žárovka se nesmí stínítka dotýkat.</p>
+      </div>
+    </section>
+  </aside>
+
+  <main>
+    <div class="viewer" id="viewer">
+      <canvas id="cv" aria-label="3D náhled litofánie"></canvas>
+      <div class="hud"><span class="chip" id="dims">–</span></div>
+      <div class="vbtns"><button type="button" class="light" id="btnLight" aria-pressed="false">Rozsvítit</button><button type="button" id="vFront">Zepředu</button><button type="button" id="vPersp">Šikmo</button></div>
+      <div class="busy" id="busy" hidden>Počítám model…</div>
+      <div class="help">Táhnutím otáčíte · kolečkem nebo dvěma prsty přibližujete</div>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <section class="card" id="card-export">
+      <div class="stats" id="stats"></div>
+      <div class="export">
+        <button class="primary" type="button" id="btnSave">Stáhnout STL</button>
+        <span class="note" id="saveNote"></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sig"><strong>Created by Julius Andy Antoš</strong><span>Svítící fotky · výpočet běží ve vašem prohlížeči, fotky se nikam neodesílají</span></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipper-lib@6.4.2/clipper.js"></script>
+<script>
+/*__CORE__*/
+/*__DILNA__*/
+/*__LITHO__*/
+/*__APP__*/
+</script>

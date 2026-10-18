@@ -1,0 +1,19 @@
+3D NÁSTROJE – rozcestník
+Created by Julius Andy Antoš
+
+CO JE UVNITŘ
+  index.html    stránka se seznamem nástrojů (hledání, kategorie)
+  nastroje.js   SEZNAM NÁSTROJŮ – tady přidáváte a upravujete nástroje
+  styl.css      vzhled (stejné barvy a písmo jako nástroje), lze použít i pro další stránky
+  img/          náhledy (640 × 400) a ikony nástrojů
+
+NAHRÁNÍ
+  Obsah složky "3d-nastroje" nahrajte přes FTP do www/3d-nastroje/
+  (vedle složek pismo-do-stl, svitici-fotky, …).
+  → https://www.vas-web.cz/3d-nastroje/
+
+PŘIDÁNÍ NOVÉHO NÁSTROJE
+  1. Složku nástroje nahrajte do www/3d-nastroje/nazev-nastroje/
+  2. Do img/ dejte náhled nazev-nastroje.jpg a ikonu nazev-nastroje-ikona.png
+  3. V nastroje.js zkopírujte jeden blok { … }, přepište texty a soubor nahrajte.
+  Nic dalšího se upravovat nemusí.

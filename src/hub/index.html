@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Julius Andy Antoš">
+<title>3D nástroje – bezplatné nástroje pro 3D tisk</title>
+<meta name="description" content="Bezplatné české nástroje pro 3D tisk: text do STL, litofánie, QR klíčenky, vykrajovátka, převod obrázků do SVG a STL, dvojitý 3D nápis. Vše běží v prohlížeči.">
+<meta property="og:title" content="3D nástroje – bezplatné nástroje pro 3D tisk">
+<meta property="og:description" content="Text do STL, litofánie, QR klíčenky, vykrajovátka, SVG a reliéfy, dvojitý 3D nápis. Zdarma, v prohlížeči, i na mobilu.">
+<meta property="og:image" content="img/pismo-do-stl.jpg">
+<meta name="theme-color" content="#0b7a72">
+<link rel="icon" type="image/png" href="img/pismo-do-stl-ikona.png">
+<link rel="stylesheet" href="styl.css">
+</head>
+<body>
+<!-- 3D nástroje – rozcestník. Created by Julius Andy Antoš.
+     Seznam nástrojů je v souboru nastroje.js, vzhled ve styl.css. -->
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="./"><svg class="cube" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 21 7v10l-9 5-9-5V7z" fill="var(--accent)"/><path d="M12 12 21 7M12 12 3 7M12 12v10" stroke="var(--panel)" stroke-width="1.6" fill="none"/></svg><span id="siteName">3D nástroje</span></a>
+  <a class="home" id="home" href="/" hidden></a>
+</div></div>
+
+<main class="wrap">
+  <header class="hero">
+    <h1 id="title">3D nástroje</h1>
+    <p id="intro"></p>
+    <div class="facts">
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Zdarma, bez registrace</span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Data zůstávají ve vašem zařízení</span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Funguje na mobilu i offline</span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16"/></svg>Výstup STL pro každý slicer</span>
+    </div>
+  </header>
+
+  <div class="tools-bar">
+    <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input type="search" id="q" placeholder="Co chcete vytisknout? Např. klíčenka, lampa…" aria-label="Hledat nástroj" autocomplete="off"></div>
+    <div class="chips" id="chips" role="group" aria-label="Kategorie"></div>
+  </div>
+
+  <div class="grid" id="grid">
+    <noscript><p class="empty">Seznam nástrojů potřebuje zapnutý JavaScript.</p></noscript>
+  </div>
+
+  <section class="info">
+    <h2>Jak to funguje</h2>
+    <div class="steps">
+      <div class="step"><b><i>1</i>Vyberte nástroj</b><p>Každý nástroj se otevře v prohlížeči, nic se neinstaluje. Na mobilu ho můžete přidat na plochu jako aplikaci.</p></div>
+      <div class="step"><b><i>2</i>Upravte a stáhněte</b><p>Napište text nebo nahrajte obrázek, v 3D náhledu hned vidíte výsledek. Pak stáhnete soubor STL.</p></div>
+      <div class="step"><b><i>3</i>Vytiskněte</b><p>STL otevřete ve sliceru (Bambu Studio, PrusaSlicer, Creality Print, Cura). Každý nástroj má rady k tisku.</p></div>
+    </div>
+  </section>
+
+  <footer class="sig"><strong id="sig">Created by Julius Andy Antoš</strong><span>Nástroje běží ve vašem prohlížeči, nic se neodesílá.</span></footer>
+</main>
+
+<script src="nastroje.js"></script>
+<script>
+/* Vykreslení rozcestníku ze seznamu v nastroje.js. Created by Julius Andy Antoš */
+(function () {
+  var W = window.WEB || {}, T = window.NASTROJE || [];
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var norm = function (s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+  if (W.nazev) { $('title').textContent = W.nazev; $('siteName').textContent = W.nazev; }
+  $('intro').textContent = W.podnadpis || '';
+  if (W.podpis) $('sig').textContent = W.podpis;
+  if (W.domu && W.domu.odkaz) { var h = $('home'); h.href = W.domu.odkaz; h.textContent = '← ' + (W.domu.text || 'Úvod'); h.hidden = false; }
+
+  var cats = []; T.forEach(function (t) { if (t.kategorie && cats.indexOf(t.kategorie) < 0) cats.push(t.kategorie); });
+  var active = '';
+  function chips() {
+    var box = $('chips'); box.innerHTML = '';
+    if (cats.length < 2) return;
+    [''].concat(cats).forEach(function (c) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = c || 'Vše';
+      b.setAttribute('aria-pressed', String(active === c)); b.onclick = function () { active = c; chips(); render(); }; box.appendChild(b);
+    });
+  }
+  function render() {
+    var toks = norm($('q').value).split(/\s+/).filter(Boolean);
+    var list = T.filter(function (t) {
+      if (active && t.kategorie !== active) return false;
+      var s = norm([t.nazev, t.popis, t.kategorie].concat(t.stitky || []).join(' '));
+      return toks.every(function (k) { return s.indexOf(k.length > 4 ? k.slice(0, -1) : k) >= 0; }); // bez koncovky: klíčenka najde i klíčenky
+    });
+    $('grid').innerHTML = list.map(function (t) {
+      return '<a class="tool" href="' + esc(t.odkaz) + '">' +
+        '<div class="shot"><img src="img/' + esc(t.id) + '.jpg" alt="Náhled: ' + esc(t.nazev) + '" loading="lazy" width="640" height="400">' + (t.novinka ? '<span class="badge">Novinka</span>' : '') + '</div>' +
+        '<div class="body"><div class="head"><img src="img/' + esc(t.id) + '-ikona.png" alt="" width="34" height="34"><div><div class="cat">' + esc(t.kategorie) + '</div><h2>' + esc(t.nazev) + '</h2></div></div>' +
+        '<p>' + esc(t.popis) + '</p>' + (t.stitky && t.stitky.length ? '<div class="tags">' + t.stitky.map(function (s) { return '<span>' + esc(s) + '</span>'; }).join('') + '</div>' : '') +
+        '<span class="open">Otevřít nástroj</span></div></a>';
+    }).join('') || '<p class="empty">Žádný nástroj neodpovídá hledání. Zkuste jiné slovo.</p>';
+  }
+  $('q').addEventListener('input', render);
+  chips(); render();
+})();
+</script>
+</body>
+</html>
