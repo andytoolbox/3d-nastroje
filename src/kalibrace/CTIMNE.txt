@@ -1,0 +1,20 @@
+KALIBRAČNÍ TESTY – testovací modely pro nastavení tiskárny a filamentu
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Kalibrační kostka s výpočtem odchylek, teplotní věž s popisky a tabulkou
+  změn teploty, test převisů, test mostů, test vůle (díry a kolík) a test
+  vlasení. U každého testu je návod, jak ho vyhodnotit.
+
+NAHRÁNÍ NA WEB
+  Složku "kalibrace" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/kalibrace/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.

@@ -1,0 +1,22 @@
+KALKULAČKA CENY TISKU – cena 3D tisku včetně vícebarevného tisku
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Filament (více barev a materiálů), odpad z výměn barev, elektřina, opotřebení
+  tiskárny, práce, další náklady, rezerva na nepovedené tisky, marže a DPH.
+  Každou položku lze zapnout nebo vypnout. Čas a gramy umí načíst z G-code
+  nebo z .gcode.3mf (Bambu Studio, Orca, PrusaSlicer, Creality Print, Cura).
+
+NAHRÁNÍ NA WEB
+  Složku "kalkulacka-tisku" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/kalkulacka-tisku/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.
+  Nastavení a ceny se ukládají jen v tomto prohlížeči.

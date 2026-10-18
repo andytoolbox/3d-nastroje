@@ -16,8 +16,13 @@ Bezplatné nástroje pro 3D tisk v češtině. Všechno se počítá přímo v p
 | <img src="docs/img/svg-studio-ikona.png" width="32"> | **SVG Studio** | Z obrázku nebo SVG udělá 3D tvar, vektorový obrys SVG nebo plastický reliéf z fotky. |
 | <img src="docs/img/qr-klicenky-ikona.png" width="32"> | **QR klíčenky** | QR kód na klíčence, cedulce nebo stojánku: web, sociální sítě, kontakt, Wi-Fi, QR platba, logo uprostřed. |
 | <img src="docs/img/cookie-cutter-studio-ikona.png" width="32"> | **Cookie Cutter Studio** | Vykrajovátka na cukroví z tvarů, obrázku, SVG nebo textu, k tomu razítko s reliéfem. |
+| <img src="docs/img/krabicky-ikona.png" width="32"> | **Krabičky a organizéry** | Krabička s přihrádkami a nasazovacím nebo posuvným víčkem (i s nápisem), Gridfinity boxy a podložky do šuplíku. |
+| <img src="docs/img/vazy-ikona.png" width="32"> | **Vázy a lampy** | Vázy, květináče s podmiskou a stínidla s vlnami, žebry a zkroucením, pro režim váza nebo se stěnou. |
+| <img src="docs/img/kalibrace-ikona.png" width="32"> | **Kalibrační testy** | Kostka, teplotní věž, převisy, mosty, vůle a vlasení, s návodem na vyhodnocení. |
+| <img src="docs/img/kontrola-stl-ikona.png" width="32"> | **Kontrola STL** | Prohlížeč STL, OBJ a 3MF: rozměry, hmotnost, cena, kontrola děr a převisů, oprava modelu a nejlepší natočení k tisku. |
+| <img src="docs/img/kalkulacka-tisku-ikona.png" width="32"> | **Kalkulačka ceny tisku** | Cena výtisku včetně vícebarevného tisku: filament, odpad z výměn barev, elektřina, opotřebení, práce, marže a DPH. Načte čas a gramy z G-code nebo .gcode.3mf. |
 
-Všechny nástroje stahují model jako **STL** (jednotky mm), který otevřete v libovolném sliceru (Bambu Studio, PrusaSlicer, Creality Print, Cura). Modely jsou uzavřená tělesa připravená k tisku.
+Nástroje, které vytvářejí modely, je stahují jako **STL** (jednotky mm), který otevřete v libovolném sliceru (Bambu Studio, PrusaSlicer, Creality Print, Cura). Modely jsou uzavřená tělesa připravená k tisku.
 
 ## Spuštění
 

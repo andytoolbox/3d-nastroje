@@ -1,0 +1,21 @@
+VÁZY A LAMPY – vázy, květináče a stínidla pro 3D tisk
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Váza, květináč (s odtokovým otvorem a podmiskou) nebo stínidlo. Tvar z průměrů
+  ve čtyřech výškách, průřez kruh, mnohoúhelník, hvězda, vlny nebo květ,
+  zkroucení, svislá žebra a vodorovné vlny. Model pro režim váza (spiralize)
+  nebo dutý se stěnou. Modely jsou uzavřená tělesa připravená k tisku.
+
+NAHRÁNÍ NA WEB
+  Složku "vazy" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/vazy/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.

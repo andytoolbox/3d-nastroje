@@ -84,6 +84,28 @@ TOOLS = {
                       'liberation': 'LiberationSans-Bold.sub.ttf'}),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'dual-app.js'},
     },
+    'krabicky': {
+        'page': 'krabicky.html', 'title': 'Krabičky',
+        'parts': {'FONT': lambda: 'const LABEL_FONT_B64 = "%s";' % b64('fonts', 'Poppins-Bold.sub.ttf'),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'krabicky-app.js'},
+    },
+    'vazy': {
+        'page': 'vazy.html', 'title': 'Vázy a lampy',
+        'parts': {'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'vazy-app.js'},
+    },
+    'kalibrace': {
+        'page': 'kalibrace.html', 'title': 'Kalibrace',
+        'parts': {'FONT': lambda: 'const LABEL_FONT_B64 = "%s";' % b64('fonts', 'Poppins-Bold.sub.ttf'),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'kalibrace-app.js'},
+    },
+    'kontrola-stl': {
+        'page': 'kontrola.html', 'title': 'Kontrola STL',
+        'parts': {'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'kontrola-app.js'},
+    },
+    'kalkulacka-tisku': {
+        'page': 'kalkulacka.html', 'title': 'Cena tisku',
+        'parts': {'APP': 'kalkulacka-app.js'},
+    },
 }
 
 def build_tool(tid, cfg, stamp):

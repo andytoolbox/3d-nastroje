@@ -751,7 +751,8 @@ function meshBuilder() {
     }
   };
   const geom = () => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); return g; };
-  return { cap, wall, orient, geom };
+  const raw = (a, b, c) => { pos.push(...a, ...b, ...c); };
+  return { cap, wall, orient, geom, raw };
 }
 /* Robustní vytažení ExPolygonů do hranolu (uzavřené těleso) */
 function prismSolid(exs, z0, z1) {

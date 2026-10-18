@@ -66,5 +66,50 @@ window.NASTROJE = [
     stitky: ['vykrajovátka', 'perníčky', 'razítka'],
     odkaz: 'cookie-cutter-studio/',
     novinka: true
+  },
+  {
+    id: 'krabicky',
+    nazev: 'Krabičky a organizéry',
+    popis: 'Krabička na míru s přihrádkami a víčkem (nasazovací nebo posuvné, s nápisem), Gridfinity boxy s magnety a podložky do šuplíku.',
+    kategorie: 'Organizace',
+    stitky: ['krabička', 'víčko', 'přihrádky', 'Gridfinity', 'šuplík'],
+    odkaz: 'krabicky/',
+    novinka: true
+  },
+  {
+    id: 'vazy',
+    nazev: 'Vázy a lampy',
+    popis: 'Vázy, květináče s miskou a stínidla: tvar, vlny, hvězdy, žebra a zkroucení. Pro tisk v režimu váza nebo se stěnou.',
+    kategorie: 'Domov',
+    stitky: ['váza', 'květináč', 'stínidlo', 'režim váza', 'spiralize'],
+    odkaz: 'vazy/',
+    novinka: true
+  },
+  {
+    id: 'kalibrace',
+    nazev: 'Kalibrační testy',
+    popis: 'Kostka, teplotní věž, převisy, mosty, vůle a vlasení. Ke každému testu návod, jak ho vyhodnotit, a u kostky výpočet odchylek.',
+    kategorie: 'Nastavení tiskárny',
+    stitky: ['kalibrace', 'teplota', 'převisy', 'tolerance', 'retrakce'],
+    odkaz: 'kalibrace/',
+    novinka: true
+  },
+  {
+    id: 'kontrola-stl',
+    nazev: 'Kontrola STL',
+    popis: 'Otevře STL, OBJ i 3MF: rozměry, hmotnost a cena, díry a otočené stěny, převisy. Model opraví a najde nejlepší natočení k tisku.',
+    kategorie: 'Nastavení tiskárny',
+    stitky: ['STL', 'oprava', 'převisy', 'hmotnost', 'natočení'],
+    odkaz: 'kontrola-stl/',
+    novinka: true
+  },
+  {
+    id: 'kalkulacka-tisku',
+    nazev: 'Kalkulačka ceny tisku',
+    popis: 'Kolik výtisk stojí a za kolik ho prodat: filament i vícebarevný tisk, elektřina, opotřebení, práce, marže a DPH. Čas a gramy načte ze sliceru.',
+    kategorie: 'Výpočty',
+    stitky: ['cena', 'filament', 'vícebarevný tisk', 'nabídka'],
+    odkaz: 'kalkulacka-tisku/',
+    novinka: true
   }
 ];
