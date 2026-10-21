@@ -222,7 +222,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 <div class="app">
   <header class="top">
     <h1>Kontrola STL</h1>
-    <p>Otevřete model a hned uvidíte rozměry, hmotnost a cenu, jestli je model uzavřený a kde bude potřebovat podpěry. Umí díry opravit a najít nejlepší natočení k tisku.</p>
+    <p>Otevřete model a hned uvidíte rozměry, hmotnost a cenu, jestli je model uzavřený a kde bude potřebovat podpěry. Umí model opravit, zjednodušit, převést mezi STL, OBJ a 3MF a najít nejlepší natočení k tisku.</p>
     <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
   </header>
 
@@ -256,7 +256,14 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
     </section>
 
     <section class="card" data-show="loaded">
-      <h2><span><span class="step">4</span>Materiál a cena</span></h2>
+      <h2><span><span class="step">4</span>Zjednodušení a sloučení</span></h2>
+      <label class="f wide"><span>Přesnost</span><select id="simpTol"><option value="0.01">0,01 mm (jemné)</option><option value="0.03">0,03 mm</option><option value="0.05" selected>0,05 mm (doporučeno)</option><option value="0.1">0,1 mm</option><option value="0.2">0,2 mm (hrubé)</option></select></label>
+      <div class="row"><button type="button" id="btnSimp">Zjednodušit model</button><button type="button" id="btnUnion" hidden>Sloučit překrývající se tělesa</button></div>
+      <p class="hint" id="simpHint">Odstraní zbytečně jemné trojúhelníky, které tiskárna stejně nevytiskne (vrstva je 0,1–0,3 mm). Soubor se zmenší a slicer ho zpracuje rychleji, tvar se změní nejvýš o zvolenou přesnost.</p>
+    </section>
+
+    <section class="card" data-show="loaded">
+      <h2><span><span class="step">5</span>Materiál a cena</span></h2>
       <label class="f wide"><span>Materiál</span><select id="mat"><option value="1.24">PLA</option><option value="1.27">PETG</option><option value="1.04">ABS</option><option value="1.07">ASA</option><option value="1.21">TPU</option><option value="1.14">PA (nylon)</option></select></label>
       <label class="f"><span>Výplň</span><span class="num"><input type="number" data-k="infill" min="0" max="100" step="5"><span>%</span></span></label>
       <label class="f"><span>Tloušťka stěn<small>perimetry, dno a vršek</small></span><span class="num"><input type="number" data-k="wall" min="0.4" max="5" step="0.1"><span>mm</span></span></label>
@@ -285,6 +292,8 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <h3>Oprava</h3>
         <ul>
           <li>Oprava sjednotí směr stěn, odstraní zdvojené a nulové trojúhelníky a zacelí díry. Velké nebo složité díry raději opravte v původním programu.</li>
+          <li>Sloučení spojí překrývající se tělesa do jednoho, takže slicer nehlásí chyby ani netiskne vnitřní stěny.</li>
+          <li>Převod: otevřete OBJ nebo 3MF a stáhněte STL (nebo opačně). 3MF je menší a uchová jednotky, STL přečte každý slicer.</li>
         </ul>
       </div>
     </section>
@@ -304,7 +313,8 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
     <section class="card" id="card-export">
       <div class="stats" id="stats"></div>
       <div class="export">
-        <button class="primary" type="button" id="btnSave" disabled>Stáhnout upravené STL</button>
+        <button class="primary" type="button" id="btnSave" disabled>Stáhnout upravený model</button>
+        <label class="f wide" style="min-width:150px"><span>Formát</span><select id="fmt"><option value="stl">STL</option><option value="3mf">3MF</option><option value="obj">OBJ</option></select></label>
         <span class="note" id="saveNote"></span>
       </div>
     </section>
@@ -319,5 +329,6 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 /*__CORE__*/
 /*__DILNA__*/
 /*__STACK__*/
+/*__MANIFOLD__*/
 /*__APP__*/
 </script>

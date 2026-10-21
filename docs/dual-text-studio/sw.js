@@ -1,6 +1,6 @@
 /* Dual Text Studio – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'dual-20261018104739';
+const VERSION = 'dual-20261019100321';
 const FONTS_CACHE = 'dual-extra';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 

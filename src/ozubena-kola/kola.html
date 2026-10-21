@@ -1,0 +1,344 @@
+<title>Ozubená kola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Ozubená kola — stejná rodina jako ostatní 3D nástroje. Created by Julius Andy Antoš */
+:root {
+  --bg: #e9eef0; --panel: #fbfcfc; --ink: #1b2428; --muted: #5a6970; --line: #d2dade;
+  --accent: #0b7a72; --accent-ink: #ffffff; --accent-soft: #d9efec;
+  --warn: #9a5200; --warn-soft: #fbecd8; --bad: #b0271f; --bad-soft: #f8dedb; --ok: #1d7536; --ok-soft: #dcefe1;
+  --view: #dde4e7; --grid: #b9c5ca; --grid-major: #93a3aa; --model: #f2efe8; --night: #121518; --glow: #ffd9a0;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --model: #d8d4cb; --night: #07090a; --glow: #ffd9a0; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --model: #d8d4cb; --night: #07090a; --glow: #ffd9a0; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--f-ui); }
+.app { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 16px; padding-inline: 16px; padding-block: 16px; min-height: 100%; }
+header.top { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+header.top h1 { margin: 0; font: 600 20px/1.2 var(--f-label); letter-spacing: .01em; }
+header.top p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+header.top .install { margin-left: auto; align-self: center; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.card h2 { margin: 0; font: 600 11px/1 var(--f-label); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.card h2 .step { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 10.5px; margin-right: 6px; letter-spacing: 0; }
+label.f { display: grid; grid-template-columns: 1fr 104px; align-items: center; gap: 8px; font-size: 13px; }
+label.f small, .lblrow small { display: block; color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.num { position: relative; }
+.num input { width: 100%; padding: 5px 34px 5px 8px; text-align: right; font: 13px var(--f-num); font-variant-numeric: tabular-nums; }
+.num span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font: 11px var(--f-num); pointer-events: none; }
+input, select, textarea { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+select { padding: 5px 6px; width: 100%; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+input:focus-visible, select:focus-visible, button:focus-visible, .seg label:focus-within, .shape:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lblrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg label { position: relative; flex: 1; text-align: center; padding: 5px 8px; cursor: pointer; font-size: 12.5px; border-left: 1px solid var(--line); user-select: none; white-space: nowrap; }
+.seg label:first-child { border-left: 0; }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.seg.wide { width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.slider { display: grid; grid-template-columns: 1fr 52px; gap: 4px 8px; align-items: center; font-size: 13px; }
+.slider input { grid-column: 1 / -1; }
+.slider output { font: 12px var(--f-num); text-align: right; color: var(--muted); }
+button { font: 500 13px var(--f-ui); border-radius: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); padding: 9px 14px; font-weight: 600; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.hint { font-size: 12px; color: var(--muted); margin: 0; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 14px; text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.drop b { color: var(--accent); }
+.photos { display: flex; flex-direction: column; gap: 6px; }
+.ph { display: grid; grid-template-columns: 22px 52px minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 4px; padding: 5px; }
+.ph .no { font: 600 12px var(--f-num); color: var(--muted); text-align: center; }
+.ph canvas { width: 52px; height: 38px; border-radius: 3px; display: block; object-fit: cover; }
+.ph .nm { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph select { font-size: 11.5px; padding: 2px 4px; margin-top: 2px; width: auto; }
+.ph .btns { display: flex; gap: 2px; }
+.ph .btns button { padding: 2px 7px; font-size: 12px; }
+.ph.unused { opacity: .45; }
+
+.shapes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.shape { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 8px 4px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; text-align: center; line-height: 1.2; }
+.shape input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.shape svg { width: 44px; height: 36px; }
+.shape svg .o { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linejoin: round; }
+.shape svg .f { fill: var(--muted); opacity: .25; }
+.shape:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.shape:has(input:checked) svg .o { stroke: var(--accent); }
+.shape:has(input:checked) svg .f { fill: var(--accent); opacity: .35; }
+.explain { background: var(--bg); border-radius: 4px; padding: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.explain b { font-weight: 600; }
+.explain ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.guide { font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+.guide h3 { margin: 0; font: 600 12.5px var(--f-label); }
+.guide ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.guide .safety { border-left: 3px solid var(--bad); background: var(--bad-soft); padding: 6px 8px; border-radius: 3px; }
+
+aside .card > h2 { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+aside .card > h2::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s; flex: none; }
+aside .card.collapsed > h2::after { transform: rotate(-45deg); }
+aside .card.collapsed > :not(h2) { display: none !important; }
+
+main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.viewer { position: relative; background: var(--view); border: 1px solid var(--line); border-radius: var(--r); height: min(62vh, 620px); min-height: 300px; overflow: hidden; touch-action: none; transition: background .3s; }
+.viewer.lit { background: var(--night); }
+.viewer canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px; font: 12px var(--f-num); font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 500; color: var(--accent); }
+.vbtns { position: absolute; right: 10px; top: 10px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.vbtns button { padding: 4px 8px; font-size: 12px; }
+.vbtns .light { font-weight: 600; }
+.vbtns .light[aria-pressed="true"] { background: var(--glow); border-color: var(--glow); color: #3a2a00; }
+.help { position: absolute; right: 10px; bottom: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; text-align: right; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--view) 60%, transparent); font: 600 13px var(--f-ui); color: var(--ink); pointer-events: none; }
+.msgs { display: flex; flex-direction: column; gap: 6px; }
+.msg { border-radius: 4px; padding: 7px 10px; font-size: 13px; border-left: 3px solid; }
+.msg.warn { background: var(--warn-soft); border-color: var(--warn); }
+.msg.bad { background: var(--bad-soft); border-color: var(--bad); }
+.msg.ok { background: var(--ok-soft); border-color: var(--ok); }
+.msg.info { background: var(--panel); border-color: var(--accent); }
+.export { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.export .note { font-size: 12px; color: var(--muted); flex: 1; min-width: 200px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.stat { border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.stat span { font: 600 10.5px var(--f-label); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.stat b { font: 500 16px var(--f-num); font-variant-numeric: tabular-nums; }
+footer.sig { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 10px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+footer.sig strong { font: 600 12.5px var(--f-label); color: var(--ink); letter-spacing: .02em; }
+
+
+.shapes2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 4px; }
+.shapes2 button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px 4px; font-size: 11.5px; line-height: 1.15; }
+.shapes2 button svg { width: 34px; height: 34px; }
+.shapes2 button svg path { fill: var(--muted); }
+.shapes2 button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.shapes2 button[aria-checked="true"] svg path { fill: var(--accent); }
+.srcname { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud .chip i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+.inset { position: absolute; right: 10px; bottom: 34px; width: 150px; max-width: 38%; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-align: center; }
+.inset canvas { width: 100%; display: block; }
+@media (max-width: 560px) { .inset { bottom: 46px; width: 96px; padding: 4px; } .inset span { display: none; } }
+.outs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.outs button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 7px; font-size: 12.5px; line-height: 1.2; text-align: center; }
+.outs button svg { width: 34px; height: 30px; fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.outs button small { color: var(--muted); font-size: 11px; }
+.outs button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.outs button[aria-checked="true"] svg { stroke: var(--accent); }
+.chipsel { display: flex; gap: 4px; flex-wrap: wrap; }
+.chipsel button { padding: 4px 9px; font-size: 12.5px; }
+.chipsel button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.flat { position: relative; background: var(--view); border: 1px solid var(--line); border-radius: var(--r); height: min(62vh, 620px); min-height: 300px; overflow: hidden; }
+.flat canvas { display: block; width: 100%; height: 100%; }
+.est { font-size: 12.5px; color: var(--muted); }
+.est b { color: var(--ink); font-weight: 500; }
+label.f.wide { grid-template-columns: auto minmax(0, 1fr); }
+.word { width: 100%; padding: 8px 10px; font: 600 17px var(--f-ui); letter-spacing: .06em; text-transform: none; }
+.wlbl { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+.wlbl small { color: var(--muted); font-size: 11.5px; }
+.views { position: absolute; right: 10px; bottom: 34px; display: flex; gap: 6px; max-width: 60%; }
+.views figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 5px; display: flex; flex-direction: column; gap: 3px; align-items: center; font-size: 10.5px; color: var(--muted); }
+.views canvas { display: block; max-width: 130px; max-height: 70px; }
+@media (max-width: 560px) { .views { bottom: 46px; left: 10px; right: auto; max-width: none; } .views canvas { max-width: 84px; max-height: 44px; } }
+textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(--f-ui); resize: vertical; }
+
+.qrtypes { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; }
+.qrtypes button { padding: 7px 4px; font-size: 12.5px; text-align: center; }
+.qrtypes button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.qf { display: flex; flex-direction: column; gap: 8px; }
+.qf .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.qf input[type=text], .qf textarea { width: 100%; padding: 7px 8px; }
+.qf textarea { min-height: 64px; resize: vertical; }
+.pre { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--bg); }
+.pre span { padding: 7px 4px 7px 8px; color: var(--muted); font: 12.5px var(--f-num); white-space: nowrap; align-self: center; }
+.pre input[type=text] { border: 0; border-radius: 0; padding-left: 0; min-width: 0; flex: 1; }
+.scan { position: absolute; right: 10px; bottom: 34px; width: 150px; max-width: 38%; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-align: center; }
+.scan canvas { width: 100%; image-rendering: pixelated; display: block; }
+.vbtns .light[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+@media (max-width: 560px) { .scan { bottom: 46px; width: 92px; padding: 4px; font-size: 10px; } .scan span { display: none; } }
+@media (min-width: 861px) {
+  html, body { height: 100%; overflow: hidden; }
+  .app { height: 100%; grid-template-rows: auto minmax(0, 1fr) auto; }
+  aside, main { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+  aside { padding-right: 6px; scrollbar-gutter: stable; }
+  .viewer, .flat { flex: 1 1 auto; height: auto; min-height: 300px; }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  main { display: contents; }
+  header.top { order: -3; }
+  .viewer, .flat { order: -1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; height: 40vh; min-height: 230px; box-shadow: 0 6px 12px -8px rgba(0,0,0,.35); }
+  .msgs, #card-export { order: 0; }
+  aside { order: 1; }
+  aside * { scroll-margin-top: calc(max(40vh, 230px) + 12px); }
+  footer.sig { order: 2; }
+}
+@media (max-width: 560px) { .help { display: none; } .vbtns { top: auto; bottom: 10px; } .shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.outs button svg .f { fill: var(--muted); opacity: .25; stroke: none; }
+.outs button[aria-checked="true"] svg .f { fill: var(--accent); opacity: .35; }
+.lgd { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 3px 8px; border-radius: 4px; }
+.lgd i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+.vbtns .tog[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+@media (max-width: 560px) { .lgd { bottom: 46px; } }
+
+.outs.five { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.picks button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px 5px; font-size: 11.5px; line-height: 1.15; text-align: center; }
+.picks button svg { width: 30px; height: 26px; fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.picks button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.picks button[aria-checked="true"] svg { stroke: var(--accent); }
+.empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 14px; padding: 20px; pointer-events: none; }
+.empty b { color: var(--ink); display: block; font-size: 16px; margin-bottom: 4px; }
+.empty button { pointer-events: auto; }
+.viewer.pick canvas { cursor: crosshair; }
+.fname { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spec { font: 12.5px var(--f-num); color: var(--muted); }
+.spec b { color: var(--ink); font-weight: 500; }
+
+.vbtns .tog[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Ozubená kola</h1>
+    <p>Čelní kola a pastorky, šikmá a šípová kola, vnitřní ozubené věnce, hřebeny, dvojice kol a planetové převodovky. Evolventní ozubení podle modulu, s dírou na hřídel, nábojem a odlehčením.</p>
+    <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
+  </header>
+
+  <aside>
+    <section class="card">
+      <h2><span><span class="step">1</span>Co tisknout</span></h2>
+      <div class="outs five" role="radiogroup" aria-label="Typ" id="types">
+        <button type="button" role="radio" data-type="gear"><svg viewBox="0 0 34 30"><circle class="f" cx="17" cy="15" r="9"/><path d="M17 3v4M17 23v4M5 15h4M25 15h4M8.5 6.5l3 3M22.5 20.5l3 3M25.5 6.5l-3 3M11.5 20.5l-3 3"/><circle cx="17" cy="15" r="9"/><circle cx="17" cy="15" r="2.5"/></svg>Kolo<small>pastorek</small></button>
+        <button type="button" role="radio" data-type="pair"><svg viewBox="0 0 34 30"><circle cx="11" cy="15" r="8"/><circle cx="26" cy="15" r="5"/><circle cx="11" cy="15" r="2"/><circle cx="26" cy="15" r="1.5"/></svg>Dvojice<small>převod</small></button>
+        <button type="button" role="radio" data-type="ring"><svg viewBox="0 0 34 30"><circle cx="17" cy="15" r="12"/><circle cx="17" cy="15" r="8"/><path d="M17 7v2M17 21v2M9 15h2M23 15h2M11.3 9.3l1.4 1.4M21.3 19.3l1.4 1.4M22.7 9.3l-1.4 1.4M12.7 19.3l-1.4 1.4"/></svg>Věnec<small>vnitřní ozubení</small></button>
+        <button type="button" role="radio" data-type="planet"><svg viewBox="0 0 34 30"><circle cx="17" cy="15" r="12"/><circle class="f" cx="17" cy="15" r="3.5"/><circle cx="17" cy="7.5" r="3.5"/><circle cx="10.5" cy="19" r="3.5"/><circle cx="23.5" cy="19" r="3.5"/></svg>Planetová<small>převodovka</small></button>
+        <button type="button" role="radio" data-type="rack"><svg viewBox="0 0 34 30"><path d="M3 22h28v4H3zM4 22l2-6h3l2 6M11 22l2-6h3l2 6M18 22l2-6h3l2 6M25 22l2-6h3"/></svg>Hřeben<small>s pastorkem</small></button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span><span class="step">2</span>Ozubení</span></h2>
+      <label class="f"><span>Modul<small>velikost zubů, roztečný ⌀ = modul × zuby</small></span><span class="num"><input type="number" data-k="m" min="0.3" max="10" step="0.1"><span>mm</span></span></label>
+      <div class="chipsel" id="modChips" role="group" aria-label="Běžné moduly"></div>
+      <label class="f" data-show="z1"><span id="lblZ1">Počet zubů</span><span class="num"><input type="number" data-k="z1" min="6" max="300" step="1"><span>×</span></span></label>
+      <label class="f" data-show="z2"><span id="lblZ2">Zuby druhého kola</span><span class="num"><input type="number" data-k="z2" min="6" max="300" step="1"><span>×</span></span></label>
+      <label class="f" data-show="planet"><span>Počet satelitů</span><span class="num"><input type="number" data-k="np" min="2" max="8" step="1"><span>×</span></span></label>
+      <label class="f" data-show="rack"><span>Zubů na hřebeni</span><span class="num"><input type="number" data-k="zr" min="3" max="200" step="1"><span>×</span></span></label>
+      <label class="f"><span>Šířka (tloušťka) kola</span><span class="num"><input type="number" data-k="b" min="1" max="100" step="0.5"><span>mm</span></span></label>
+      <div class="lblrow" data-show="helix"><span>Zuby</span>
+        <div class="seg" role="radiogroup" aria-label="Tvar zubů">
+          <label><input type="radio" name="tooth" value="spur">Rovné</label>
+          <label><input type="radio" name="tooth" value="helical">Šikmé</label>
+          <label><input type="radio" name="tooth" value="herring">Šípové</label>
+        </div>
+      </div>
+      <label class="f" data-show="beta"><span>Úhel sklonu zubů</span><span class="num"><input type="number" data-k="beta" min="5" max="45" step="1"><span>°</span></span></label>
+      <label class="f"><span>Úhel záběru</span><span class="num"><input type="number" data-k="alpha" min="14.5" max="30" step="0.5"><span>°</span></span></label>
+      <label class="f"><span>Vůle v ozubení<small>větší = volnější chod</small></span><span class="num"><input type="number" data-k="bl" min="0" max="1" step="0.05"><span>mm</span></span></label>
+      <div class="spec" id="spec"></div>
+    </section>
+
+    <section class="card" data-show="hubCard">
+      <h2><span><span class="step">3</span>Díra a náboj</span></h2>
+      <div class="lblrow"><span>Díra na hřídel</span>
+        <div class="seg" role="radiogroup" aria-label="Tvar díry">
+          <label><input type="radio" name="bore" value="round">Kulatá</label>
+          <label><input type="radio" name="bore" value="d">S ploškou</label>
+          <label><input type="radio" name="bore" value="hex">Šestihran</label>
+          <label><input type="radio" name="bore" value="key">S drážkou</label>
+          <label><input type="radio" name="bore" value="none">Bez</label>
+        </div>
+      </div>
+      <label class="f" data-show="boreD"><span id="lblBore">Průměr hřídele</span><span class="num"><input type="number" data-k="bd" min="1" max="100" step="0.5"><span>mm</span></span></label>
+      <label class="f" data-show="boreD"><span>Vůle díry</span><span class="num"><input type="number" data-k="bc" min="0" max="1" step="0.05"><span>mm</span></span></label>
+      <label class="f"><span>Náboj (výška nad kolem)<small>0 = bez náboje</small></span><span class="num"><input type="number" data-k="hh" min="0" max="60" step="0.5"><span>mm</span></span></label>
+      <label class="f" data-show="hubD"><span>Průměr náboje<small>0 = automaticky</small></span><span class="num"><input type="number" data-k="hd" min="0" max="200" step="0.5"><span>mm</span></span></label>
+      <label class="check"><input type="checkbox" data-k="light">Odlehčovací otvory (u větších kol)</label>
+    </section>
+
+    <section class="card" data-show="ringCard">
+      <h2><span><span class="step">3</span>Věnec</span></h2>
+      <label class="f"><span>Tloušťka věnce za zuby</span><span class="num"><input type="number" data-k="rim" min="1" max="30" step="0.5"><span>mm</span></span></label>
+      <label class="f" data-show="rack"><span>Výška hřebene pod zuby</span><span class="num"><input type="number" data-k="rackH" min="2" max="40" step="0.5"><span>mm</span></span></label>
+    </section>
+
+    <section class="card">
+      <h2><span>Tiskárna</span></h2>
+      <label class="f"><span>Tisková plocha X</span><span class="num"><input type="number" data-k="bedX" min="50" max="1000" step="1"><span>mm</span></span></label>
+      <label class="f"><span>Tisková plocha Y</span><span class="num"><input type="number" data-k="bedY" min="50" max="1000" step="1"><span>mm</span></span></label>
+      <label class="f"><span>Výška tisku</span><span class="num"><input type="number" data-k="bedZ" min="50" max="1000" step="1"><span>mm</span></span></label>
+    </section>
+
+    <section class="card">
+      <h2><span>Rady</span></h2>
+      <div class="guide">
+        <h3>Co spolu zabírá</h3>
+        <ul>
+          <li>Do sebe zapadnou jen kola se stejným modulem a stejným úhlem záběru. Osová vzdálenost dvou kol = modul × (z₁ + z₂) / 2.</li>
+          <li>Šikmá kola v páru mají opačný sklon (jedno pravé, druhé levé), to nástroj nastaví sám. Šípová kola se netlačí do stran a tisknou se dobře.</li>
+          <li>Planetová převodovka: věnec má z₁ + 2 × z₂ zubů. Satelity jdou rovnoměrně rozmístit, když je (z₁ + zuby věnce) dělitelné počtem satelitů.</li>
+        </ul>
+        <h3>Tisk</h3>
+        <ul>
+          <li>Modul 1 a větší se tiskne spolehlivě, menší zuby jen s 0,2mm tryskou. Kola tiskněte naplocho, 3–4 perimetry, výplň 30–50 %.</li>
+          <li>Pod 12 zubů se zuby u paty zužují (podříznutí), kolo je slabší. Pro pastorky volte aspoň 12–15 zubů.</li>
+          <li>Vůle 0,1–0,2 mm zajistí lehký chod. Na hřídel s ploškou (motory, např. 5 mm) zvolte díru s ploškou.</li>
+        </ul>
+      </div>
+    </section>
+  </aside>
+
+  <main>
+    <div class="viewer" id="viewer">
+      <canvas id="cv" aria-label="3D náhled ozubení"></canvas>
+      <div class="hud"><span class="chip" id="dims">–</span></div>
+      <div class="vbtns"><button type="button" class="tog" id="vSpin" aria-pressed="false">Otáčet</button><button type="button" id="vFront">Zepředu</button><button type="button" id="vTop">Shora</button><button type="button" id="vPersp">Šikmo</button></div>
+      <div class="busy" id="busy">Načítám…</div>
+      <div class="help">Táhnutím otáčíte · kolečkem nebo dvěma prsty přibližujete</div>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <section class="card" id="card-export">
+      <div class="stats" id="stats"></div>
+      <div class="export">
+        <button class="primary" type="button" id="btnSave" disabled>Stáhnout STL</button>
+        <span class="note" id="saveNote"></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sig"><strong>Created by Julius Andy Antoš</strong><span>Ozubená kola · výpočet běží ve vašem prohlížeči, nic se neodesílá</span></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipper-lib@6.4.2/clipper.js"></script>
+<script>
+/*__MANIFOLD__*/
+/*__CORE__*/
+/*__DILNA__*/
+/*__APP__*/
+</script>

@@ -2,7 +2,8 @@
 const $ = (id) => document.getElementById(id);
 const DEF = {
   out: 'shape', sample: 'kvetina',
-  trace: { mode: 'dark', auto: true, thr: 128, blur: 0, detail: 600, smooth: 2, speck: 30 },
+  trace: { mode: 'dark', auto: true, thr: 128, blur: 0, detail: 600, smooth: 2, speck: 30, svg: 'auto' },
+
   size: 60,
   m3: { mode: 'plate', relief: 'raised', height: 2, engDepth: 1.2, baseT: 2, offW: 3, fillHoles: true, padW: 4, radius: 3, mirror: false, split: false },
   hole: { on: false, pos: 'top', d: 4.5, rim: 2.5 },
@@ -60,7 +61,9 @@ async function openFile(f) {
   if (!f) return;
   try {
     const isSvg = /svg/i.test(f.type) || /\.svg$/i.test(f.name), text = isSvg ? await f.text() : null;
-    const img = await loadImage(isSvg ? URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' })) : URL.createObjectURL(f));
+    let img = null;
+    if (isSvg) { try { img = await loadImage(URL.createObjectURL(new Blob([svgForImage(text, 1600)], { type: 'image/svg+xml' }))); } catch (e) { img = null; } } // SVG jde převést i bez náhledu
+    else img = await loadImage(URL.createObjectURL(f));
     SRC = { kind: isSvg ? 'svg' : 'raster', name: f.name, img, id: ++srcSeq, svgText: text };
     fitNext = true; renderSamples(); updateUI(); schedule();
   } catch (e) { $('srcName').textContent = 'Obrázek se nepodařilo otevřít. Zkuste jiný soubor (PNG, JPG, WEBP, SVG).'; }
@@ -86,20 +89,39 @@ let shapeCache = { key: '', val: null };
 function getShape() {
   if (!SRC) return { error: 'Nahrajte obrázek nebo vyberte ukázku.' };
   const t = D.trace;
-  const key = SRC.kind === 'svg' ? `svg|${SRC.id}|${D.size}` : [SRC.id, t.mode, t.auto, t.thr, t.blur, t.detail, t.smooth, t.speck, D.size].join('|');
+  const key = [SRC.id, D.trace.svg, t.mode, t.auto, t.thr, t.blur, t.detail, t.smooth, t.speck, D.size].join('|');
   if (shapeCache.key === key) return shapeCache.val;
   let val;
   try {
+    let viaImage = SRC.kind !== 'svg', note = '';
     if (SRC.kind === 'svg') {
-      const sym = svgToSymbol(SRC.svgText, true);
-      val = sym ? { ex: normalizeEx(symbolToEx(sym), D.size), vector: true } : { error: 'V SVG nejsou žádné vyplněné plochy ani čáry, které by šly převést.' };
-    } else {
-      const R = rasterize(SRC.img, t.detail);
+      const mode = D.trace.svg, risky = svgRisky(SRC.svgText);
+      if (mode === 'vector' || (mode === 'auto' && !risky)) {
+        let sym = null; try { sym = svgToSymbol(SRC.svgText, true); } catch (e) { sym = null; }
+        if (sym) val = { ex: normalizeEx(symbolToEx(sym), D.size), vector: true };
+        else if (mode === 'vector' || !SRC.img) val = { error: SRC.img ? 'Z vektorů SVG se nic převést nepodařilo. Přepněte převod SVG na „Jako obrázek“.' : 'SVG se nepodařilo přečíst. Zkuste ho v Inkscape uložit jako „Prosté SVG“.' };
+        else { viaImage = true; note = 'SVG se z vektorů převést nepodařilo, převedl jsem ho přes obrázek.'; }
+      } else if (!SRC.img) {
+        let sym = null; try { sym = svgToSymbol(SRC.svgText, true); } catch (e) { sym = null; }
+        val = sym ? { ex: normalizeEx(symbolToEx(sym), D.size), vector: true, note: 'SVG obsahuje text nebo masky, které se z vektorů nepřevedou. Text v Inkscape převeďte na křivky (Cesta → Objekt na cestu).' } : { error: 'SVG se nepodařilo přečíst. Zkuste ho v Inkscape uložit jako „Prosté SVG“ a text převést na křivky.' };
+      } else { viaImage = true; if (mode === 'auto') note = 'SVG obsahuje text nebo vložené obrázky, proto jsem ho převedl přes obrázek. Pro přesné křivky přepněte převod SVG na „Z vektorů“.'; }
+    }
+    if (viaImage) {
+      const svgAuto = SRC.kind === 'svg' && D.trace.svg !== 'raster';
+      const R = rasterize(SRC.img, SRC.kind === 'svg' ? Math.max(1200, +t.detail) : t.detail);
+      if (svgAuto) { // SVG s průhledným pozadím: tvar tvoří vše neprůhledné
+        let nt = 0; const d = R.img.data; for (let i = 3; i < d.length; i += 4) if (d[i] < 128) nt++;
+        const tr = nt > d.length / 4 * 0.02;             // aspoň 2 % průhledných pixelů = průhledné pozadí
+        const M = makeMask(R.img, { mode: tr ? 'alpha' : 'dark', threshold: null, blur: 0 });
+        const exPx = loopsToEx(traceMask(M.mask, M.w, M.h), M.h, { smooth: 1, minArea: 4, pxSize: 1 });
+        val = exPx.length ? { ex: normalizeEx(exPx, D.size), exPx, raster: R.canvas, w: M.w, h: M.h, thr: M.thr, note } : { error: 'V SVG se nenašel žádný tvar.' };
+        shapeCache = { key, val }; return val;
+      }
       if (t.mode === 'alpha') { let tr = false; const d = R.img.data; for (let i = 3; i < d.length; i += 4) if (d[i] < 250) { tr = true; break; }
         if (!tr) { val = { error: 'Obrázek nemá průhledné pozadí, takže „Neprůhledné“ by vytvořilo celý obdélník. Přepněte „Tvar tvoří“ na Tmavé nebo Světlé.' }; shapeCache = { key, val }; return val; } }
       const M = makeMask(R.img, { mode: t.mode, threshold: t.auto ? null : t.thr, blur: t.blur });
       const exPx = loopsToEx(traceMask(M.mask, M.w, M.h), M.h, { smooth: t.smooth, minArea: Math.max(1, t.speck), pxSize: 1 });
-      val = exPx.length ? { ex: normalizeEx(exPx, D.size), exPx, raster: R.canvas, w: M.w, h: M.h, thr: M.thr }
+      val = exPx.length ? { ex: normalizeEx(exPx, D.size), exPx, raster: R.canvas, w: M.w, h: M.h, thr: M.thr, note }
         : { error: 'V obrázku se nenašel žádný tvar. Přepněte „Tmavé / Světlé“ nebo upravte práh jasu.', thr: M.thr };
     }
   } catch (e) { val = { error: 'Obrázek se nepodařilo převést: ' + e.message }; }
@@ -120,12 +142,13 @@ function syncUI() {
 }
 function updateUI() {
   const o = D.out, eng = D.m3.relief === 'engraved' && D.m3.mode !== 'text', isSvg = !!(SRC && SRC.kind === 'svg');
-  const show = { trace: o !== 'rel', thr: !D.trace.auto && !isSvg, isSvg, sized: o !== 'rel', shape: o === 'shape', rel: o === 'rel',
+  const svgVec = isSvg && D.trace.svg !== 'raster';
+  const show = { trace: o !== 'rel', thr: !D.trace.auto && !svgVec, isSvg, svgVec, sized: o !== 'rel', shape: o === 'shape', rel: o === 'rel',
     m3base: D.m3.mode !== 'text', hang: D.rel.hang, m3offset: D.m3.mode === 'offset', m3plate: D.m3.mode === 'plate', hole: D.hole.on && D.m3.mode !== 'text' };
   document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !show[el.dataset.show]; });
   document.querySelectorAll('#outs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.out === o)));
   $('outHint').textContent = OUT_HINT[o];
-  document.querySelectorAll('[data-show="trace"] input, [data-show="trace"] select').forEach(el => { el.disabled = isSvg; });
+  document.querySelectorAll('[data-show="trace"] .tr-opt input, [data-show="trace"] .tr-opt select').forEach(el => { el.disabled = svgVec; });
   $('m3hLbl').textContent = eng ? 'Hloubka rytí' : D.m3.mode === 'text' ? 'Výška tvaru' : 'Výška nad podkladem';
   $('m3h').value = eng ? D.m3.engDepth : D.m3.height;
   $('split').checked = D.m3.split;
@@ -259,6 +282,7 @@ function thrLabel(sh) { $('oThr').textContent = D.trace.auto ? (sh && sh.thr != 
 function buildSvg(msgs) {
   const sh = getShape(); thrLabel(sh); shapeNow = sh; model = null;
   if (sh.error) { msgs.push({ lvl: 'bad', msg: sh.error }); $('btnSave').disabled = true; drawFlat(); return; }
+  if (sh.note) msgs.push({ lvl: 'info', msg: sh.note });
   $('btnSave').disabled = false;
   const paths = exToPaths(sh.ex), n = sh.ex.length, pts = paths.reduce((s, p) => s + p.length, 0);
   if (pts > 150000) msgs.push({ lvl: 'warn', msg: 'Obrys je velmi složitý. Zvyšte „Odstranit drobnosti“, přidejte rozmazání nebo snižte detail.' });
@@ -287,6 +311,7 @@ new ResizeObserver(() => { if (D.out === 'svg') drawFlat(); }).observe($('flat')
 function buildShape(msgs) {
   const sh = getShape(); thrLabel(sh); shapeNow = sh;
   if (sh.error) { msgs.push({ lvl: 'bad', msg: sh.error }); setModel(null); return; }
+  if (sh.note) msgs.push({ lvl: 'info', msg: sh.note });
   const m = D.m3;
   const S = { mode: m.mode, relief: m.relief, height: m.height, engDepth: m.engDepth, baseT: m.baseT, offW: m.offW, fillHoles: m.fillHoles, padW: m.padW, radius: m.radius, mirror: m.mirror,
     hole: D.hole.on && m.mode !== 'text', holePos: D.hole.pos, holeD: D.hole.d, holeRim: D.hole.rim };

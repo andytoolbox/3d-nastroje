@@ -103,12 +103,18 @@ TOOLS = {
     },
     'kontrola-stl': {
         'page': 'kontrola.html', 'title': 'Kontrola STL',
-        'parts': {'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'kontrola-app.js'},
+        'parts': {'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'STACK': 'shared/stack-core.js', 'APP': 'kontrola-app.js',
+                  'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm')},
     },
     'zavity': {
         'page': 'zavity.html', 'title': 'Závity',
         'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'zavity-app.js'},
+    },
+    'ozubena-kola': {
+        'page': 'kola.html', 'title': 'Ozubená kola',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'kola-app.js'},
     },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',

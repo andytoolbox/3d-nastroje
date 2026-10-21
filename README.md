@@ -11,7 +11,7 @@ Bezplatné nástroje pro 3D tisk v češtině. Všechno se počítá přímo v p
 | | Nástroj | Co umí |
 |---|---|---|
 | <img src="docs/img/pismo-do-stl-ikona.png" width="32"> | **Písmo do STL** | Text jako 3D model: samotná písmena, s obrysem, na destičce nebo nastojato. Klíčenky, jmenovky, rytý text, ikony, vlastní logo. |
-| <img src="docs/img/dual-text-studio-ikona.png" width="32"> | **Dual Text Studio** | Dvojitý 3D nápis: zepředu jedno slovo, z boku druhé, případně shora třetí. |
+| <img src="docs/img/dual-text-studio-ikona.png" width="32"> | **Dual Text Studio** | Dvojitý 3D nápis: zepředu jedno slovo, z boku druhé. |
 | <img src="docs/img/svitici-fotky-ikona.png" width="32"> | **Svítící fotky** | Litofánie z fotek: rovné a prohnuté destičky, srdce, lucerny a stínítka na lampu s křížem na objímku. |
 | <img src="docs/img/svg-studio-ikona.png" width="32"> | **SVG Studio** | Z obrázku nebo SVG udělá 3D tvar, vektorový obrys SVG nebo plastický reliéf z fotky. |
 | <img src="docs/img/qr-klicenky-ikona.png" width="32"> | **QR klíčenky** | QR kód na klíčence, cedulce nebo stojánku: web, sociální sítě, kontakt, Wi-Fi, QR platba, logo uprostřed. |
@@ -19,8 +19,9 @@ Bezplatné nástroje pro 3D tisk v češtině. Všechno se počítá přímo v p
 | <img src="docs/img/krabicky-ikona.png" width="32"> | **Krabičky a organizéry** | Krabička s přihrádkami a nasazovacím nebo posuvným víčkem (i s nápisem), Gridfinity boxy a podložky do šuplíku. |
 | <img src="docs/img/vazy-ikona.png" width="32"> | **Vázy a lampy** | Vázy, květináče s podmiskou a stínidla s vlnami, žebry a zkroucením, pro režim váza nebo se stěnou. |
 | <img src="docs/img/zavity-ikona.png" width="32"> | **Závity a šrouby** | Šrouby, matice, podložky a závitové tyče s metrickým (M2–M30) i trapézovým závitem, různé hlavy a drážky, závit do vlastního STL. |
+| <img src="docs/img/ozubena-kola-ikona.png" width="32"> | **Ozubená kola** | Evolventní kola a pastorky (rovné, šikmé, šípové), vnitřní věnce, hřebeny, dvojice kol a planetové převodovky. |
 | <img src="docs/img/kalibrace-ikona.png" width="32"> | **Kalibrační testy** | Kostka, teplotní věž, převisy, mosty, vůle a vlasení, s návodem na vyhodnocení. |
-| <img src="docs/img/kontrola-stl-ikona.png" width="32"> | **Kontrola STL** | Prohlížeč STL, OBJ a 3MF: rozměry, hmotnost, cena, kontrola děr a převisů, oprava modelu a nejlepší natočení k tisku. |
+| <img src="docs/img/kontrola-stl-ikona.png" width="32"> | **Kontrola STL** | Prohlížeč STL, OBJ a 3MF: rozměry, hmotnost, cena, kontrola děr a převisů, oprava, zjednodušení, převod formátů a nejlepší natočení k tisku. |
 | <img src="docs/img/kalkulacka-tisku-ikona.png" width="32"> | **Kalkulačka ceny tisku** | Cena výtisku včetně vícebarevného tisku: filament, odpad z výměn barev, elektřina, opotřebení, práce, marže a DPH. Načte čas a gramy z G-code nebo .gcode.3mf. |
 
 Nástroje, které vytvářejí modely, je stahují jako **STL** (jednotky mm), který otevřete v libovolném sliceru (Bambu Studio, PrusaSlicer, Creality Print, Cura). Modely jsou uzavřená tělesa připravená k tisku.

@@ -220,6 +220,14 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 
     <section class="card" data-show="trace">
       <h2><span><span class="step">3</span>Převod na obrys</span></h2>
+      <div class="lblrow" data-show="isSvg"><span>Převod SVG</span>
+        <div class="seg" role="radiogroup" aria-label="Převod SVG">
+          <label><input type="radio" name="trace.svg" value="auto">Automaticky</label>
+          <label><input type="radio" name="trace.svg" value="vector">Z vektorů</label>
+          <label><input type="radio" name="trace.svg" value="raster">Jako obrázek</label>
+        </div>
+      </div>
+      <div class="tr-opt qf">
       <div class="lblrow"><span>Tvar tvoří</span>
         <div class="seg" role="radiogroup" aria-label="Co tvoří tvar">
           <label><input type="radio" name="trace.mode" value="dark">Tmavé</label>
@@ -240,7 +248,8 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f"><span>Rozmazání šumu<small>pro fotky a skeny</small></span><span class="num"><input type="number" data-k="trace.blur" min="0" max="6" step="1"><span>px</span></span></label>
       <label class="f"><span>Odstranit drobnosti<small>menší než (plocha)</small></span><span class="num"><input type="number" data-k="trace.speck" min="0" max="5000" step="10"><span>px²</span></span></label>
       <label class="f wide"><span>Detail</span><select data-k="trace.detail"><option value="300">nízký</option><option value="600">střední</option><option value="1000">vysoký</option><option value="1600">velmi vysoký</option></select></label>
-      <p class="hint" data-show="isSvg">U souboru SVG se obrys bere přímo z vektorů, tato nastavení se nepoužijí.</p>
+      </div>
+      <p class="hint" data-show="svgVec">U SVG se obrys bere přímo z vektorů a tato nastavení se nepoužijí. Když výsledek nesedí (chybí text, objeví se obdélník), přepněte na „Jako obrázek“.</p>
     </section>
 
     <section class="card" data-show="sized">

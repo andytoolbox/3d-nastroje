@@ -1,0 +1,22 @@
+OZUBENÁ KOLA – kola, pastorky, věnce, hřebeny a planetové převodovky
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Evolventní ozubení podle modulu: čelní kolo (rovné, šikmé, šípové),
+  dvojice kol se správnou osovou vzdáleností, vnitřní ozubený věnec,
+  hřeben s pastorkem a planetová převodovka (slunce, satelity, věnec).
+  Díra kulatá, s ploškou, šestihranná nebo s drážkou, náboj a odlehčení.
+  V náhledu jde ozubení roztočit. Používá knihovnu Manifold (Apache 2.0).
+
+NAHRÁNÍ NA WEB
+  Složku "ozubena-kola" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/ozubena-kola/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.

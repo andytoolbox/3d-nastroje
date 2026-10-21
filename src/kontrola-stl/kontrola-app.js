@@ -1,6 +1,6 @@
 /* ===== Kontrola STL — aplikace. Created by Julius Andy Antoš ===== */
 const $ = (id) => document.getElementById(id);
-const DEF = { mat: '1.24', infill: 15, wall: 1.2, price: 500, ang: 45, bedX: 220, bedY: 220, bedZ: 250, showOver: true, showEdges: true };
+const DEF = { fmt: 'stl', mat: '1.24', infill: 15, wall: 1.2, price: 500, ang: 45, bedX: 220, bedY: 220, bedZ: 250, showOver: true, showEdges: true };
 const STORE = 'kontrola-stl-v1';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
@@ -285,6 +285,7 @@ function checks(pl, oh) {
   if (oh.bed < 1) L.push(['warn', 'Malá plocha na podložce', 'Model se podložky skoro nedotýká. Položte ho rovnou stěnou dolů nebo zapněte podpěry a lem (brim).']);
   $('checks').innerHTML = L.map(([c, t, d]) => `<div class="chk ${c}"><i>${c === 'ok' ? '✓' : c === 'info' ? 'i' : '!'}</i><span>${t}${d ? `<small>${d}</small>` : ''}</span></div>`).join('');
   const needFix = !closed || !oriented || A.degen || A.dup;
+  $('btnUnion').hidden = A.shells < 2;
   $('btnFix').hidden = !needFix;
   const msgs = [];
   if (fixed) msgs.push({ lvl: closed && oriented ? 'ok' : 'warn', msg: `Oprava: ${fixed.filled ? plural(fixed.filled, 'díra zacelena', 'díry zaceleny', 'děr zaceleno') : 'bez děr'}${fixed.removed ? ', odstraněno ' + plural(fixed.removed, 'nadbytečný trojúhelník', 'nadbytečné trojúhelníky', 'nadbytečných trojúhelníků') : ''}, směr stěn sjednocen.` + (fixed.skipped ? ' Některé díry jsou příliš složité, opravte je v původním programu.' : '') });
@@ -300,6 +301,31 @@ function stats(pl, oh) {
   const box = $('stats'); box.textContent = '';
   for (const [a, b] of tiles) { const d = document.createElement('div'); d.className = 'stat'; const s1 = document.createElement('span'); s1.textContent = a; const s2 = document.createElement('b'); s2.textContent = b; d.append(s1, s2); box.append(d); }
 }
+
+/* ===== Manifold: zjednodušení a sloučení těles ===== */
+let MF = null;
+async function mf() { if (!MF) { const s2 = atob(MANIFOLD_WASM_B64), u = new Uint8Array(s2.length); for (let i = 0; i < s2.length; i++) u[i] = s2.charCodeAt(i); MF = await ManifoldModule({ wasmBinary: u }); MF.setup(); } return MF; }
+function toMF(V, T) { const mesh = new MF.Mesh({ numProp: 3, vertProperties: Float32Array.from(V), triVerts: Uint32Array.from(T) }); mesh.merge(); return new MF.Manifold(mesh); }
+function fromMF(m) { const me = m.getMesh(), np = me.numProp, n = me.vertProperties.length / np, V = new Float64Array(n * 3); for (let i = 0; i < n; i++) { V[3 * i] = me.vertProperties[i * np]; V[3 * i + 1] = me.vertProperties[i * np + 1]; V[3 * i + 2] = me.vertProperties[i * np + 2]; } return { V, T: Uint32Array.from(me.triVerts) }; }
+async function mfStep(fn, okMsg) {
+  if (!base) return; busy(true); await new Promise(r => setTimeout(r, 30));
+  const trash = [];
+  try {
+    await mf();
+    if (A.open || A.nonMan || A.flipped || A.vol <= 0) { const r = repair(base.V, base.T); base.V = r.V; base.T = r.T; fixed = r; }
+    const m = toMF(base.V, base.T); trash.push(m);
+    const st = m.status(); if (st !== 'NoError' && st !== 0) throw new Error('nm');
+    const before = base.T.length / 3, out = fn(m, trash); trash.push(out);
+    const r = fromMF(out); base.V = r.V; base.T = r.T; A = analyze(base.V, base.T);
+    $('fname').textContent = base.name + ' · ' + plural(A.nT, 'trojúhelník', 'trojúhelníky', 'trojúhelníků');
+    refresh(); extraMsg = { lvl: 'ok', msg: okMsg(before, A.nT) }; showMsgs([extraMsg]);
+  } catch (e) {
+    console.error(e); showMsgs([{ lvl: 'bad', msg: 'Model se nepodařilo zpracovat. Nejdřív ho opravte tlačítkem „Opravit model“; pokud to nepomůže, má složitější chyby (protínající se plochy).' }]);
+  } finally { trash.forEach(x => { try { x.delete(); } catch (e) {} }); busy(false); }
+}
+let extraMsg = null;
+$('btnSimp').onclick = () => { const tol = +$('simpTol').value; mfStep((m) => m.simplify(tol), (b, a) => `Zjednodušeno s přesností ${fmt(tol, 2)} mm: ${fmtN(b)} → ${fmtN(a)} trojúhelníků (${fmt(100 - a / b * 100, 0)} % méně).`); };
+$('btnUnion').onclick = () => mfStep((m, trash) => { const parts = m.decompose(); parts.forEach(x => trash.push(x)); return MF.Manifold.union(parts); }, (b, a) => `Tělesa jsou sloučená do ${A.shells === 1 ? 'jednoho' : fmtN(A.shells)}.`);
 
 /* ===== Úpravy ===== */
 $('btnFix').onclick = () => {
@@ -462,21 +488,45 @@ $('btnDemo').onclick = () => { // ukázka: stojánek s převisem, dírou a otoč
 const inViewer = !!(window.claude && typeof window.claude.use === 'function');
 let dlCap = null;
 if (inViewer) window.claude.use('downloads').then(d => { dlCap = d; updateNote(); }).catch(() => updateNote());
-function updateNote() { $('saveNote').textContent = inViewer ? (dlCap ? 'Tady se STL stáhne zabalené v ZIP souboru.' : 'Stahování je v tomto zobrazení nedostupné.') : 'Uloží model tak, jak ho vidíte: opravený, natočený a ve zvoleném měřítku.'; }
-$('btnSave').onclick = async () => {
-  if (!base || !P) return;
-  const T = base.T, V = P.V, nT = T.length / 3, pos = new Float32Array(nT * 9);
+function updateNote() { $('saveNote').textContent = inViewer ? (dlCap ? 'Tady se STL stáhne zabalené v ZIP souboru.' : 'Stahování je v tomto zobrazení nedostupné.') : 'Uloží model tak, jak ho vidíte: opravený, natočený a ve zvoleném měřítku. Formát STL přečte každý slicer.'; }
+$('fmt').value = D.fmt; $('fmt').addEventListener('change', () => { D.fmt = $('fmt').value; saveState(); });
+function exportData(fmtName) {
+  const T = base.T, V = P.V, nT = T.length / 3, nV = V.length / 3;
+  if (fmtName === 'obj') {
+    const L = ['# Created by Julius Andy Antos | Kontrola STL | mm'];
+    for (let i = 0; i < nV; i++) L.push('v ' + V[3 * i].toFixed(4) + ' ' + V[3 * i + 1].toFixed(4) + ' ' + V[3 * i + 2].toFixed(4));
+    for (let t = 0; t < nT; t++) L.push('f ' + (T[3 * t] + 1) + ' ' + (T[3 * t + 1] + 1) + ' ' + (T[3 * t + 2] + 1));
+    return new TextEncoder().encode(L.join('\n') + '\n');
+  }
+  if (fmtName === '3mf') {
+    const vs = [], ts = [];
+    for (let i = 0; i < nV; i++) vs.push(`<vertex x="${V[3 * i].toFixed(4)}" y="${V[3 * i + 1].toFixed(4)}" z="${V[3 * i + 2].toFixed(4)}"/>`);
+    for (let t = 0; t < nT; t++) ts.push(`<triangle v1="${T[3 * t]}" v2="${T[3 * t + 1]}" v3="${T[3 * t + 2]}"/>`);
+    const model = '<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="cs-CZ" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Application">Kontrola STL - Julius Andy Antos</metadata><resources><object id="1" type="model"><mesh><vertices>' + vs.join('') + '</vertices><triangles>' + ts.join('') + '</triangles></mesh></object></resources><build><item objectid="1"/></build></model>';
+    const enc = (t) => new TextEncoder().encode(t);
+    return makeZip([
+      { name: '[Content_Types].xml', data: enc('<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>') },
+      { name: '_rels/.rels', data: enc('<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>') },
+      { name: '3D/3dmodel.model', data: enc(model) },
+    ]);
+  }
+  const pos = new Float32Array(nT * 9);
   for (let t = 0; t < nT; t++) for (let k = 0; k < 3; k++) { const v = T[3 * t + k]; pos[9 * t + 3 * k] = V[3 * v]; pos[9 * t + 3 * k + 1] = V[3 * v + 1]; pos[9 * t + 3 * k + 2] = V[3 * v + 2]; }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const u = stlBinary([g]), head = 'Created by Julius Andy Antos | Kontrola STL | mm'; for (let i = 0; i < 80; i++) u[i] = i < head.length ? head.charCodeAt(i) : 32;
-  const name = base.name.replace(/\.(stl|obj|3mf)$/i, '') + '_upraveno.stl';
+  return u;
+}
+$('btnSave').onclick = async () => {
+  if (!base || !P) return;
+  const f = D.fmt || 'stl', data = exportData(f);
+  const name = base.name.replace(/\.(stl|obj|3mf)$/i, '') + '_upraveno.' + f;
   if (inViewer) {
     if (!dlCap) return;
-    try { await dlCap.save({ filename: name.replace(/\.stl$/, '.zip'), data: makeZip([{ name, data: u }]) }); $('saveNote').textContent = 'ZIP je uložený.'; }
+    try { await dlCap.save({ filename: name.replace(/\.\w+$/, '.zip'), data: makeZip([{ name, data }]) }); $('saveNote').textContent = 'ZIP je uložený.'; }
     catch (err) { if (err && err.code !== 'declined') $('saveNote').textContent = 'Soubor se nepodařilo uložit.'; }
     return;
   }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([u], { type: 'model/stl' })); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/octet-stream' })); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
 
 /* ===== Instalace jako aplikace a sbalitelné sekce ===== */

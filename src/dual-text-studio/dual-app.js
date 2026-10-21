@@ -10,6 +10,7 @@ const STORE = 'dual-text-studio-v1';
 const deepMerge = (a, b) => { for (const k in b) { if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) && a[k] && typeof a[k] === 'object') deepMerge(a[k], b[k]); else if (k in a) a[k] = b[k]; } return a; };
 const D = JSON.parse(JSON.stringify(DEF));
 try { deepMerge(D, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) {}
+D.three = false; // třetí slovo shora je vypnuté: ořezávalo písmena a dělalo chyby
 const saveState = () => { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch (e) {} };
 const getK = (p) => p.split('.').reduce((o, k) => o[k], D);
 const setK = (p, v) => { const ks = p.split('.'); let o = D; for (let i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = v; };
@@ -149,7 +150,7 @@ function updateUI() {
   document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !show[el.dataset.show]; });
   const a = prep(D.wA).length, b = prep(D.wB).length;
   $('lenA').textContent = plural(a, 'písmeno', 'písmena', 'písmen'); $('lenB').textContent = plural(b, 'písmeno', 'písmena', 'písmen');
-  $('figTop').hidden = !D.three;
+  $('figTop').hidden = true;
 }
 let anchor = null; // ovládací prvek, na který uživatel naposledy klepl: po přepočtu zůstane na stejném místě
 function keepInPlace(el, fn) {

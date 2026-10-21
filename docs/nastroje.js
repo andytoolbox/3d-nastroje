@@ -27,7 +27,7 @@ window.NASTROJE = [
   {
     id: 'dual-text-studio',
     nazev: 'Dual Text Studio',
-    popis: 'Dvojitý 3D nápis: zepředu jedno slovo, z boku druhé, a když chcete, shora i třetí. Dárek pro rodiče nebo dvě jména.',
+    popis: 'Dvojitý 3D nápis: zepředu jedno slovo, z boku druhé. Dárek pro rodiče, dvě jména nebo jméno a datum.',
     kategorie: 'Text a písmo',
     stitky: ['dárky', 'jména', 'iluze'],
     odkaz: 'dual-text-studio/',
@@ -95,6 +95,15 @@ window.NASTROJE = [
     novinka: true
   },
   {
+    id: 'ozubena-kola',
+    nazev: 'Ozubená kola',
+    popis: 'Čelní kola a pastorky (rovné, šikmé, šípové), vnitřní věnce, hřebeny, dvojice kol a planetové převodovky. V náhledu je jde roztočit.',
+    kategorie: 'Díly',
+    stitky: ['ozubené kolo', 'pastorek', 'věnec', 'hřeben', 'planetová převodovka'],
+    odkaz: 'ozubena-kola/',
+    novinka: true
+  },
+  {
     id: 'kalibrace',
     nazev: 'Kalibrační testy',
     popis: 'Kostka, teplotní věž, převisy, mosty, vůle a vlasení. Ke každému testu návod, jak ho vyhodnotit, a u kostky výpočet odchylek.',
@@ -106,9 +115,9 @@ window.NASTROJE = [
   {
     id: 'kontrola-stl',
     nazev: 'Kontrola STL',
-    popis: 'Otevře STL, OBJ i 3MF: rozměry, hmotnost a cena, díry a otočené stěny, převisy. Model opraví a najde nejlepší natočení k tisku.',
+    popis: 'Otevře STL, OBJ i 3MF: rozměry, hmotnost, cena, díry a převisy. Model opraví, zjednoduší, převede mezi formáty a najde nejlepší natočení k tisku.',
     kategorie: 'Nastavení tiskárny',
-    stitky: ['STL', 'oprava', 'převisy', 'hmotnost', 'natočení'],
+    stitky: ['STL', 'oprava', 'převod OBJ 3MF', 'zjednodušení', 'převisy'],
     odkaz: 'kontrola-stl/',
     novinka: true
   },

@@ -10663,32 +10663,96 @@ function svgFillRule(node) {
   }
   return 'nonzero';
 }
+/* Úprava SVG před převodem: rozbalí <use>, odstraní ořezové cesty, masky, skryté prvky a zkosení převede na matici.
+   SVGLoader by jinak kreslil ořezové obdélníky jako plochy a nezvládl by některé soubory z Inkscape, Illustratoru a Figmy. */
+function svgPrepare(txt) {
+  try {
+    txt = String(txt).replace(/^\uFEFF/, '');
+    const NS = 'http://www.w3.org/2000/svg', XL = 'http://www.w3.org/1999/xlink';
+    const doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
+    if (doc.getElementsByTagName('parsererror').length) return txt;
+    const root = doc.documentElement, all = (tag) => Array.from(root.getElementsByTagName(tag));
+    for (let pass = 0; pass < 5; pass++) {
+      const uses = all('use'); if (!uses.length) break;
+      for (const u of uses) {
+        const href = u.getAttribute('href') || u.getAttributeNS(XL, 'href') || u.getAttribute('xlink:href') || '';
+        const ref = href.charAt(0) === '#' ? doc.getElementById(href.slice(1)) : null;
+        const g = doc.createElementNS(NS, 'g');
+        for (const a of Array.from(u.attributes)) if (!/^(x|y|width|height|href|xlink:href|transform|id)$/.test(a.name)) g.setAttribute(a.name, a.value);
+        const x = parseFloat(u.getAttribute('x')) || 0, y = parseFloat(u.getAttribute('y')) || 0;
+        const tr = ((u.getAttribute('transform') || '') + (x || y ? ` translate(${x},${y})` : '')).trim();
+        if (tr) g.setAttribute('transform', tr);
+        if (ref && !ref.contains(u)) {
+          const c = ref.cloneNode(true); c.removeAttribute('id');
+          if (/^symbol$/i.test(c.localName)) { const gg = doc.createElementNS(NS, 'g'); while (c.firstChild) gg.appendChild(c.firstChild); g.appendChild(gg); } else g.appendChild(c);
+        }
+        u.parentNode.replaceChild(g, u);
+      }
+    }
+    for (const tag of ['clipPath', 'mask', 'pattern', 'marker', 'symbol', 'metadata', 'title', 'desc', 'script', 'foreignObject', 'filter', 'image', 'text'])
+      for (const el of all(tag)) el.parentNode && el.parentNode.removeChild(el);
+    for (const el of Array.from(root.getElementsByTagName('*'))) {
+      const st = (el.getAttribute('style') || '').replace(/\s/g, '');
+      if (el.getAttribute('display') === 'none' || el.getAttribute('visibility') === 'hidden' || /display:none|visibility:hidden/.test(st)) { el.parentNode && el.parentNode.removeChild(el); continue; }
+      for (const a of ['clip-path', 'mask', 'filter']) el.removeAttribute(a);
+      const t = el.getAttribute('transform');
+      if (t && /skew/i.test(t)) el.setAttribute('transform', t.replace(/skewX\(\s*([-\d.eE]+)\s*\)/g, (m, a) => `matrix(1,0,${Math.tan(a * Math.PI / 180)},1,0,0)`).replace(/skewY\(\s*([-\d.eE]+)\s*\)/g, (m, a) => `matrix(1,${Math.tan(a * Math.PI / 180)},0,1,0,0)`));
+    }
+    return new XMLSerializer().serializeToString(doc);
+  } catch (e) { return txt; }
+}
+/* Obsahuje SVG něco, co se z vektorů převést nedá (text, obrázky, masky)? Pak je spolehlivější převod přes obrázek. */
+function svgRisky(txt) { return /<(?:\w+:)?(text|image|filter|foreignObject|pattern)\b/i.test(txt); }
+/* SVG pro vykreslení jako obrázek: doplní xmlns a rozměry v pixelech (podle viewBox) */
+function svgForImage(txt, maxPx) {
+  try {
+    const doc = new DOMParser().parseFromString(String(txt).replace(/^\uFEFF/, ''), 'image/svg+xml');
+    if (doc.getElementsByTagName('parsererror').length) return txt;
+    const r = doc.documentElement;
+    let w = 0, h = 0; const vb = (r.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+    if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) { w = vb[2]; h = vb[3]; }
+    else { w = parseFloat(r.getAttribute('width')) || 0; h = parseFloat(r.getAttribute('height')) || 0; if (w > 0 && h > 0 && !/%/.test(r.getAttribute('width') || '')) r.setAttribute('viewBox', `0 0 ${w} ${h}`); else { w = h = 1000; } }
+    const k = (maxPx || 1600) / Math.max(w, h);
+    r.setAttribute('width', Math.round(w * k)); r.setAttribute('height', Math.round(h * k));
+    if (!r.getAttribute('xmlns')) r.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    return new XMLSerializer().serializeToString(doc);
+  } catch (e) { return txt; }
+}
 function svgToSymbol(svgText, ignoreWhite) {
-  const data = new THREE.SVGLoader().parse(svgText);
-  const K = 1000; const all = [];
+  const data = new THREE.SVGLoader().parse(svgPrepare(svgText));
+  const K = 1000;
   const white = (c) => /^(#fff|#ffffff|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))$/i.test(String(c || '').trim());
   const toInt = (pts) => pts.map(v => ({ X: Math.round(v.x * K), Y: Math.round(-v.y * K) }));
+  let all = [];
+  const cut = (paths) => { // bílá plocha nakreslená přes tmavou: vyřízne ji (jako při vykreslení)
+    if (!all.length || !paths.length) return;
+    const c = new ClipperLib.Clipper(); c.AddPaths(exToPaths(unionEx(all)), ClipperLib.PolyType.ptSubject, true); c.AddPaths(paths, ClipperLib.PolyType.ptClip, true);
+    const pt = new ClipperLib.PolyTree(); c.Execute(ClipperLib.ClipType.ctDifference, pt, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
+    all = exToPaths(ClipperLib.JS.PolyTreeToExPolygons(pt));
+  };
   for (const sp of data.paths) {
     const st = (sp.userData && sp.userData.style) || {};
     if (st.visibility === 'hidden' || st.opacity === 0) continue;
     const subs = sp.subPaths.map(p => p.getPoints(24)).filter(p => p.length > 1);
     const fill = st.fill;
-    if (fill && fill !== 'none' && fill !== 'transparent' && st.fillOpacity !== 0 && !(ignoreWhite && white(fill))) {
+    if (fill && fill !== 'none' && fill !== 'transparent' && st.fillOpacity !== 0) {
       const conts = subs.filter(p => p.length > 2).map(toInt);
       const rule = svgFillRule(sp.userData.node) === 'evenodd' ? ClipperLib.PolyFillType.pftEvenOdd : ClipperLib.PolyFillType.pftNonZero;
       const c = new ClipperLib.Clipper(); c.AddPaths(conts, ClipperLib.PolyType.ptSubject, true);
       const pt = new ClipperLib.PolyTree(); c.Execute(ClipperLib.ClipType.ctUnion, pt, rule, rule);
-      all.push(...exToPaths(ClipperLib.JS.PolyTreeToExPolygons(pt)));
+      const paths = exToPaths(ClipperLib.JS.PolyTreeToExPolygons(pt));
+      if (ignoreWhite && white(fill)) cut(paths); else all.push(...paths);
     }
     const stroke = st.stroke, sw = st.strokeWidth;
-    if (stroke && stroke !== 'none' && sw > 0 && st.strokeOpacity !== 0 && !(ignoreWhite && white(stroke))) {
+    if (stroke && stroke !== 'none' && sw > 0 && st.strokeOpacity !== 0) {
       const co = new ClipperLib.ClipperOffset(2, Math.max(1, sw * K * 0.01));
       for (const p of subs) {
         const a = p[0], b = p[p.length - 1]; const closed = a.distanceTo(b) < 1e-6;
         co.AddPath(toInt(closed ? p.slice(0, -1) : p), ClipperLib.JoinType.jtRound, closed ? ClipperLib.EndType.etClosedLine : ClipperLib.EndType.etOpenRound);
       }
       const pt = new ClipperLib.PolyTree(); co.Execute(pt, sw / 2 * K);
-      all.push(...exToPaths(ClipperLib.JS.PolyTreeToExPolygons(pt)));
+      const paths = exToPaths(ClipperLib.JS.PolyTreeToExPolygons(pt));
+      if (ignoreWhite && white(stroke)) cut(paths); else all.push(...paths);
     }
   }
   if (!all.length) return null;

@@ -202,7 +202,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 <div class="app">
   <header class="top">
     <h1>Dual Text Studio</h1>
-    <p>Dvojitý 3D nápis: zepředu přečtete jedno slovo, z boku druhé, a když chcete, shora i třetí. Krásný dárek, třeba MAMA a TATA nebo dvě jména.</p>
+    <p>Dvojitý 3D nápis: zepředu přečtete jedno slovo, z boku druhé. Krásný dárek, třeba MAMA a TATA nebo dvě jména.</p>
     <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
   </header>
 
@@ -213,11 +213,6 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <input type="text" class="word" data-k="wA" aria-label="Slovo zepředu" autocomplete="off" spellcheck="false">
       <div class="wlbl"><span>Z boku (zprava)</span><small id="lenB"></small></div>
       <input type="text" class="word" data-k="wB" aria-label="Slovo z boku" autocomplete="off" spellcheck="false">
-      <label class="check"><input type="checkbox" data-k="three">Třetí slovo shora</label>
-      <div class="qf" data-show="three">
-        <input type="text" class="word" data-k="wC" aria-label="Slovo shora" autocomplete="off" spellcheck="false">
-        <p class="hint">Třetí slovo ořízne písmena i shora, takže zepředu a z boku budou méně čitelná. Hodí se tučné písmo a krátká slova.</p>
-      </div>
       <label class="check"><input type="checkbox" data-k="upper">Velká písmena</label>
       <label class="check"><input type="checkbox" data-k="noDia">Bez háčků a čárek</label>
       <p class="hint">Slova musí mít stejný počet písmen. Každá dvojice písmen se protne do jednoho kusu. Háčky a čárky jsou nad písmenem oddělené mezerou, proto by se ztratily nebo odpadly.</p>
@@ -290,11 +285,11 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
     <div class="viewer" id="viewer">
       <canvas id="cv" aria-label="3D náhled dvojitého nápisu"></canvas>
       <div class="hud"><span class="chip" id="dims">–</span></div>
-      <div class="vbtns"><button type="button" id="vFront">Zepředu</button><button type="button" id="vSide">Z boku</button><button type="button" id="vTop">Shora</button><button type="button" id="vPersp">Šikmo</button></div>
+      <div class="vbtns"><button type="button" id="vFront">Zepředu</button><button type="button" id="vSide">Z boku</button><button type="button" id="vTop" hidden>Shora</button><button type="button" id="vPersp">Šikmo</button></div>
       <div class="views" id="views" hidden>
         <figure><canvas id="svFront"></canvas><figcaption>Zepředu</figcaption></figure>
         <figure><canvas id="svSide"></canvas><figcaption>Z boku</figcaption></figure>
-        <figure id="figTop"><canvas id="svTop"></canvas><figcaption>Shora</figcaption></figure>
+        <figure id="figTop" hidden><canvas id="svTop"></canvas><figcaption>Shora</figcaption></figure>
       </div>
       <div class="busy" id="busy" hidden>Počítám model…</div>
       <div class="help">Táhnutím otáčíte · kolečkem nebo dvěma prsty přibližujete</div>
