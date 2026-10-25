@@ -116,6 +116,16 @@ TOOLS = {
         'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'kola-app.js'},
     },
+    'mrizky': {
+        'page': 'mrizky.html', 'title': 'Mřížky',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'mrizky-app.js'},
+    },
+    'elektronika': {
+        'page': 'elektronika.html', 'title': 'Elektronika',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'elektronika-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},

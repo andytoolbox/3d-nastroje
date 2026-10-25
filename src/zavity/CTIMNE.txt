@@ -7,7 +7,8 @@ CO UMÍ
   válcovou, čočkovou, zápustnou, motýlkovou nebo rýhovanou (imbus, torx,
   křížová, plochá drážka). Matice šestihranné, nízké, čtyřhranné, motýlkové,
   rýhované a kloboučkové, podložky a závitové tyče. Závit (díru nebo čep)
-  vloží i do vlastního modelu STL. Používá knihovnu Manifold (Apache 2.0).
+  vloží i do vlastního modelu STL. Kabelové průchodky PG7–PG48
+  a M12–M63×1,5 (tělo, převlečná matice, pojistná matice, těsnění z TPU). Používá knihovnu Manifold (Apache 2.0).
 
 NAHRÁNÍ NA WEB
   Složku "zavity" nahrajte vedle ostatních nástrojů,

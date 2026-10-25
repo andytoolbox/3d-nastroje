@@ -1,0 +1,403 @@
+<title>Elektronika – držáky a panely</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Elektronika — stejná rodina jako ostatní 3D nástroje. Created by Julius Andy Antoš */
+:root {
+  --bg: #e9eef0; --panel: #fbfcfc; --ink: #1b2428; --muted: #5a6970; --line: #d2dade;
+  --accent: #0b7a72; --accent-ink: #ffffff; --accent-soft: #d9efec;
+  --warn: #9a5200; --warn-soft: #fbecd8; --bad: #b0271f; --bad-soft: #f8dedb; --ok: #1d7536; --ok-soft: #dcefe1;
+  --view: #dde4e7; --grid: #b9c5ca; --grid-major: #93a3aa; --model: #f2efe8; --night: #121518; --glow: #ffd9a0;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --model: #d8d4cb; --night: #07090a; --glow: #ffd9a0; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12181b; --panel: #192125; --ink: #e3eaed; --muted: #93a3aa; --line: #2c383d;
+  --accent: #3cbfb2; --accent-ink: #062623; --accent-soft: #173a37;
+  --warn: #f0b060; --warn-soft: #3a2a14; --bad: #ff8a80; --bad-soft: #3d1c1a; --ok: #7fd494; --ok-soft: #173020;
+  --view: #0e1316; --grid: #26333a; --grid-major: #3a4a52; --model: #d8d4cb; --night: #07090a; --glow: #ffd9a0; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--f-ui); }
+.app { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 16px; padding-inline: 16px; padding-block: 16px; min-height: 100%; }
+header.top { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+header.top h1 { margin: 0; font: 600 20px/1.2 var(--f-label); letter-spacing: .01em; }
+header.top p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+header.top .install { margin-left: auto; align-self: center; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+aside { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.card h2 { margin: 0; font: 600 11px/1 var(--f-label); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.card h2 .step { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 10.5px; margin-right: 6px; letter-spacing: 0; }
+label.f { display: grid; grid-template-columns: 1fr 104px; align-items: center; gap: 8px; font-size: 13px; }
+label.f small, .lblrow small { display: block; color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.num { position: relative; }
+.num input { width: 100%; padding: 5px 34px 5px 8px; text-align: right; font: 13px var(--f-num); font-variant-numeric: tabular-nums; }
+.num span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font: 11px var(--f-num); pointer-events: none; }
+input, select, textarea { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+select { padding: 5px 6px; width: 100%; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+input:focus-visible, select:focus-visible, button:focus-visible, .seg label:focus-within, .shape:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lblrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg label { position: relative; flex: 1; text-align: center; padding: 5px 8px; cursor: pointer; font-size: 12.5px; border-left: 1px solid var(--line); user-select: none; white-space: nowrap; }
+.seg label:first-child { border-left: 0; }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.seg.wide { width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.slider { display: grid; grid-template-columns: 1fr 52px; gap: 4px 8px; align-items: center; font-size: 13px; }
+.slider input { grid-column: 1 / -1; }
+.slider output { font: 12px var(--f-num); text-align: right; color: var(--muted); }
+button { font: 500 13px var(--f-ui); border-radius: 4px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); padding: 9px 14px; font-weight: 600; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.hint { font-size: 12px; color: var(--muted); margin: 0; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 14px; text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.drop b { color: var(--accent); }
+.photos { display: flex; flex-direction: column; gap: 6px; }
+.ph { display: grid; grid-template-columns: 22px 52px minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 4px; padding: 5px; }
+.ph .no { font: 600 12px var(--f-num); color: var(--muted); text-align: center; }
+.ph canvas { width: 52px; height: 38px; border-radius: 3px; display: block; object-fit: cover; }
+.ph .nm { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph select { font-size: 11.5px; padding: 2px 4px; margin-top: 2px; width: auto; }
+.ph .btns { display: flex; gap: 2px; }
+.ph .btns button { padding: 2px 7px; font-size: 12px; }
+.ph.unused { opacity: .45; }
+
+.shapes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.shape { position: relative; border: 1px solid var(--line); border-radius: 4px; padding: 8px 4px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; text-align: center; line-height: 1.2; }
+.shape input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.shape svg { width: 44px; height: 36px; }
+.shape svg .o { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linejoin: round; }
+.shape svg .f { fill: var(--muted); opacity: .25; }
+.shape:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.shape:has(input:checked) svg .o { stroke: var(--accent); }
+.shape:has(input:checked) svg .f { fill: var(--accent); opacity: .35; }
+.explain { background: var(--bg); border-radius: 4px; padding: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.explain b { font-weight: 600; }
+.explain ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.guide { font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+.guide h3 { margin: 0; font: 600 12.5px var(--f-label); }
+.guide ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.guide .safety { border-left: 3px solid var(--bad); background: var(--bad-soft); padding: 6px 8px; border-radius: 3px; }
+
+aside .card > h2 { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+aside .card > h2::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s; flex: none; }
+aside .card.collapsed > h2::after { transform: rotate(-45deg); }
+aside .card.collapsed > :not(h2) { display: none !important; }
+
+main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.viewer { position: relative; background: var(--view); border: 1px solid var(--line); border-radius: var(--r); height: min(62vh, 620px); min-height: 300px; overflow: hidden; touch-action: none; transition: background .3s; }
+.viewer.lit { background: var(--night); }
+.viewer canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px; font: 12px var(--f-num); font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 500; color: var(--accent); }
+.vbtns { position: absolute; right: 10px; top: 10px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.vbtns button { padding: 4px 8px; font-size: 12px; }
+.vbtns .light { font-weight: 600; }
+.vbtns .light[aria-pressed="true"] { background: var(--glow); border-color: var(--glow); color: #3a2a00; }
+.help { position: absolute; right: 10px; bottom: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; text-align: right; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--view) 60%, transparent); font: 600 13px var(--f-ui); color: var(--ink); pointer-events: none; }
+.msgs { display: flex; flex-direction: column; gap: 6px; }
+.msg { border-radius: 4px; padding: 7px 10px; font-size: 13px; border-left: 3px solid; }
+.msg.warn { background: var(--warn-soft); border-color: var(--warn); }
+.msg.bad { background: var(--bad-soft); border-color: var(--bad); }
+.msg.ok { background: var(--ok-soft); border-color: var(--ok); }
+.msg.info { background: var(--panel); border-color: var(--accent); }
+.export { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.export .note { font-size: 12px; color: var(--muted); flex: 1; min-width: 200px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.stat { border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.stat span { font: 600 10.5px var(--f-label); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.stat b { font: 500 16px var(--f-num); font-variant-numeric: tabular-nums; }
+footer.sig { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 10px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+footer.sig strong { font: 600 12.5px var(--f-label); color: var(--ink); letter-spacing: .02em; }
+
+
+.shapes2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 4px; }
+.shapes2 button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px 4px; font-size: 11.5px; line-height: 1.15; }
+.shapes2 button svg { width: 34px; height: 34px; }
+.shapes2 button svg path { fill: var(--muted); }
+.shapes2 button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.shapes2 button[aria-checked="true"] svg path { fill: var(--accent); }
+.srcname { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud .chip i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+.inset { position: absolute; right: 10px; bottom: 34px; width: 150px; max-width: 38%; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-align: center; }
+.inset canvas { width: 100%; display: block; }
+@media (max-width: 560px) { .inset { bottom: 46px; width: 96px; padding: 4px; } .inset span { display: none; } }
+.outs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.outs button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 7px; font-size: 12.5px; line-height: 1.2; text-align: center; }
+.outs button svg { width: 34px; height: 30px; fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.outs button small { color: var(--muted); font-size: 11px; }
+.outs button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.outs button[aria-checked="true"] svg { stroke: var(--accent); }
+.chipsel { display: flex; gap: 4px; flex-wrap: wrap; }
+.chipsel button { padding: 4px 9px; font-size: 12.5px; }
+.chipsel button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.flat { position: relative; background: var(--view); border: 1px solid var(--line); border-radius: var(--r); height: min(62vh, 620px); min-height: 300px; overflow: hidden; }
+.flat canvas { display: block; width: 100%; height: 100%; }
+.est { font-size: 12.5px; color: var(--muted); }
+.est b { color: var(--ink); font-weight: 500; }
+label.f.wide { grid-template-columns: auto minmax(0, 1fr); }
+.word { width: 100%; padding: 8px 10px; font: 600 17px var(--f-ui); letter-spacing: .06em; text-transform: none; }
+.wlbl { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+.wlbl small { color: var(--muted); font-size: 11.5px; }
+.views { position: absolute; right: 10px; bottom: 34px; display: flex; gap: 6px; max-width: 60%; }
+.views figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 5px; display: flex; flex-direction: column; gap: 3px; align-items: center; font-size: 10.5px; color: var(--muted); }
+.views canvas { display: block; max-width: 130px; max-height: 70px; }
+@media (max-width: 560px) { .views { bottom: 46px; left: 10px; right: auto; max-width: none; } .views canvas { max-width: 84px; max-height: 44px; } }
+textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(--f-ui); resize: vertical; }
+
+.qrtypes { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; }
+.qrtypes button { padding: 7px 4px; font-size: 12.5px; text-align: center; }
+.qrtypes button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.qf { display: flex; flex-direction: column; gap: 8px; }
+.qf .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.qf input[type=text], .qf textarea { width: 100%; padding: 7px 8px; }
+.qf textarea { min-height: 64px; resize: vertical; }
+.pre { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--bg); }
+.pre span { padding: 7px 4px 7px 8px; color: var(--muted); font: 12.5px var(--f-num); white-space: nowrap; align-self: center; }
+.pre input[type=text] { border: 0; border-radius: 0; padding-left: 0; min-width: 0; flex: 1; }
+.scan { position: absolute; right: 10px; bottom: 34px; width: 150px; max-width: 38%; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-align: center; }
+.scan canvas { width: 100%; image-rendering: pixelated; display: block; }
+.vbtns .light[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+@media (max-width: 560px) { .scan { bottom: 46px; width: 92px; padding: 4px; font-size: 10px; } .scan span { display: none; } }
+@media (min-width: 861px) {
+  html, body { height: 100%; overflow: hidden; }
+  .app { height: 100%; grid-template-rows: auto minmax(0, 1fr) auto; }
+  aside, main { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+  aside { padding-right: 6px; scrollbar-gutter: stable; }
+  .viewer, .flat { flex: 1 1 auto; height: auto; min-height: 300px; }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  main { display: contents; }
+  header.top { order: -3; }
+  .viewer, .flat { order: -1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; height: 40vh; min-height: 230px; box-shadow: 0 6px 12px -8px rgba(0,0,0,.35); }
+  .msgs, #card-export { order: 0; }
+  aside { order: 1; }
+  aside * { scroll-margin-top: calc(max(40vh, 230px) + 12px); }
+  footer.sig { order: 2; }
+}
+@media (max-width: 560px) { .help { display: none; } .vbtns { top: auto; bottom: 10px; } .shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.outs button svg .f { fill: var(--muted); opacity: .25; stroke: none; }
+.outs button[aria-checked="true"] svg .f { fill: var(--accent); opacity: .35; }
+.lgd { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 3px 8px; border-radius: 4px; }
+.lgd i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+.vbtns .tog[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+@media (max-width: 560px) { .lgd { bottom: 46px; } }
+
+#modes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.outs.five { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.picks button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px 5px; font-size: 11.5px; line-height: 1.15; text-align: center; }
+.picks button svg { width: 30px; height: 26px; fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.picks button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.picks button[aria-checked="true"] svg { stroke: var(--accent); }
+.empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 14px; padding: 20px; pointer-events: none; }
+.empty b { color: var(--ink); display: block; font-size: 16px; margin-bottom: 4px; }
+.empty button { pointer-events: auto; }
+.viewer.pick canvas { cursor: crosshair; }
+.fname { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spec { font: 12.5px var(--f-num); color: var(--muted); }
+.spec b { color: var(--ink); font-weight: 500; }
+
+.vbtns .tog[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Elektronika – držáky a panely</h1>
+    <p>Podložky se sloupky pro Raspberry Pi, Arduino a ESP desky, kolébky pro desky bez děr, čelní panely pro OLED a LCD displeje, panely a objímky na LED a profily na LED pásky. Ke všemu šablona otvorů pro vrtání.</p>
+    <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
+  </header>
+
+  <aside>
+    <section class="card">
+      <h2><span><span class="step">1</span>Co tisknout</span></h2>
+      <div class="picks" role="radiogroup" aria-label="Co tisknout" id="modes"></div>
+    </section>
+
+    <section class="card" data-show="board">
+      <h2><span><span class="step">2</span>Deska</span></h2>
+      <select id="selBoard" data-k="board" aria-label="Deska"></select>
+      <div data-show="bCustom" class="qf">
+        <label class="f"><span>Šířka desky</span><span class="num"><input type="number" data-k="bW" min="10" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Hloubka desky</span><span class="num"><input type="number" data-k="bH" min="10" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Rozteč děr X<small>0 = deska bez děr</small></span><span class="num"><input type="number" data-k="bsx" min="0" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Rozteč děr Y</span><span class="num"><input type="number" data-k="bsy" min="0" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Díra od okraje X</span><span class="num"><input type="number" data-k="bix" min="0" max="100" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Díra od okraje Y</span><span class="num"><input type="number" data-k="biy" min="0" max="100" step="0.1"><span>mm</span></span></label>
+      </div>
+      <label class="f" data-show="bHoles"><span>Díra v desce</span><span class="num"><input type="number" data-k="bhd" min="1" max="5" step="0.05"><span>mm</span></span></label>
+      <div class="spec" id="bSpec"></div>
+    </section>
+
+    <section class="card" data-show="board">
+      <h2><span><span class="step">3</span>Uchycení</span></h2>
+      <div data-show="bHoles" class="qf">
+        <div class="seg wide" role="radiogroup" aria-label="Sloupky">
+          <label><input type="radio" name="fix" value="screw">Šroub</label>
+          <label><input type="radio" name="fix" value="insert">Insert</label>
+          <label><input type="radio" name="fix" value="nut">Matice</label>
+          <label><input type="radio" name="fix" value="pin">Kolík</label>
+        </div>
+        <p class="hint" id="fixHint"></p>
+        <label class="f" data-show="fixScrew"><span>Šroub</span><select data-k="scr" id="selScr"><option value="0">podle díry</option><option value="1.6">M1,6</option><option value="2">M2</option><option value="2.5">M2,5</option><option value="3">M3</option></select></label>
+        <label class="f"><span>Výška sloupků</span><span class="num"><input type="number" data-k="sh" min="2" max="40" step="0.5"><span>mm</span></span></label>
+      </div>
+      <div data-show="cradle" class="qf">
+        <p class="hint">Deska nemá montážní díry, proto se zacvakne do kolébky za okraje.</p>
+        <label class="f"><span>Místo pod deskou<small>s kolíkovou lištou dolů 9 mm</small></span><span class="num"><input type="number" data-k="under" min="0" max="20" step="0.5"><span>mm</span></span></label>
+        <label class="f"><span>Tloušťka DPS</span><span class="num"><input type="number" data-k="pcb" min="0.6" max="3" step="0.1"><span>mm</span></span></label>
+        <label class="check"><input type="checkbox" data-k="lips">Západky přes okraj desky</label>
+      </div>
+      <label class="f"><span>Tloušťka podložky</span><span class="num"><input type="number" data-k="bt" min="1.2" max="8" step="0.2"><span>mm</span></span></label>
+      <label class="f"><span>Okraj kolem desky</span><span class="num"><input type="number" data-k="mg" min="0" max="30" step="0.5"><span>mm</span></span></label>
+      <label class="check"><input type="checkbox" data-k="ears">Ouška na přišroubování (M3)</label>
+      <label class="check" data-show="bHoles"><input type="checkbox" data-k="light">Odlehčit podložku pod deskou</label>
+    </section>
+
+    <section class="card" data-show="disp">
+      <h2><span><span class="step">2</span>Displej</span></h2>
+      <select id="selDisp" data-k="disp" aria-label="Displej"></select>
+      <div data-show="dCustom" class="qf">
+        <label class="f"><span>Šířka DPS</span><span class="num"><input type="number" data-k="dW" min="10" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Výška DPS</span><span class="num"><input type="number" data-k="dH" min="10" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Rozteč děr X<small>0 = bez sloupků</small></span><span class="num"><input type="number" data-k="dsx" min="0" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Rozteč děr Y</span><span class="num"><input type="number" data-k="dsy" min="0" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Okno šířka<small>viditelná plocha</small></span><span class="num"><input type="number" data-k="vw" min="3" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Okno výška</span><span class="num"><input type="number" data-k="vh" min="3" max="300" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Posun okna X<small>od středu DPS</small></span><span class="num"><input type="number" data-k="vdx" min="-100" max="100" step="0.1"><span>mm</span></span></label>
+        <label class="f"><span>Posun okna Y<small>+ = ke straně s piny</small></span><span class="num"><input type="number" data-k="vdy" min="-100" max="100" step="0.1"><span>mm</span></span></label>
+      </div>
+      <label class="f" data-show="dHoles"><span>Díra v DPS</span><span class="num"><input type="number" data-k="dhd" min="1" max="5" step="0.05"><span>mm</span></span></label>
+      <label class="f"><span>Výška čela nad DPS<small>sklo nebo rámeček displeje</small></span><span class="num"><input type="number" data-k="dz" min="0.5" max="30" step="0.1"><span>mm</span></span></label>
+      <div class="spec" id="dSpec"></div>
+    </section>
+
+    <section class="card" data-show="disp">
+      <h2><span><span class="step">3</span>Panel</span></h2>
+      <label class="f"><span>Tloušťka panelu</span><span class="num"><input type="number" data-k="pt" min="1" max="6" step="0.2"><span>mm</span></span></label>
+      <label class="f"><span>Okraj kolem DPS</span><span class="num"><input type="number" data-k="dmg" min="0" max="40" step="0.5"><span>mm</span></span></label>
+      <label class="f"><span>Přesah okna</span><span class="num"><input type="number" data-k="wm" min="-2" max="5" step="0.1"><span>mm</span></span></label>
+      <label class="check"><input type="checkbox" data-k="chf">Zkosené okno (lepší pohled ze strany)</label>
+      <div data-show="dHoles" class="qf">
+        <div class="seg wide" role="radiogroup" aria-label="Sloupky">
+          <label><input type="radio" name="dfix" value="screw">Šroub</label>
+          <label><input type="radio" name="dfix" value="insert">Insert</label>
+          <label><input type="radio" name="dfix" value="pin">Kolík</label>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" data-k="dears">Díry na přišroubování panelu (M3)</label>
+    </section>
+
+    <section class="card" data-show="led">
+      <h2><span><span class="step">2</span>LED</span></h2>
+      <div class="seg wide" role="radiogroup" aria-label="Průměr LED">
+        <label><input type="radio" name="led" value="3">3 mm</label>
+        <label><input type="radio" name="led" value="5">5 mm</label>
+        <label><input type="radio" name="led" value="8">8 mm</label>
+        <label><input type="radio" name="led" value="10">10 mm</label>
+      </div>
+      <div class="seg wide" role="radiogroup" aria-label="Typ">
+        <label><input type="radio" name="lkind" value="panel">Panel s otvory</label>
+        <label><input type="radio" name="lkind" value="holder">Objímky do krabice</label>
+      </div>
+      <label class="f"><span>Počet vodorovně</span><span class="num"><input type="number" data-k="nx" min="1" max="40" step="1"><span>×</span></span></label>
+      <label class="f"><span>Počet svisle</span><span class="num"><input type="number" data-k="ny" min="1" max="40" step="1"><span>×</span></span></label>
+      <label class="f" data-show="lPanel"><span>Rozteč</span><span class="num"><input type="number" data-k="lp" min="3" max="100" step="0.5"><span>mm</span></span></label>
+      <label class="f"><span id="lblLpt">Tloušťka panelu</span><span class="num"><input type="number" data-k="lpt" min="1" max="6" step="0.2"><span>mm</span></span></label>
+      <label class="f"><span>Vůle otvoru</span><span class="num"><input type="number" data-k="lclr" min="0" max="1" step="0.05"><span>mm</span></span></label>
+      <div class="spec" id="lSpec"></div>
+    </section>
+
+    <section class="card" data-show="strip">
+      <h2><span><span class="step">2</span>LED pásek</span></h2>
+      <div class="chipsel" id="strips" role="group" aria-label="Šířka pásku"></div>
+      <label class="f"><span>Šířka pásku</span><span class="num"><input type="number" data-k="sw" min="3" max="40" step="0.5"><span>mm</span></span></label>
+      <label class="f"><span>Délka profilu</span><span class="num"><input type="number" data-k="sL" min="20" max="1000" step="5"><span>mm</span></span></label>
+      <label class="f"><span>Hloubka<small>od dna k difuzoru</small></span><span class="num"><input type="number" data-k="sd" min="3" max="30" step="0.5"><span>mm</span></span></label>
+      <label class="f"><span>Tloušťka stěny</span><span class="num"><input type="number" data-k="swall" min="1.6" max="4" step="0.1"><span>mm</span></span></label>
+      <label class="check"><input type="checkbox" data-k="sdif">Zasouvací difuzor (tisk z bílého nebo průhledného)</label>
+      <label class="check"><input type="checkbox" data-k="sholes">Zapuštěné díry na šrouby ve dně</label>
+    </section>
+
+    <section class="card">
+      <h2><span>Tiskárna</span></h2>
+      <label class="f"><span>Tisková plocha X</span><span class="num"><input type="number" data-k="bedX" min="50" max="1000" step="1"><span>mm</span></span></label>
+      <label class="f"><span>Tisková plocha Y</span><span class="num"><input type="number" data-k="bedY" min="50" max="1000" step="1"><span>mm</span></span></label>
+      <label class="f"><span>Výška tisku</span><span class="num"><input type="number" data-k="bedZ" min="50" max="1000" step="1"><span>mm</span></span></label>
+    </section>
+
+    <section class="card">
+      <h2><span>Rady</span></h2>
+      <div class="guide">
+        <h3>Rozměry</h3>
+        <ul>
+          <li>Desky od různých výrobců (hlavně klony ESP a displejů) se liší o desetiny milimetru. Před tiskem přeměřte posuvkou rozteč děr a případně zvolte „Vlastní“.</li>
+          <li>Rychlá kontrola: stáhněte šablonu SVG, vytiskněte ji na papír ve 100 % a desku na ni přiložte.</li>
+        </ul>
+        <h3>Sloupky</h3>
+        <ul>
+          <li><b>Šroub</b> – díra je o něco menší, šroub si do plastu vyřízne závit. Na opakované šroubování je lepší <b>insert</b> (zalisovací matice), který se zatlačí horkou páječkou.</li>
+          <li><b>Matice</b> – průchozí díra a šestihranné lůžko pro matici ze spodu podložky.</li>
+          <li><b>Kolík</b> – deska se jen nasadí, bez šroubů. Na tenké kolíky (Nano, Pico) tiskněte pomalu.</li>
+        </ul>
+        <h3>Tisk</h3>
+        <ul>
+          <li>Podložky a panely tiskněte plochou stranou na podložce, bez podpěr. U panelu je čelní strana dole, takže bude hladká.</li>
+          <li>Objímky LED tiskněte límcem dolů. Difuzor pásku z bílého PETG nebo průhledného materiálu ve 2–3 vrstvách.</li>
+        </ul>
+      </div>
+    </section>
+  </aside>
+
+  <main>
+    <div class="viewer" id="viewer">
+      <canvas id="cv" aria-label="3D náhled"></canvas>
+      <div class="hud"><span class="chip" id="dims">–</span></div>
+      <div class="vbtns"><button type="button" id="vFront">Zepředu</button><button type="button" id="vTop">Shora</button><button type="button" id="vPersp">Šikmo</button><button type="button" class="tog" id="vPcb" aria-pressed="true">Deska</button></div>
+      <div class="busy" id="busy">Načítám…</div>
+      <div class="help">Táhnutím otáčíte · kolečkem nebo dvěma prsty přibližujete</div>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <section class="card" id="card-export">
+      <div class="stats" id="stats"></div>
+      <div class="export">
+        <button class="primary" type="button" id="btnSave" disabled>Stáhnout STL</button>
+        <button type="button" id="btnSvg" disabled>Šablona otvorů (SVG 1:1)</button>
+        <span class="note" id="saveNote"></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sig"><strong>Created by Julius Andy Antoš</strong><span>Elektronika · výpočet běží ve vašem prohlížeči, nic se neodesílá</span></footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipper-lib@6.4.2/clipper.js"></script>
+<script>
+/*__MANIFOLD__*/
+/*__CORE__*/
+/*__DILNA__*/
+/*__APP__*/
+</script>

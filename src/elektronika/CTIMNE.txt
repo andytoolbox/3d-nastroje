@@ -1,0 +1,25 @@
+ELEKTRONIKA – držáky desek, panely displejů a LED pro 3D tisk
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Podložky se sloupky pro Raspberry Pi 5/4/3, Zero, Pico, Arduino Uno,
+  Mega, Nano, NodeMCU a kolébky se západkami pro desky bez děr (ESP32
+  DevKit, Wemos D1 mini, ESP32-CAM…). Sloupky na šroub, zalisovací
+  matici, s maticí zespodu nebo s kolíkem. Čelní panely s oknem pro OLED
+  a LCD 1602/2004, panely a objímky pro LED 3–10 mm a profily na LED
+  pásky s difuzorem. Šablona otvorů v SVG 1:1 na vyvrtání do krabice.
+  Rozměry desek se u různých výrobců liší o desetiny milimetru, proto
+  jdou všechny hodnoty upravit. Používá knihovnu Manifold (Apache 2.0).
+
+NAHRÁNÍ NA WEB
+  Složku "elektronika" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/elektronika/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.

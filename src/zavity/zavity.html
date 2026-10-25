@@ -223,7 +223,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 <div class="app">
   <header class="top">
     <h1>Závity a šrouby</h1>
-    <p>Šrouby, matice, podložky a závitové tyče s metrickým nebo trapézovým závitem. Hlava šestihranná, imbus, torx, křížová, zápustná, motýlková i rýhovaná. A závit vložíte i do vlastního modelu.</p>
+    <p>Šrouby, matice, podložky a závitové tyče s metrickým nebo trapézovým závitem. Hlava šestihranná, imbus, torx, křížová, zápustná, motýlková i rýhovaná. Kabelové průchodky PG i metrické. A závit vložíte i do vlastního modelu.</p>
     <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
   </header>
 
@@ -236,11 +236,13 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <button type="button" role="radio" data-type="washer"><svg viewBox="0 0 34 30"><circle cx="17" cy="15" r="11"/><circle cx="17" cy="15" r="5"/></svg>Podložka</button>
         <button type="button" role="radio" data-type="rod"><svg viewBox="0 0 34 30"><path d="M13 3h8v24h-8zM13 7l8 2M13 11l8 2M13 15l8 2M13 19l8 2M13 23l8 2"/></svg>Závitová tyč</button>
         <button type="button" role="radio" data-type="model"><svg viewBox="0 0 34 30"><path class="f" d="M4 10h26v15H4z"/><path d="M4 10h26v15H4zM14 10v9h6v-9M14 13l6 1.5M14 16l6 1.5"/></svg>Závit do modelu</button>
+        <button type="button" role="radio" data-type="gland"><svg viewBox="0 0 34 30"><path class="f" d="M9 11h16v5H9z"/><path d="M11 25V16M23 25V16M9 11h16v5H9zM11 11V5h12v6M17 2v28"/></svg>Průchodka<small>PG i metrická</small></button>
       </div>
     </section>
 
     <section class="card">
       <h2><span><span class="step">2</span>Závit</span></h2>
+      <div class="qf" data-show="thrSel">
       <div class="seg wide" role="radiogroup" aria-label="Druh závitu">
         <label><input type="radio" name="thr.kind" value="M">Metrický</label>
         <label><input type="radio" name="thr.kind" value="Tr">Trapézový</label>
@@ -251,6 +253,20 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f" data-show="customP"><span>Vlastní stoupání</span><span class="num"><input type="number" data-k="thr.P" min="0.25" max="12" step="0.05"><span>mm</span></span></label>
       <label class="f" data-show="tr"><span>Počet chodů<small>např. Tr8×8 = 4 chody</small></span><span class="num"><input type="number" data-k="thr.starts" min="1" max="6" step="1"><span>×</span></span></label>
       <label class="check"><input type="checkbox" data-k="thr.left">Levý závit</label>
+      </div>
+      <div class="qf" data-show="gland">
+        <div class="seg wide" role="radiogroup" aria-label="Norma průchodky">
+          <label><input type="radio" name="gl.std" value="M">Metrická (M×1,5)</label>
+          <label><input type="radio" name="gl.std" value="PG">PG</label>
+        </div>
+        <label class="f wide"><span>Velikost</span><select id="selGland" data-k="gl.size"></select></label>
+        <label class="f"><span>Průměr kabelu<small id="cableHint"></small></span><span class="num"><input type="number" data-k="gl.cable" min="2" max="50" step="0.5"><span>mm</span></span></label>
+        <div class="lblrow"><span>Díly</span></div>
+        <label class="check"><input type="checkbox" data-k="gl.body">Tělo se závitem a sevřením</label>
+        <label class="check"><input type="checkbox" data-k="gl.cap">Převlečná matice</label>
+        <label class="check"><input type="checkbox" data-k="gl.nut">Pojistná matice</label>
+        <label class="check"><input type="checkbox" data-k="gl.seal">Těsnicí vložka (tisk z TPU)</label>
+      </div>
       <label class="f"><span>Vůle<small>na průměru, šroub a matice dohromady</small></span><span class="num"><input type="number" data-k="thr.clr" min="0" max="1.5" step="0.05"><span>mm</span></span></label>
       <label class="f wide"><span>Jemnost modelu</span><select data-k="thr.q"><option value="1">Rychlý náhled</option><option value="2">Normální</option><option value="3">Jemná (větší soubor)</option></select></label>
       <div class="spec" id="spec"></div>
@@ -327,6 +343,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
           <li>Vrstva 0,12–0,16 mm dává čistší závit. Závity menší než M5 se tisknou obtížně, M6 a větší jdou spolehlivě.</li>
           <li>Vůle 0,3 mm je dobrý začátek pro šroub i matici z tiskárny. Když jde ztuha, zvyšte ji o 0,1–0,2 mm. Nejlepší vůli zjistíte testem vůle v Kalibračních testech.</li>
           <li>Pro kovový šroub v tištěné díře nastavte vůli kolem 0,4–0,6 mm.</li>
+          <li>Průchodka: tělo prostrčte otvorem v krabici a zajistěte pojistnou maticí. Kabel provlékněte těsnicí vložkou z TPU a převlečnou maticí, utažením se kabel sevře. Otvor v krabici vrtejte na průměr závitu (M20 = 20,5 mm, PG9 = 15,5 mm).</li>
         </ul>
         <h3>Závit do modelu</h3>
         <ul>

@@ -88,9 +88,9 @@ window.NASTROJE = [
   {
     id: 'zavity',
     nazev: 'Závity a šrouby',
-    popis: 'Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Závit vloží i do vašeho modelu.',
+    popis: 'Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Kabelové průchodky PG i metrické. Závit vloží i do vašeho modelu.',
     kategorie: 'Díly',
-    stitky: ['šroub', 'matice', 'závit', 'trapézový závit', 'motýlková matice'],
+    stitky: ['šroub', 'matice', 'závit', 'trapézový závit', 'motýlková matice', 'kabelová průchodka', 'PG průchodka'],
     odkaz: 'zavity/',
     novinka: true
   },
@@ -101,6 +101,24 @@ window.NASTROJE = [
     kategorie: 'Díly',
     stitky: ['ozubené kolo', 'pastorek', 'věnec', 'hřeben', 'planetová převodovka'],
     odkaz: 'ozubena-kola/',
+    novinka: true
+  },
+  {
+    id: 'mrizky',
+    nazev: 'Mřížky na ventilátor',
+    popis: 'Ochranné mřížky na ventilátory 25–140 mm: kruhy, plástev, štěrbiny, mříž nebo spirála. Rovné, nebo vyklenuté do kužele či kopule pro tišší chod.',
+    kategorie: 'Díly',
+    stitky: ['ventilátor', 'mřížka', 'kryt', 'chlazení', 'elektronika'],
+    odkaz: 'mrizky/',
+    novinka: true
+  },
+  {
+    id: 'elektronika',
+    nazev: 'Elektronika – držáky a panely',
+    popis: 'Podložky se sloupky pro Raspberry Pi, Arduino a ESP desky, kolébky pro desky bez děr, panely pro OLED a LCD displeje, LED a profily na LED pásky. Se šablonou otvorů.',
+    kategorie: 'Díly',
+    stitky: ['elektronika', 'Raspberry Pi', 'Arduino', 'ESP32', 'displej', 'LED pásek'],
+    odkaz: 'elektronika/',
     novinka: true
   },
   {

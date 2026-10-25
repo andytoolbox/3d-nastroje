@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="author" content="Julius Andy Antoš">
-<meta name="description" content="Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Závit vloží i do vašeho modelu.">
+<meta name="description" content="Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Kabelové průchodky PG i metrické. Závit vloží i do vašeho modelu.">
 <link rel="canonical" href="https://andytoolbox.github.io/3d-nastroje/zavity/">
 <meta property="og:title" content="Závity a šrouby">
-<meta property="og:description" content="Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Závit vloží i do vašeho modelu.">
+<meta property="og:description" content="Šrouby, matice, podložky a závitové tyče s metrickým i trapézovým závitem. Hlavy imbus, torx, šestihran, křížová, zápustná i motýlková. Kabelové průchodky PG i metrické. Závit vloží i do vašeho modelu.">
 <meta property="og:image" content="https://andytoolbox.github.io/3d-nastroje/img/zavity.jpg">
 <meta property="og:type" content="website">
 
@@ -243,7 +243,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 <div class="app">
   <header class="top">
     <h1>Závity a šrouby</h1>
-    <p>Šrouby, matice, podložky a závitové tyče s metrickým nebo trapézovým závitem. Hlava šestihranná, imbus, torx, křížová, zápustná, motýlková i rýhovaná. A závit vložíte i do vlastního modelu.</p>
+    <p>Šrouby, matice, podložky a závitové tyče s metrickým nebo trapézovým závitem. Hlava šestihranná, imbus, torx, křížová, zápustná, motýlková i rýhovaná. Kabelové průchodky PG i metrické. A závit vložíte i do vlastního modelu.</p>
     <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
   </header>
 
@@ -256,11 +256,13 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <button type="button" role="radio" data-type="washer"><svg viewBox="0 0 34 30"><circle cx="17" cy="15" r="11"/><circle cx="17" cy="15" r="5"/></svg>Podložka</button>
         <button type="button" role="radio" data-type="rod"><svg viewBox="0 0 34 30"><path d="M13 3h8v24h-8zM13 7l8 2M13 11l8 2M13 15l8 2M13 19l8 2M13 23l8 2"/></svg>Závitová tyč</button>
         <button type="button" role="radio" data-type="model"><svg viewBox="0 0 34 30"><path class="f" d="M4 10h26v15H4z"/><path d="M4 10h26v15H4zM14 10v9h6v-9M14 13l6 1.5M14 16l6 1.5"/></svg>Závit do modelu</button>
+        <button type="button" role="radio" data-type="gland"><svg viewBox="0 0 34 30"><path class="f" d="M9 11h16v5H9z"/><path d="M11 25V16M23 25V16M9 11h16v5H9zM11 11V5h12v6M17 2v28"/></svg>Průchodka<small>PG i metrická</small></button>
       </div>
     </section>
 
     <section class="card">
       <h2><span><span class="step">2</span>Závit</span></h2>
+      <div class="qf" data-show="thrSel">
       <div class="seg wide" role="radiogroup" aria-label="Druh závitu">
         <label><input type="radio" name="thr.kind" value="M">Metrický</label>
         <label><input type="radio" name="thr.kind" value="Tr">Trapézový</label>
@@ -271,6 +273,20 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f" data-show="customP"><span>Vlastní stoupání</span><span class="num"><input type="number" data-k="thr.P" min="0.25" max="12" step="0.05"><span>mm</span></span></label>
       <label class="f" data-show="tr"><span>Počet chodů<small>např. Tr8×8 = 4 chody</small></span><span class="num"><input type="number" data-k="thr.starts" min="1" max="6" step="1"><span>×</span></span></label>
       <label class="check"><input type="checkbox" data-k="thr.left">Levý závit</label>
+      </div>
+      <div class="qf" data-show="gland">
+        <div class="seg wide" role="radiogroup" aria-label="Norma průchodky">
+          <label><input type="radio" name="gl.std" value="M">Metrická (M×1,5)</label>
+          <label><input type="radio" name="gl.std" value="PG">PG</label>
+        </div>
+        <label class="f wide"><span>Velikost</span><select id="selGland" data-k="gl.size"></select></label>
+        <label class="f"><span>Průměr kabelu<small id="cableHint"></small></span><span class="num"><input type="number" data-k="gl.cable" min="2" max="50" step="0.5"><span>mm</span></span></label>
+        <div class="lblrow"><span>Díly</span></div>
+        <label class="check"><input type="checkbox" data-k="gl.body">Tělo se závitem a sevřením</label>
+        <label class="check"><input type="checkbox" data-k="gl.cap">Převlečná matice</label>
+        <label class="check"><input type="checkbox" data-k="gl.nut">Pojistná matice</label>
+        <label class="check"><input type="checkbox" data-k="gl.seal">Těsnicí vložka (tisk z TPU)</label>
+      </div>
       <label class="f"><span>Vůle<small>na průměru, šroub a matice dohromady</small></span><span class="num"><input type="number" data-k="thr.clr" min="0" max="1.5" step="0.05"><span>mm</span></span></label>
       <label class="f wide"><span>Jemnost modelu</span><select data-k="thr.q"><option value="1">Rychlý náhled</option><option value="2">Normální</option><option value="3">Jemná (větší soubor)</option></select></label>
       <div class="spec" id="spec"></div>
@@ -347,6 +363,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
           <li>Vrstva 0,12–0,16 mm dává čistší závit. Závity menší než M5 se tisknou obtížně, M6 a větší jdou spolehlivě.</li>
           <li>Vůle 0,3 mm je dobrý začátek pro šroub i matici z tiskárny. Když jde ztuha, zvyšte ji o 0,1–0,2 mm. Nejlepší vůli zjistíte testem vůle v Kalibračních testech.</li>
           <li>Pro kovový šroub v tištěné díře nastavte vůli kolem 0,4–0,6 mm.</li>
+          <li>Průchodka: tělo prostrčte otvorem v krabici a zajistěte pojistnou maticí. Kabel provlékněte těsnicí vložkou z TPU a převlečnou maticí, utažením se kabel sevře. Otvor v krabici vrtejte na průměr závitu (M20 = 20,5 mm, PG9 = 15,5 mm).</li>
         </ul>
         <h3>Závit do modelu</h3>
         <ul>
@@ -1249,6 +1266,7 @@ const DEF = {
   nut: { kind: 'hex' },
   rod: { L: 60 },
   model: { mode: 'hole', depth: 12, through: false, studL: 12 },
+  gl: { std: 'M', size: '20', cable: 9, body: true, cap: true, nut: true, seal: true },
   ov: {},
   bedX: 220, bedY: 220, bedZ: 250,
 };
@@ -1307,6 +1325,10 @@ function profile(t, internal) {
     const ac = P <= 1.5 ? 0.15 : P <= 5 ? 0.25 : 0.5, tanA = Math.tan(15 * Math.PI / 180);
     return internal ? { R: (d + 2 * ac) / 2 + c, r: (d - P) / 2 + c, Rp: (d - 0.5 * P) / 2 + c, tanA }
       : { R: d / 2 - c, r: (d - P - 2 * ac) / 2 - c, Rp: (d - 0.5 * P) / 2 - c, tanA };
+  }
+  if (t.kind === 'PG') { // Panzergewinde: úhel 80°, mělký závit
+    const tg = Math.tan(40 * Math.PI / 180);
+    return internal ? { R: d / 2 + c + 0.05 * P, r: (d - 0.96 * P) / 2 + c, Rp: (d - 0.48 * P) / 2 + c, tanA: tg } : { R: d / 2 - c, r: (d - 0.96 * P) / 2 - c, Rp: (d - 0.48 * P) / 2 - c, tanA: tg };
   }
   const tanA = Math.tan(30 * Math.PI / 180);
   return internal ? { R: d / 2 + c + 0.06 * P, r: (d - 1.0825 * P) / 2 + c, Rp: (d - 0.649519 * P) / 2 + c, tanA }
@@ -1480,6 +1502,57 @@ function buildRod(msgs, t) {
   return { m: threadSolid(t, profile(t, false), 0, L, { end0: 'chamfer', end1: 'chamfer' }), info: `tyč ${t.kind === 'Tr' ? 'Tr' : 'M'}${fmtP(t.d)}×${fmtP(L)}`, name: `zavitova_tyc_${t.kind === 'Tr' ? 'Tr' : 'M'}${t.d}x${L}` };
 }
 
+/* ===== Kabelové průchodky ===== */
+// velikost: [průměr závitu, stoupání, kabel od, kabel do, klíč]
+const GLANDS = {
+  M: { '12': [12, 1.5, 3, 6.5, 15], '16': [16, 1.5, 4, 8, 19], '20': [20, 1.5, 6, 12, 24], '25': [25, 1.5, 9, 17, 30], '32': [32, 1.5, 13, 21, 36], '40': [40, 1.5, 19, 28, 46], '50': [50, 1.5, 27, 35, 60], '63': [63, 1.5, 34, 44, 75] },
+  PG: { '7': [12.5, 1.27, 3, 6.5, 15], '9': [15.2, 1.41, 4, 8, 19], '11': [18.6, 1.41, 5, 10, 22], '13.5': [20.4, 1.41, 6, 12, 24], '16': [22.5, 1.41, 10, 14, 27], '21': [28.3, 1.588, 13, 18, 33], '29': [37, 1.588, 18, 25, 42], '36': [47, 1.588, 22, 32, 53], '42': [54, 1.588, 32, 38, 60], '48': [59.3, 1.588, 37, 44, 65] },
+};
+function glandSpec() {
+  const G = D.gl, tab = GLANDS[G.std] || GLANDS.M; if (!tab[G.size]) G.size = Object.keys(tab)[2];
+  const [d, P, cmin, cmax, s] = tab[G.size];
+  return { d, P, cmin, cmax, s, label: (G.std === 'PG' ? 'PG' : 'M') + fmtP(+G.size) + (G.std === 'PG' ? '' : '×1,5'), t: { kind: G.std === 'PG' ? 'PG' : 'M', d, P, starts: 1, lead: P, left: false, clr: clamp(D.thr.clr, 0, 1.5) } };
+}
+function buildGland(msgs) {
+  const g = glandSpec(), t = g.t, e = profile(t, false), i = profile(t, true), d = g.d, s = g.s;
+  const cable = clamp(D.gl.cable, 2, 50);
+  if (cable < g.cmin - 1 || cable > g.cmax + 0.5) msgs.push({ lvl: 'warn', msg: `Průchodka ${g.label} je určená pro kabel ${fmtP(g.cmin)}–${fmtP(g.cmax)} mm. Pro kabel ${fmtP(cable)} mm zvolte jinou velikost.` });
+  const L1 = Math.max(8, 0.5 * d), hf = Math.max(3, 0.16 * d), L2 = Math.max(10, 0.55 * d), top = L1 + hf + L2;
+  const insR = Math.min(e.r - 1.4, Math.max(cable / 2 + 1.5, cable / 2 + 0.15 * cable));
+  const boreR = Math.min(insR - 0.4, Math.max(cable / 2 + 0.6, cable / 2 * 1.05));
+  if (insR - cable / 2 < 1) msgs.push({ lvl: 'warn', msg: 'Kabel je na tuto průchodku moc tlustý, těsnicí vložka bude velmi tenká.' });
+  const hexBody = (h, z) => inter(inter(ext(hexCS(s), h, z), cyl(h, s / 2 * 0.95, s / 2 * 0.95 + h * 1.732, z, 96)), cyl(h, s / 2 * 0.95 + h * 1.732, s / 2 * 0.95, z, 96));
+  const parts = [];
+  if (D.gl.body) { // tělo: spodní závit, šestihran, horní závit se sevřením
+    let b = U([threadSolid(t, e, 0, L1 + 0.537, { end0: 'chamfer' }), hexBody(hf, L1), threadSolid(t, e, L1 + hf - 0.537, top, { end1: 'chamfer' })]);
+    b = sub(b, cyl(top + 2, boreR, boreR, -1));
+    b = sub(b, cyl(L2 * 0.75 + 1, insR, insR, top - L2 * 0.75));
+    const slots = [], n = d >= 30 ? 8 : 6, sd = L2 * 0.55;
+    for (let k = 0; k < n; k++) slots.push(T(T(T(MF.Manifold.cube([e.R + 2, 1.4, sd + 1])).translate([0, -0.7, top - sd])).rotate([0, 0, k * 360 / n])));
+    b = sub(b, U(slots));
+    parts.push({ m: b, name: 'telo', label: 'Tělo' });
+  }
+  if (D.gl.cap) { // převlečná matice tiskem vrchem dolů: víko, kužel, závit
+    const wall = 2.5, cz = Math.max(1, i.R + 0.3 - (insR - 0.6)), Hc = Math.max(L2 * 0.75 + wall + cz, wall + cz + 5 * t.P);
+    let c = hexBody(Hc, 0);
+    const tap = threadSolid(t, i, wall + cz + 0.31, Hc + 1.029, { end1: 'flare', face1: Hc });
+    const hr = Math.max(cable / 2 + 0.5, boreR - 0.2), cr = Math.max(insR - 0.6, hr + 0.33);
+    c = sub(c, U([tap, cyl(cz + 0.01, cr, i.R + 0.3, wall, 96), cyl(0.71, i.R + 0.3, i.R + 0.3, wall + cz, 96), cyl(wall + 2, hr, hr, -1, 64)]));
+    parts.push({ m: c, name: 'prevlecna_matice', label: 'Převlečná matice' });
+  }
+  if (D.gl.nut) {
+    const h = Math.max(3 * t.P + 1, 0.25 * d);
+    parts.push({ m: sub(hexBody(h, 0), threadSolid(t, i, -1.037, h + 1.029, { end0: 'flare', end1: 'flare', face0: 0, face1: h })), name: 'pojistna_matice', label: 'Pojistná matice' });
+  }
+  if (D.gl.seal) {
+    const h = L2 * 0.7, ro = insR - 0.15, ri = Math.max(0.8, cable / 2 - 0.3);
+    parts.push({ m: sub(cyl(h, ro, ro, 0, 96), cyl(h + 2, ri, ri, -1, 64)), name: 'tesneni_TPU', label: 'Těsnění (TPU)' });
+  }
+  if (!parts.length) { msgs.push({ lvl: 'bad', msg: 'Vyberte aspoň jeden díl průchodky.' }); return null; }
+  msgs.push({ lvl: 'info', msg: `Průchodka ${g.label} pro kabel ${fmtP(g.cmin)}–${fmtP(g.cmax)} mm, klíč ${s} mm. Otvor v krabici vrtejte na ${fmtP(Math.ceil((d + 0.5) * 2) / 2)} mm.` });
+  return { parts, info: `průchodka ${g.label}`, name: `pruchodka_${g.label.replace(/[^A-Za-z0-9]+/g, '_')}` };
+}
+
 /* ===== Závit do vlastního modelu ===== */
 let user = null; // { pos, idx, name, steps: [Manifold mesh data], base geometry }
 function placeUser(soup) { // položit na podložku a vystředit, sloučit body
@@ -1615,7 +1688,7 @@ function syncUI() {
 }
 function updateUI() {
   const t = thread(), h = D.bolt.head;
-  const show = { bolt: D.type === 'bolt', nut: D.type === 'nut', rod: D.type === 'rod', model: D.type === 'model', dims: /bolt|nut|washer/.test(D.type), customD: D.thr.size === 'custom', customP: D.thr.pitch === 'custom', tr: D.thr.kind === 'Tr', drive: /socket|pan|csk/.test(h), mHole: D.model.mode === 'hole', mStud: D.model.mode === 'stud' };
+  const show = { thrSel: D.type !== 'gland', gland: D.type === 'gland', bolt: D.type === 'bolt', nut: D.type === 'nut', rod: D.type === 'rod', model: D.type === 'model', dims: /bolt|nut|washer/.test(D.type), customD: D.thr.size === 'custom', customP: D.thr.pitch === 'custom', tr: D.thr.kind === 'Tr', drive: /socket|pan|csk/.test(h), mHole: D.model.mode === 'hole', mStud: D.model.mode === 'stud' };
   document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !show[el.dataset.show]; });
   document.querySelectorAll('#types [data-type]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.type === D.type)));
   document.querySelectorAll('#heads [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === h)));
@@ -1624,9 +1697,14 @@ function updateUI() {
   const pe = profile(t, false), pi = profile(t, true);
   $('spec').innerHTML = `${t.kind === 'Tr' ? 'Tr' : 'M'}${fmtP(t.d)}×${fmtP(t.lead)}${t.starts > 1 ? ` (P${fmtP(t.P)}, ${t.starts} chody)` : ''}${t.left ? ' LH' : ''} · šroub ⌀ <b>${fmt(pe.R * 2, 2)}</b>/<b>${fmt(pe.r * 2, 2)}</b> · díra ⌀ <b>${fmt(pi.r * 2, 2)}</b>/<b>${fmt(pi.R * 2, 2)}</b> mm`;
   $('empty').hidden = !(D.type === 'model' && !user);
+  const gs = $('selGland'), tab = GLANDS[D.gl.std] || GLANDS.M;
+  gs.innerHTML = Object.keys(tab).map(k => `<option value="${k}">${D.gl.std === 'PG' ? 'PG' : 'M'}${fmtP(+k)}${D.gl.std === 'PG' ? '' : '×1,5'} (kabel ${fmtP(tab[k][2])}–${fmtP(tab[k][3])} mm)</option>`).join('');
+  if (!tab[D.gl.size]) D.gl.size = Object.keys(tab)[2]; gs.value = D.gl.size;
+  const gsp = tab[D.gl.size]; $('cableHint').textContent = `pro tuto velikost ${fmtP(gsp[2])}–${fmtP(gsp[3])} mm`;
+  if (D.type === 'gland') { const gg = glandSpec(); $('spec').innerHTML = `${gg.label} · stoupání <b>${fmtP(gg.P)}</b> mm · klíč <b>${gg.s}</b> mm`; }
   dimFields();
 }
-function onChange(path) { if (/^(type|thr\.(size|kind|d)|bolt\.(head|L)|nut\.kind|rod\.L)$/.test(path)) fitNext = true; if (/^thr\.(kind|size|d)$/.test(path)) { fillSelects(); } updateUI(); saveState(); schedule(); }
+function onChange(path) { if (/^(type|thr\.(size|kind|d)|bolt\.(head|L)|nut\.kind|rod\.L|gl\.(std|size))$/.test(path)) fitNext = true; if (/^thr\.(kind|size|d)$/.test(path)) { fillSelects(); } updateUI(); saveState(); schedule(); }
 document.querySelectorAll('[data-k]').forEach(el => {
   const ev = (el.type === 'checkbox' || el.tagName === 'SELECT') ? 'change' : 'input';
   el.addEventListener(ev, () => {
@@ -1634,10 +1712,11 @@ document.querySelectorAll('[data-k]').forEach(el => {
     if (el.type === 'number') { v = parseFloat(v); if (!isFinite(v)) return; }
     setK(el.dataset.k, v);
     if (el.dataset.k === 'thr.kind' || el.dataset.k === 'thr.size') D.thr.pitch = 'std';
+    if (el.dataset.k === 'gl.size') { const tb = GLANDS[D.gl.std][D.gl.size]; if (tb) D.gl.cable = Math.round((tb[2] + tb[3]) / 2); syncUI(); }
     onChange(el.dataset.k);
   });
 });
-document.querySelectorAll('input[type=radio][name*="."]').forEach(r => r.addEventListener('change', () => { setK(r.name, r.value); if (r.name === 'thr.kind') { D.thr.pitch = 'std'; D.thr.size = r.value === 'Tr' ? '10' : '8'; } onChange(r.name); }));
+document.querySelectorAll('input[type=radio][name*="."]').forEach(r => r.addEventListener('change', () => { setK(r.name, r.value); if (r.name === 'thr.kind') { D.thr.pitch = 'std'; D.thr.size = r.value === 'Tr' ? '10' : '8'; } if (r.name === 'gl.std') { D.gl.size = r.value === 'PG' ? '9' : '20'; const tb = GLANDS[D.gl.std][D.gl.size]; D.gl.cable = Math.round((tb[2] + tb[3]) / 2); syncUI(); } onChange(r.name); }));
 document.querySelectorAll('#types [data-type]').forEach(b => b.addEventListener('click', () => { D.type = b.dataset.type; D.ov = {}; onChange('type'); }));
 let tmr = 0;
 function schedule(now) { clearTimeout(tmr); tmr = setTimeout(() => { if (!MF) return; busy(true, 'Počítám model…'); setTimeout(() => { try { rebuild(); } finally { busy(false); } }, 20); }, now ? 0 : 350); }
@@ -1714,16 +1793,24 @@ function rebuild() {
   try {
     if (D.type === 'model') {
       if (user) { const m = meshToMf(user.steps[user.steps.length - 1]); r = { m, info: user.name + (user.steps.length > 1 ? ` + ${user.steps.length - 1}× závit` : ''), name: user.name.replace(/\.(stl|obj|3mf)$/i, '') + '_se_zavitem' }; }
-    } else r = ({ bolt: buildBolt, nut: buildNut, washer: buildWasher, rod: buildRod })[D.type](msgs, t);
-    if (r && t.P < 0.6 && D.type !== 'washer') msgs.push({ lvl: 'warn', msg: `Stoupání ${fmtP(t.P)} mm je na tisk velmi jemné. Závit nemusí jít zašroubovat, zkuste vrstvu 0,1 mm nebo větší závit.` });
-    if (r && t.d < 5 && D.type !== 'washer' && D.type !== 'model') msgs.push({ lvl: 'info', msg: 'Závity menší než M5 jsou na hraně možností běžné tiskárny.' });
+    } else r = ({ bolt: buildBolt, nut: buildNut, washer: buildWasher, rod: buildRod, gland: buildGland })[D.type](msgs, t);
+    if (r && r.parts) { // více dílů vedle sebe na tiskové ploše
+      let x = 0; const placed = [];
+      r.files = r.parts.map(p => { const g = toGeom(p.m); g.computeBoundingBox(); const b = g.boundingBox; g.translate(-(b.min.x + b.max.x) / 2, -(b.min.y + b.max.y) / 2, -b.min.z); g.computeBoundingBox(); return { g, name: p.name, label: p.label, w: b.max.x - b.min.x }; });
+      const tot = r.files.reduce((a, f) => a + f.w, 0) + 6 * (r.files.length - 1); x = -tot / 2;
+      for (const f of r.files) { placed.push(T(T(r.parts[r.files.indexOf(f)].m).translate([x + f.w / 2, 0, 0]))); x += f.w + 6; }
+      r.m = T(MF.Manifold.compose(placed));
+    }
+    if (r && t.P < 0.6 && !/washer|gland/.test(D.type)) msgs.push({ lvl: 'warn', msg: `Stoupání ${fmtP(t.P)} mm je na tisk velmi jemné. Závit nemusí jít zašroubovat, zkuste vrstvu 0,1 mm nebo větší závit.` });
+    if (r && t.d < 5 && !/washer|model|gland/.test(D.type)) msgs.push({ lvl: 'info', msg: 'Závity menší než M5 jsou na hraně možností běžné tiskárny.' });
   } catch (e) { console.error(e); msgs.push({ lvl: 'bad', msg: 'Model se nepodařilo spočítat. Zkuste jiné rozměry.' }); r = null; }
   if (mesh) { scene && scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); mesh = null; }
   if (model && model.g) model.g.dispose();
   if (!r || !r.m) { model = null; freeAll(); $('btnSave').disabled = true; showMsgs(msgs); $('stats').textContent = ''; $('dims').textContent = '–'; draw(); return; }
   const g = toGeom(r.m); const vol = r.m.volume(); freeAll();
   g.computeBoundingBox(); const b = g.boundingBox; if (D.type !== 'model') { g.translate(-(b.min.x + b.max.x) / 2, -(b.min.y + b.max.y) / 2, -b.min.z); g.computeBoundingBox(); }
-  model = { g, bbox: g.boundingBox.clone(), name: r.name }; $('btnSave').disabled = false;
+  model = { g, bbox: g.boundingBox.clone(), name: r.name, files: r.files || null }; $('btnSave').disabled = false;
+  $('btnSave').textContent = r.files && r.files.length > 1 ? `Stáhnout STL (${r.files.length} díly)` : 'Stáhnout STL';
   const sx = model.bbox.max.x - model.bbox.min.x, sy = model.bbox.max.y - model.bbox.min.y, sz = model.bbox.max.z - model.bbox.min.z;
   if (sx > D.bedX || sy > D.bedY || sz > D.bedZ) msgs.push({ lvl: 'warn', msg: `Díl (${fmt(sx, 0)} × ${fmt(sy, 0)} × ${fmt(sz, 0)} mm) se nevejde na tiskovou plochu.` });
   showMsgs(msgs);
@@ -1744,7 +1831,14 @@ if (inViewer) window.claude.use('downloads').then(d => { dlCap = d; updateNote()
 function updateNote() { $('saveNote').textContent = inViewer ? (dlCap ? 'Tady se STL stáhne zabalené v ZIP souboru.' : 'Stahování je v tomto zobrazení nedostupné.') : 'Díl je natočený tak, jak se má tisknout. Jednotky jsou milimetry.'; }
 $('btnSave').onclick = async () => {
   if (!model) return;
-  const u = stlBinary([model.g]), head = 'Created by Julius Andy Antos | Zavity a srouby | mm'; for (let i = 0; i < 80; i++) u[i] = i < head.length ? head.charCodeAt(i) : 32;
+  const enc = (g) => { const u = stlBinary([g]), head = 'Created by Julius Andy Antos | Zavity a srouby | mm'; for (let i = 0; i < 80; i++) u[i] = i < head.length ? head.charCodeAt(i) : 32; return u; };
+  if (model.files && model.files.length > 1) {
+    const files = model.files.map(f => ({ name: model.name + '_' + f.name + '.stl', data: enc(f.g) }));
+    if (inViewer) { if (!dlCap) return; try { await dlCap.save({ filename: model.name + '.zip', data: makeZip(files) }); $('saveNote').textContent = 'ZIP je uložený.'; } catch (err) { if (err && err.code !== 'declined') $('saveNote').textContent = 'Soubor se nepodařilo uložit.'; } return; }
+    for (const f of files) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([f.data], { type: 'model/stl' })); a.download = f.name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); await new Promise(r => setTimeout(r, 300)); }
+    return;
+  }
+  const u = enc(model.files ? model.files[0].g : model.g);
   const name = model.name.replace(/[^A-Za-z0-9_.-]+/g, '_') + '.stl';
   if (inViewer) { if (!dlCap) return; try { await dlCap.save({ filename: name.replace(/\.stl$/, '.zip'), data: makeZip([{ name, data: u }]) }); $('saveNote').textContent = 'ZIP je uložený.'; } catch (err) { if (err && err.code !== 'declined') $('saveNote').textContent = 'Soubor se nepodařilo uložit.'; } return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([u], { type: 'model/stl' })); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
