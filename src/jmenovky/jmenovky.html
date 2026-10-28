@@ -277,8 +277,9 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f"><span>Zesílit písmo<small>silnější tahy i spoje písmen</small></span><span class="num"><input type="number" data-k="bold" min="0" max="1.5" step="0.1"><span>mm</span></span></label>
       <label class="f"><span>Hloubka zapuštění</span><span class="num"><input type="number" data-k="d" min="0.4" max="10" step="0.2"><span>mm</span></span></label>
       <label class="f"><span>Výška nad písmenem<small>0 = zarovnané s povrchem</small></span><span class="num"><input type="number" data-k="r" min="0" max="5" step="0.2"><span>mm</span></span></label>
-      <label class="f"><span>Vnitřní lem<small>okraj písmen jinou barvou, 0 = bez</small></span><span class="num"><input type="number" data-k="rw" min="0" max="3" step="0.1"><span>mm</span></span></label>
-      <label class="f" data-show="rim"><span>Výplň nad lemem</span><span class="num"><input type="number" data-k="fr" min="0" max="3" step="0.2"><span>mm</span></span></label>
+      <label class="f"><span>Lem okrajů písmen<small>šířka, 0 = bez lemu</small></span><span class="num"><input type="number" data-k="rw" min="0" max="3" step="0.1"><span>mm</span></span></label>
+      <label class="f" data-show="rim"><span>Lem nad jménem<small>o kolik lem vystupuje</small></span><span class="num"><input type="number" data-k="rh" min="0" max="3" step="0.2"><span>mm</span></span></label>
+      <label class="check" data-show="rim"><input type="checkbox" data-k="lemSame">Lem stejnou barvou jako písmeno</label>
       <div class="lblrow" data-show="onePiece"><span>Části jména mimo písmeno</span></div>
       <div class="seg wide" role="radiogroup" aria-label="Části jména mimo písmeno" data-show="onePiece">
         <label><input type="radio" name="out" value="full">Podepřít celou tloušťkou</label>
@@ -299,8 +300,8 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f" data-show="parts"><span>Vůle pro vsazení</span><span class="num"><input type="number" data-k="clr" min="0" max="0.6" step="0.05"><span>mm</span></span></label>
       <div class="cols">
         <label><input type="color" data-k="c1">Písmeno</label>
-        <label><input type="color" data-k="c2"><span id="lblC2">Jméno</span></label>
-        <label data-show="rim"><input type="color" data-k="c3">Výplň</label>
+        <label><input type="color" data-k="c2">Jméno</label>
+        <label data-show="rimCol"><input type="color" data-k="c3">Lem</label>
       </div>
       <p class="hint" id="modeHint"></p>
       <label class="f"><span>Výška vrstvy</span><span class="num"><input type="number" data-k="lh" min="0.08" max="0.32" step="0.04"><span>mm</span></span></label>
@@ -329,7 +330,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <ul>
           <li>Tiskne se naležato, čelem nahoru, bez podpěr. Jemné tahy psacího písma tiskněte pomaleji, nejlépe s tryskou 0,4 mm a vrstvou 0,2 mm nebo menší.</li>
           <li>Když jméno vychází moc tenké, zvětšete jeho šířku, přidejte zesílení písma nebo zvolte silnější písmo (Pacifico, Norican, Damion).</li>
-          <li>Při výměně filamentu musí jméno vystupovat nad písmeno, jinak by bylo stejnou barvou. Zarovnané jméno a lem ve stejné výšce jdou jen na vícebarevné tiskárně nebo při vsazení zvlášť vytištěného jména.</li>
+          <li>Při výměně filamentu se barva mění podle výšky: písmeno, nad ním vystupující jméno a nad jménem lem okrajů písmen. Proto musí jméno vystupovat nad písmeno a lem nad jméno. Zarovnané jméno nebo lem ve stejné výšce jdou jen na vícebarevné tiskárně.</li>
         </ul>
       </div>
     </section>

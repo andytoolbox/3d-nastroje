@@ -4,8 +4,8 @@ Created by Julius Andy Antoš
 CO UMÍ
   Velké 3D písmeno (9 písem) a jméno psacím písmem se spojenými písmeny
   (8 písem) vsazené do jeho povrchu: vyřízne se do písmene a vyplní,
-  může vystupovat nad povrch. Volitelně vnitřní lem okrajů písmen jinou
-  barvou, zesílení tahů, zkosení hran, zarovnaný spodek a podstavec,
+  může vystupovat nad povrch. Lem okrajů písmen jména vystupuje nad
+  jméno a může mít barvu písmene (tisk po vrstvách s výměnou filamentu), zesílení tahů, zkosení hran, zarovnaný spodek a podstavec,
   když by písmeno se jménem nestálo. Tisk vcelku s výměnou filamentu
   (vypíše výšky a čísla vrstev), na vícebarevné tiskárně (díly se
   společným umístěním), nebo jméno zvlášť na vsazení do vybrání.

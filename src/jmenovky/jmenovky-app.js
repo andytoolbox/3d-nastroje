@@ -7,9 +7,9 @@ const FONTS = {
   pacifico: ['Pacifico', 0, 1], norican: ['Norican', 0, 1], damion: ['Damion', 0, 1], dancing: ['Dancing Script', 0, 1], lobster: ['Lobster', 0, 1],
   grandhotel: ['Grand Hotel', 0, 1], playball: ['Playball', 0, 1], greatvibes: ['Great Vibes', 0, 1],
 };
-const DEF = { name: 'Amélie', letter: '', fBig: 'playfair', fName: 'pacifico', H: 100, T: 16, ch: 1.6, base: 'auto', nw: 92, ny: 24, nx: 0, rot: 0, bold: 0.3, d: 1.2, r: 0.8, rw: 0, fr: 0.4, out: 'full',
+const DEF = { name: 'Amélie', letter: '', fBig: 'playfair', fName: 'pacifico', H: 100, T: 16, ch: 1.6, base: 'auto', nw: 92, ny: 24, nx: 0, rot: 0, bold: 0.3, d: 1.2, r: 0.8, rw: 0.6, rh: 0.4, lemSame: true, out: 'full',
   mode: 'one', colors: 'swap', clr: 0.15, c1: '#74c2a8', c2: '#f6f1e7', c3: '#e88fa6', lh: 0.2, bedX: 220, bedY: 220, bedZ: 250 };
-const STORE = 'jmenovky-v2';
+const STORE = 'jmenovky-v3';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
 if (!FONTS[D.fBig] || !FONTS[D.fBig][1]) D.fBig = DEF.fBig; if (!FONTS[D.fName] || !FONTS[D.fName][2]) D.fName = DEF.fName;
@@ -141,26 +141,32 @@ function build(msgs) {
   const bodies = [], swaps = [];
   if (!S) { bodies.push({ m: letterSolid, role: 1, name: 'pismeno' }); return { bodies, swaps, letter, name, H, Th, LW, LH, lh }; }
   const d = Math.min(clamp(D.d, 0.4, 10), Th - 1); let r = clamp(D.r, 0, 5);
-  const rw = clamp(D.rw, 0, 3), fr = clamp(D.fr, 0, 3);
-  const inner = rw > 0 ? cl(T(S.offset(-rw, 'Round'))) : null, hasIn = inner && !empty(inner);
-  if (rw > 0 && !hasIn) msgs.push({ lvl: 'info', msg: 'Vnitřní lem je na tahy písma moc široký, výplň by zmizela. Zmenšete lem.' });
-  const swap = D.colors === 'swap', raised = hasIn && fr > 0;
+  const rw = clamp(D.rw, 0, 3); let rh = clamp(D.rh, 0, 3);
+  const swap = D.colors === 'swap', rimRole = D.lemSame ? 1 : 3;
+  // lem = pás podél okraje písmen jména; výplň = zbytek uvnitř
+  const inner = rw > 0 ? cl(T(S.offset(-rw, 'Round'))) : null;
+  const hasRim = rw > 0, hasIn = hasRim && inner && !empty(inner);
+  // lem nad jménem: jméno se vytáhne o výšku lemu výš a výplň uvnitř lemu se vybere zpět dolů
+  const cutIn = (z0, z1) => hasIn ? ext(inner, z0, z1) : null;
   if (swap && D.mode === 'one' && r < 0.4) { r = 0.4; msgs.push({ lvl: 'info', msg: 'Při výměně filamentu musí jméno vystupovat nad písmeno, výška je upravená na 0,4 mm. Zarovnané jméno jde vytisknout na vícebarevné tiskárně nebo zvlášť.' }); }
-  if (swap && hasIn && !raised) msgs.push({ lvl: 'info', msg: 'Lem jinou barvou jde při výměně filamentu jen se zvýšenou výplní. Nastavte „Výplň nad lemem“ nebo zvolte vícebarevnou tiskárnu.' });
+  if (swap && hasRim && rh < 0.4) { rh = 0.4; msgs.push({ lvl: 'info', msg: 'Při výměně filamentu musí lem vystupovat nad jméno, aby měl svou barvu. Výška lemu je upravená na 0,4 mm.' }); }
+  const rimUp = hasRim && rh > 0;
+  if (hasRim && !hasIn) msgs.push({ lvl: 'info', msg: 'Lem je na tahy písma moc široký, celé jméno je lemem. Zmenšete šířku lemu.' });
   if (D.mode === 'one') {
-    const zb = Th - d;
+    const zb = Th - d, top = Th + r;
     if (swap) {
-      const m = U([letterSolid, ext(S, full ? 0 : zb, Th + r), raised ? ext(inner, Th + r - 0.2, Th + r + fr) : null]);
-      const bands = [[0, 1], [Th, 2]]; swaps.push([Th, 2]); if (raised) { bands.push([Th + r, 3]); swaps.push([Th + r, 3]); }
+      let nm = ext(S, full ? 0 : zb, top + (rimUp ? rh : 0)); if (rimUp && hasIn) nm = sub(nm, cutIn(top, top + rh + 1));
+      const m = U([letterSolid, nm]);
+      const bands = [[0, 1], [Th, 2]]; swaps.push([Th, 2]); if (rimUp) { bands.push([top, rimRole]); swaps.push([top, rimRole]); }
       bodies.push({ m, role: 0, name: 'jmenovka', bands });
     } else {
       const outside = full ? T(sub(ext(S, 0, zb + 0.3), ext(Lc, -1, Th + 1))) : null;
-      const NS = U([ext(S, zb, Th + r), outside && outside.volume() > 0.01 ? outside : null]);
-      bodies.push({ m: sub(letterSolid, ext(S, zb, Th + r + 1)), role: 1, name: 'pismeno' });
-      if (hasIn) {
-        const col = ext(inner, -1, Th + r + fr + 2);
-        bodies.push({ m: sub(NS, col), role: 2, name: 'lem' });
-        bodies.push({ m: U([T(NS.intersect(col)), raised ? ext(inner, Th + r - 0.2, Th + r + fr) : null]), role: 3, name: 'vypln' });
+      const NS = U([ext(S, zb, top), outside && outside.volume() > 0.01 ? outside : null]);
+      bodies.push({ m: sub(letterSolid, ext(S, zb, top + 1)), role: 1, name: 'pismeno' });
+      if (hasRim) {
+        const all = rimUp ? U([NS, ext(S, top - 0.3, top + rh)]) : NS;
+        if (hasIn) bodies.push({ m: T(NS.intersect(cutIn(-1, top + 1))), role: 2, name: 'jmeno' });
+        bodies.push({ m: hasIn ? sub(all, cutIn(-1, top + rh + 1)) : all, role: rimRole, name: 'lem' });
       } else bodies.push({ m: NS, role: 2, name: 'jmeno' });
     }
     const out = full ? T(S.subtract(Lc)) : null;
@@ -168,16 +174,15 @@ function build(msgs) {
   } else { // jméno zvlášť a vsadit do vybrání
     const clr = clamp(D.clr, 0, 0.6), h = d + r, ob = S.bounds(), dx = b.max[0] - ob.min[0] + 8, asm = [0, 0, Th - d];
     bodies.push({ m: sub(letterSolid, ext(cl(T(S.offset(clr, 'Round'))), Th - d, Th + 1)), role: 1, name: 'pismeno' });
-    if (swap || !hasIn) {
-      const m = U([ext(S, 0, h), raised ? ext(inner, h - 0.2, h + fr) : null]);
-      bodies.push({ m, role: raised ? 0 : 2, name: 'jmeno', bands: raised ? [[0, 2], [h, 3]] : null, print: [dx, 0, 0], asm });
-      if (raised) swaps.push([h, 3]);
+    if (swap || !hasRim) {
+      const m = rimUp && hasIn ? sub(ext(S, 0, h + rh), cutIn(h, h + rh + 1)) : ext(S, 0, h + (rimUp ? rh : 0));
+      bodies.push({ m, role: rimUp ? 0 : 2, name: 'jmeno', bands: rimUp ? [[0, 2], [h, rimRole]] : null, print: [dx, 0, 0], asm });
+      if (rimUp) swaps.push([h, rimRole]);
     } else {
-      const col = ext(inner, -1, h + fr + 2);
-      bodies.push({ m: sub(ext(S, 0, h), col), role: 2, name: 'lem', print: [dx, 0, 0], asm });
-      bodies.push({ m: U([ext(inner, 0, h), raised ? ext(inner, h - 0.2, h + fr) : null]), role: 3, name: 'vypln', print: [dx, 0, 0], asm });
+      if (hasIn) bodies.push({ m: cutIn(0, h), role: 2, name: 'jmeno', print: [dx, 0, 0], asm });
+      bodies.push({ m: hasIn ? sub(ext(S, 0, h + rh), cutIn(-1, h + rh + 1)) : ext(S, 0, h + rh), role: rimRole, name: 'lem', print: [dx, 0, 0], asm });
     }
-        msgs.push({ lvl: 'info', msg: `Jméno se tiskne zvlášť, ${fmtP(h)} mm vysoké, a vsadí se do vybrání hlubokého ${fmtP(d)} mm s vůlí ${fmtP(clr)} mm. Tečky a čárky nad písmeny jsou samostatné kousky.` });
+    msgs.push({ lvl: 'info', msg: `Jméno se tiskne zvlášť, ${fmtP(h)} mm vysoké, a vsadí se do vybrání hlubokého ${fmtP(d)} mm s vůlí ${fmtP(clr)} mm.` });
   }
   return { bodies, swaps, letter, name, H, Th, LW, LH, lh };
 }
@@ -189,16 +194,15 @@ function syncUI() {
   updateUI();
 }
 function updateUI() {
-  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ rim: +D.rw > 0, onePiece: D.mode === 'one', parts: D.mode === 'parts' })[el.dataset.show]; });
-  $('lblC2').textContent = +D.rw > 0 ? 'Lem' : 'Jméno';
+  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ rim: +D.rw > 0, rimCol: +D.rw > 0 && !D.lemSame, onePiece: D.mode === 'one', parts: D.mode === 'parts' })[el.dataset.show]; });
   document.querySelectorAll('#fBig [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.fBig)));
   document.querySelectorAll('#fName [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.fName)));
   $('oW').textContent = D.nw + ' %'; $('oY').textContent = D.ny + ' %'; $('oX').textContent = (D.nx > 0 ? '+' : '') + D.nx + ' %'; $('oR').textContent = D.rot + '°';
   $('inLetter').placeholder = initialOf(D.name || '') || 'A';
   const rim = +D.rw > 0;
   $('modeHint').textContent = D.mode === 'one'
-    ? (D.colors === 'swap' ? 'Jeden soubor. Jméno vystupuje nad písmeno a barva se mění podle výšky.' : `${rim ? 'Tři' : 'Dva'} soubory se stejným umístěním: písmeno a jméno${rim ? ' (lem a výplň)' : ''}. Načtěte je najednou jako jeden objekt.`)
-    : (D.colors === 'swap' ? 'Písmeno s vybráním a jméno zvlášť. Jméno vsadíte do vybrání, případně přilepíte.' : `Písmeno s vybráním a jméno${rim ? ' (lem a výplň jako dva díly jednoho objektu)' : ''} zvlášť.`);
+    ? (D.colors === 'swap' ? `Jeden soubor. Barva se mění podle výšky: písmeno, nad ním jméno${rim ? ' a nahoře lem okrajů písmen' : ''}.` : `${rim ? 'Tři' : 'Dva'} soubory se stejným umístěním: písmeno, jméno${rim ? ' a lem' : ''}. Načtěte je najednou jako jeden objekt.`)
+    : (D.colors === 'swap' ? `Písmeno s vybráním a jméno zvlášť${rim ? ' (nahoře lem jinou barvou)' : ''}. Jméno vsadíte do vybrání.` : `Písmeno s vybráním a jméno${rim ? ' s lemem (dva díly jednoho objektu)' : ''} zvlášť.`);
 }
 (function () {
   const mk = (box, key, filt, sample) => { for (const id in FONTS) { if (!FONTS[id][filt]) continue; const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.v = id;
