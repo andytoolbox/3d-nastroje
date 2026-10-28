@@ -115,7 +115,7 @@ window.NASTROJE = [
   {
     id: 'jmenovky',
     nazev: 'Jmenovky – písmeno se jménem',
-    popis: 'Velké 3D písmeno a přes něj jméno psacím písmem s obrysem. Tisk vcelku s výměnou filamentu, na vícebarevné tiskárně nebo po dílech.',
+    popis: 'Velké 3D písmeno se jménem psacím písmem vsazeným do povrchu, volitelně s lemem jinou barvou. Tisk vcelku, na vícebarevné tiskárně nebo jméno zvlášť na vsazení.',
     kategorie: 'Text a písmo',
     stitky: ['jmenovka', 'písmeno', 'jméno', 'dárek', 'vícebarevný tisk'],
     odkaz: 'jmenovky/',

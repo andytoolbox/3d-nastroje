@@ -234,7 +234,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 <div class="app">
   <header class="top">
     <h1>Jmenovky – písmeno se jménem</h1>
-    <p>Velké 3D písmeno a přes něj jméno psacím písmem s obrysem. Tisk vcelku s výměnou filamentu, na vícebarevné tiskárně, nebo po dílech na slepení.</p>
+    <p>Velké 3D písmeno se jménem psacím písmem vsazeným do povrchu, volitelně s lemem okrajů jinou barvou. Tisk vcelku s výměnou filamentu, na vícebarevné tiskárně, nebo jméno zvlášť na vsazení.</p>
     <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
   </header>
 
@@ -259,21 +259,30 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f"><span>Výška písmene</span><span class="num"><input type="number" data-k="H" min="30" max="300" step="5"><span>mm</span></span></label>
       <label class="f"><span>Tloušťka písmene</span><span class="num"><input type="number" data-k="T" min="3" max="60" step="1"><span>mm</span></span></label>
       <label class="f"><span>Zkosení hran</span><span class="num"><input type="number" data-k="ch" min="0" max="5" step="0.2"><span>mm</span></span></label>
-      <label class="check"><input type="checkbox" data-k="flat">Rovná podstava, aby písmeno stálo</label>
+      <div class="lblrow"><span>Podstavec</span></div>
+      <div class="seg wide" role="radiogroup" aria-label="Podstavec">
+        <label><input type="radio" name="base" value="auto">Když je potřeba</label>
+        <label><input type="radio" name="base" value="always">Vždy</label>
+        <label><input type="radio" name="base" value="never">Nikdy</label>
+      </div>
+      <p class="hint">Spodek písmene se zarovná. Když by písmeno se jménem nestálo (třeba J nebo S), přidá se pod něj nízký podstavec.</p>
     </section>
 
     <section class="card">
-      <h2><span><span class="step">4</span>Umístění jména</span></h2>
+      <h2><span><span class="step">4</span>Jméno</span></h2>
       <div class="slider"><span>Šířka jména</span><output id="oW"></output><input type="range" data-k="nw" min="40" max="160" step="1"></div>
       <div class="slider"><span>Výška na písmenu</span><output id="oY"></output><input type="range" data-k="ny" min="0" max="100" step="1"></div>
       <div class="slider"><span>Posun do stran</span><output id="oX"></output><input type="range" data-k="nx" min="-50" max="50" step="1"></div>
       <div class="slider"><span>Natočení</span><output id="oR"></output><input type="range" data-k="rot" min="-30" max="30" step="1"></div>
-      <label class="f"><span>Šířka obrysu</span><span class="num"><input type="number" data-k="ow" min="0.8" max="8" step="0.2"><span>mm</span></span></label>
-      <label class="f"><span>Výška obrysu nad písmenem</span><span class="num"><input type="number" data-k="oh" min="0.4" max="6" step="0.2"><span>mm</span></span></label>
-      <label class="f"><span>Výška jména nad obrysem</span><span class="num"><input type="number" data-k="th" min="0.4" max="6" step="0.2"><span>mm</span></span></label>
-      <div class="seg wide" role="radiogroup" aria-label="Přesah jména">
-        <label><input type="radio" name="over" value="keep">Přesah podepřít</label>
-        <label><input type="radio" name="over" value="clip">Oříznout podle písmene</label>
+      <label class="f"><span>Zesílit písmo<small>silnější tahy i spoje písmen</small></span><span class="num"><input type="number" data-k="bold" min="0" max="1.5" step="0.1"><span>mm</span></span></label>
+      <label class="f"><span>Hloubka zapuštění</span><span class="num"><input type="number" data-k="d" min="0.4" max="10" step="0.2"><span>mm</span></span></label>
+      <label class="f"><span>Výška nad písmenem<small>0 = zarovnané s povrchem</small></span><span class="num"><input type="number" data-k="r" min="0" max="5" step="0.2"><span>mm</span></span></label>
+      <label class="f"><span>Vnitřní lem<small>okraj písmen jinou barvou, 0 = bez</small></span><span class="num"><input type="number" data-k="rw" min="0" max="3" step="0.1"><span>mm</span></span></label>
+      <label class="f" data-show="rim"><span>Výplň nad lemem</span><span class="num"><input type="number" data-k="fr" min="0" max="3" step="0.2"><span>mm</span></span></label>
+      <div class="lblrow" data-show="onePiece"><span>Části jména mimo písmeno</span></div>
+      <div class="seg wide" role="radiogroup" aria-label="Části jména mimo písmeno" data-show="onePiece">
+        <label><input type="radio" name="out" value="full">Podepřít celou tloušťkou</label>
+        <label><input type="radio" name="out" value="clip">Oříznout</label>
       </div>
     </section>
 
@@ -281,17 +290,17 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <h2><span><span class="step">5</span>Tisk a barvy</span></h2>
       <div class="seg wide" role="radiogroup" aria-label="Způsob tisku">
         <label><input type="radio" name="mode" value="one">Vcelku</label>
-        <label><input type="radio" name="mode" value="parts">Zvlášť a slepit</label>
+        <label><input type="radio" name="mode" value="parts">Jméno zvlášť a vsadit</label>
       </div>
       <div class="seg wide" role="radiogroup" aria-label="Barvy">
         <label><input type="radio" name="colors" value="swap">Výměna filamentu</label>
         <label><input type="radio" name="colors" value="ams">Vícebarevná tiskárna</label>
       </div>
-      <label class="f" data-show="pocket"><span>Vybrání pro jmenovku<small>0 = bez, jen přilepit</small></span><span class="num"><input type="number" data-k="pd" min="0" max="3" step="0.2"><span>mm</span></span></label>
+      <label class="f" data-show="parts"><span>Vůle pro vsazení</span><span class="num"><input type="number" data-k="clr" min="0" max="0.6" step="0.05"><span>mm</span></span></label>
       <div class="cols">
         <label><input type="color" data-k="c1">Písmeno</label>
-        <label><input type="color" data-k="c2">Obrys</label>
-        <label><input type="color" data-k="c3">Jméno</label>
+        <label><input type="color" data-k="c2"><span id="lblC2">Jméno</span></label>
+        <label data-show="rim"><input type="color" data-k="c3">Výplň</label>
       </div>
       <p class="hint" id="modeHint"></p>
       <label class="f"><span>Výška vrstvy</span><span class="num"><input type="number" data-k="lh" min="0.08" max="0.32" step="0.04"><span>mm</span></span></label>
@@ -314,12 +323,13 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         </ul>
         <h3>Vícebarevná tiskárna (AMS, MMU)</h3>
         <ul>
-          <li>Stáhnete tři soubory. Do sliceru je přetáhněte najednou a na dotaz zvolte, že jde o jeden objekt s více díly. Pak každému dílu přiřaďte barvu.</li>
+          <li>Stáhnete dva nebo tři soubory (písmeno, jméno, případně výplň). Do sliceru je přetáhněte najednou a na dotaz zvolte, že jde o jeden objekt s více díly. Pak každému dílu přiřaďte barvu.</li>
         </ul>
         <h3>Tisk</h3>
         <ul>
           <li>Tiskne se naležato, čelem nahoru, bez podpěr. Jemné tahy psacího písma tiskněte pomaleji, nejlépe s tryskou 0,4 mm a vrstvou 0,2 mm nebo menší.</li>
-          <li>Když jméno vychází moc tenké, zvětšete jeho šířku nebo zvolte silnější písmo (Pacifico, Lobster).</li>
+          <li>Když jméno vychází moc tenké, zvětšete jeho šířku, přidejte zesílení písma nebo zvolte silnější písmo (Pacifico, Norican, Damion).</li>
+          <li>Při výměně filamentu musí jméno vystupovat nad písmeno, jinak by bylo stejnou barvou. Zarovnané jméno a lem ve stejné výšce jdou jen na vícebarevné tiskárně nebo při vsazení zvlášť vytištěného jména.</li>
         </ul>
       </div>
     </section>

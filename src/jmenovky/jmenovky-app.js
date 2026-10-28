@@ -4,11 +4,12 @@ const $ = (id) => document.getElementById(id);
 const FONTS = {
   playfair: ['Playfair', 1, 0], dejavu: ['DejaVu Serif', 1, 0], anton: ['Anton', 1, 0], bebas: ['Bebas Neue', 1, 0], poppins: ['Poppins', 1, 0],
   baloo: ['Baloo', 1, 0], bungee: ['Bungee', 1, 0], righteous: ['Righteous', 1, 0], lobsterB: ['Lobster', 1, 0],
-  dancing: ['Dancing Script', 0, 1], pacifico: ['Pacifico', 0, 1], lobster: ['Lobster', 0, 1], courgette: ['Courgette', 0, 1], caveat: ['Caveat', 0, 1], kalam: ['Kalam', 0, 1],
+  pacifico: ['Pacifico', 0, 1], norican: ['Norican', 0, 1], damion: ['Damion', 0, 1], dancing: ['Dancing Script', 0, 1], lobster: ['Lobster', 0, 1],
+  grandhotel: ['Grand Hotel', 0, 1], playball: ['Playball', 0, 1], greatvibes: ['Great Vibes', 0, 1],
 };
-const DEF = { name: 'Amélie', letter: '', fBig: 'playfair', fName: 'dancing', H: 100, T: 16, ch: 1.6, flat: true, nw: 115, ny: 28, nx: 0, rot: -6, ow: 2.2, oh: 1.2, th: 1.2, over: 'keep',
-  mode: 'one', colors: 'swap', pd: 1, c1: '#74c2a8', c2: '#f6f1e7', c3: '#e88fa6', lh: 0.2, bedX: 220, bedY: 220, bedZ: 250 };
-const STORE = 'jmenovky-v1';
+const DEF = { name: 'Amélie', letter: '', fBig: 'playfair', fName: 'pacifico', H: 100, T: 16, ch: 1.6, base: 'auto', nw: 92, ny: 24, nx: 0, rot: 0, bold: 0.3, d: 1.2, r: 0.8, rw: 0, fr: 0.4, out: 'full',
+  mode: 'one', colors: 'swap', clr: 0.15, c1: '#74c2a8', c2: '#f6f1e7', c3: '#e88fa6', lh: 0.2, bedX: 220, bedY: 220, bedZ: 250 };
+const STORE = 'jmenovky-v2';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
 if (!FONTS[D.fBig] || !FONTS[D.fBig][1]) D.fBig = DEF.fBig; if (!FONTS[D.fName] || !FONTS[D.fName][2]) D.fName = DEF.fName;
@@ -34,6 +35,8 @@ function toGeom(m) {
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); return g;
 }
 const ext = (cs, z0, z1) => T(T(cs.extrude(z1 - z0)).translate([0, 0, z0]));
+const U = (list) => T(MF.Manifold.union(list.filter(Boolean)));
+const sub = (a, b) => T(a.subtract(b));
 const csBox = (x0, y0, x1, y1) => T(T(MF.CrossSection.square([x1 - x0, y1 - y0])).translate([x0, y0]));
 const csArea = (cs) => cs.area();
 // vyčištění 2D tvaru: odstraní dotyky v jednom bodě a téměř shodné vrcholy, které by v 3D daly nečisté hrany
@@ -48,11 +51,8 @@ function textCS(fontId, text, size) {
   const polys = exToPaths(exs).map(p => p.map(q => [q.X / SC, q.Y / SC]));
   return { cs: T(T(new MF.CrossSection(polys, 'NonZero')).simplify(0.002)), exs, missing: L.missing };
 }
-// obrys bez děr (jako samolepka)
-function fillHoles(cs) {
-  const keep = cs.toPolygons().filter(p => { let a = 0; for (let i = 0, j = p.length - 1; i < p.length; j = i++) a += (p[j][0] - p[i][0]) * (p[j][1] + p[i][1]); return a > 0; });
-  return keep.length ? T(new MF.CrossSection(keep, 'NonZero')) : cs;
-}
+// těžiště plochy (pro kontrolu, jestli písmeno stojí)
+function centroid(cs) { let A = 0, cx = 0; for (const p of cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const f = p[j][0] * p[i][1] - p[i][0] * p[j][1]; A += f; cx += (p[j][0] + p[i][0]) * f; } return A ? cx / (3 * A) : 0; }
 
 /* ===== Geometrie ===== */
 function initialOf(name) { const ch = [...name.trim()][0] || ''; return ch.toLocaleUpperCase('cs'); }
@@ -65,70 +65,95 @@ function build(msgs) {
   if (L0.missing.length || empty(L0.cs)) { msgs.push({ lvl: 'bad', msg: `Písmeno „${letter}“ toto písmo neumí. Zvolte jiné.` }); return null; }
   let b = L0.cs.bounds(), k = H / (b.max[1] - b.min[1]);
   let Lc = T(T(L0.cs.translate([-(b.min[0] + b.max[0]) / 2, -b.min[1]])).scale([k, k]));
-  let cut = 0;
-  if (D.flat) { // odřízne spodek, dokud písmeno nestojí na dost široké ploše
-    const W = Lc.bounds().max[0] - Lc.bounds().min[0], need = Math.min(Math.max(Th, 10), W * 0.35);
-    for (let c = 0; c <= H * 0.12; c += 0.25) {
-      const strip = T(Lc.intersect(csBox(-1e4, c, 1e4, c + 0.4))), len = strip.area() / 0.4;
-      cut = c; if (len >= need) break;
+  b = Lc.bounds(); let LW = b.max[0] - b.min[0], LH = b.max[1] - b.min[1];
+  const full = D.mode === 'one' && D.out === 'full';
+
+  // jméno psacím písmem, zesílené a umístěné na písmeno
+  let S = null, sc = 1;
+  if (name) {
+    const N0 = textCS(D.fName, name, 10);
+    if (N0.missing.length) msgs.push({ lvl: 'warn', msg: `Písmo jména neumí znaky: ${N0.missing.join(' ')}` });
+    if (!empty(N0.cs)) {
+      const nb = N0.cs.bounds(); sc = clamp(D.nw, 40, 160) / 100 * LW / (nb.max[0] - nb.min[0]);
+      const cx = clamp(D.nx, -50, 50) / 100 * LW, cy = clamp(D.ny, 0, 100) / 100 * LH, bold = clamp(D.bold, 0, 1.5);
+      S = T(T(T(T(N0.cs.translate([-(nb.min[0] + nb.max[0]) / 2, -(nb.min[1] + nb.max[1]) / 2])).scale([sc, sc])).rotate(clamp(D.rot, -30, 30))).translate([cx, cy]));
+      if (bold > 0) S = T(S.offset(bold / 2, 'Round'));
+      S = T(S.intersect(csBox(-1e4, 0, 1e4, 1e4)));
+      if (!full) { const before = S.area(); S = T(S.intersect(T(Lc.offset(-0.83, 'Round')))); if (S.area() < before * 0.97) msgs.push({ lvl: 'info', msg: 'Část jména leží mimo písmeno a je oříznutá. Zmenšete šířku jména nebo ho posuňte.' }); }
+      S = cl(S); if (empty(S)) S = null;
+      const loss = thinLoss(N0.exs, Math.max(0.1, 0.8 - bold) / sc);
+      if (loss > 0.1) msgs.push({ lvl: 'warn', msg: `Část tahů jména je tenčí než 0,8 mm (asi ${Math.round(loss * 100)} %). Zvětšete jméno, přidejte zesílení písma nebo zvolte silnější písmo.` });
     }
-    if (cut > 0.01) { Lc = T(T(Lc.intersect(csBox(-1e4, cut, 1e4, 1e4))).translate([0, -cut])); if (cut > 1) msgs.push({ lvl: 'info', msg: `Spodek písmene je zarovnaný o ${fmtP(Math.round(cut * 10) / 10)} mm, aby stálo.` }); }
   }
-  b = Lc.bounds(); const LW = b.max[0] - b.min[0], LH = b.max[1] - b.min[1];
+  // stabilita: spodek se zarovná, a když by písmeno se jménem nestálo, přidá se podstavec
+  const base = full && S ? T(MF.CrossSection.union([Lc, S])) : Lc, bb = base.bounds(), BW = bb.max[0] - bb.min[0];
+  const need = Math.min(Math.max(Th, 10), BW * 0.3), margin = Math.max(2, BW * 0.06), cen = centroid(base);
+  let cut = -1;
+  for (let c = 0; c <= H * 0.06; c += 0.25) {
+    const strip = T(base.intersect(csBox(-1e4, c, 1e4, c + 0.4))); if (empty(strip)) continue;
+    const sb = strip.bounds(), len = strip.area() / 0.4;
+    if (len >= need && cen > sb.min[0] + margin && cen < sb.max[0] - margin) { cut = c; break; }
+  }
+  let plinth = D.base === 'always' || (D.base === 'auto' && cut < 0);
+  if (plinth) {
+    const hb = Math.max(3, Math.round(H * 0.05)), pl = T(T(MF.CrossSection.square([BW + 4, hb + 0.8])).translate([bb.min[0] - 2, -hb]));
+    Lc = T(T(MF.CrossSection.union([Lc, cl(T(T(pl.offset(-1, 'Round')).offset(1, 'Round')))])).translate([0, hb]));
+    if (S) S = T(S.translate([0, hb]));
+    msgs.push({ lvl: 'info', msg: D.base === 'always' ? 'Písmeno má podstavec.' : 'Písmeno by se jménem samo nestálo, proto má nízký podstavec. Můžete ho vypnout.' });
+  } else if (cut > 0.01) {
+    Lc = T(T(Lc.intersect(csBox(-1e4, cut, 1e4, 1e4))).translate([0, -cut]));
+    if (S) { S = cl(T(T(S.translate([0, -cut])).intersect(csBox(-1e4, 0, 1e4, 1e4)))); if (empty(S)) S = null; }
+    if (cut > 1) msgs.push({ lvl: 'info', msg: `Spodek písmene je zarovnaný o ${fmtP(Math.round(cut * 10) / 10)} mm, aby stálo.` });
+  } else if (cut < 0) msgs.push({ lvl: 'warn', msg: 'Písmeno bez podstavce asi nebude stát. Zapněte podstavec nebo posuňte jméno.' });
+  b = Lc.bounds(); LW = b.max[0] - b.min[0]; LH = b.max[1] - b.min[1];
   // písmeno se zkosením (schody po výšce vrstvy)
   const parts = [ext(Lc, 0, Th - ch)];
   if (ch > 0.05) { const n = Math.max(1, Math.round(ch / lh)); for (let i = 1; i <= n; i++) { const o = cl(T(Lc.offset(-ch * i / n, 'Round'))); if (!empty(o)) parts.push(ext(o, Th - ch - 0.3 - i * 0.0137, Th - ch + ch * i / n)); } }
   const letterSolid = T(MF.Manifold.union(parts));
   if (Th < H * 0.1) msgs.push({ lvl: 'info', msg: 'Tenké písmeno se snadno převrhne. Na stání doporučuji tloušťku aspoň desetinu výšky.' });
 
-  // jméno
-  let S = null, O = null, nameInfo = null;
-  if (name) {
-    const N0 = textCS(D.fName, name, 10);
-    if (N0.missing.length) msgs.push({ lvl: 'warn', msg: `Písmo jména neumí znaky: ${N0.missing.join(' ')}` });
-    if (!empty(N0.cs)) {
-      const nb = N0.cs.bounds(), s = clamp(D.nw, 40, 160) / 100 * LW / (nb.max[0] - nb.min[0]);
-      const cx = clamp(D.nx, -50, 50) / 100 * LW, cy = clamp(D.ny, 0, 100) / 100 * LH;
-      S = T(T(T(T(N0.cs.translate([-(nb.min[0] + nb.max[0]) / 2, -(nb.min[1] + nb.max[1]) / 2])).scale([s, s])).rotate(clamp(D.rot, -30, 30))).translate([cx, cy]));
-      const ow = clamp(D.ow, 0.8, 8);
-      O = fillHoles(T(S.offset(ow, 'Round', 2, 64)));
-      O = T(O.intersect(csBox(-1e4, 0, 1e4, 1e4)));   // nic pod podstavou
-      if (D.over === 'clip') { O = T(O.intersect(T(Lc.offset(-0.33, 'Round')))); S = T(S.intersect(T(O.offset(-ow * 0.4, 'Round')))); }
-      O = cl(O); S = cl(T(S.intersect(T(O.offset(-0.05, 'Round')))));
-      const loss = thinLoss(N0.exs, 0.8 / s);
-      if (loss > 0.1) msgs.push({ lvl: 'warn', msg: `Část tahů jména je tenčí než 0,8 mm (asi ${Math.round(loss * 100)} %). Zvětšete šířku jména nebo zvolte silnější písmo.` });
-      nameInfo = { s };
-      const ob = O.bounds(); if (ob.min[0] < b.min[0] - 0.5 || ob.max[0] > b.max[0] + 0.5) { if (D.over === 'keep' && D.mode === 'one') msgs.push({ lvl: 'info', msg: 'Jméno přesahuje písmeno. Přesah je podepřený až k podložce, takže se tiskne bez podpěr.' }); }
-    }
-  }
-  const oh = clamp(D.oh, 0.4, 6), th = clamp(D.th, 0.4, 6), zIn = Th - ch - 0.6;
   const bodies = [], swaps = [];
+  if (!S) { bodies.push({ m: letterSolid, role: 1, name: 'pismeno' }); return { bodies, swaps, letter, name, H, Th, LW, LH, lh }; }
+  const d = Math.min(clamp(D.d, 0.4, 10), Th - 1); let r = clamp(D.r, 0, 5);
+  const rw = clamp(D.rw, 0, 3), fr = clamp(D.fr, 0, 3);
+  const inner = rw > 0 ? cl(T(S.offset(-rw, 'Round'))) : null, hasIn = inner && !empty(inner);
+  if (rw > 0 && !hasIn) msgs.push({ lvl: 'info', msg: 'Vnitřní lem je na tahy písma moc široký, výplň by zmizela. Zmenšete lem.' });
+  const swap = D.colors === 'swap', raised = hasIn && fr > 0;
+  if (swap && D.mode === 'one' && r < 0.4) { r = 0.4; msgs.push({ lvl: 'info', msg: 'Při výměně filamentu musí jméno vystupovat nad písmeno, výška je upravená na 0,4 mm. Zarovnané jméno jde vytisknout na vícebarevné tiskárně nebo zvlášť.' }); }
+  if (swap && hasIn && !raised) msgs.push({ lvl: 'info', msg: 'Lem jinou barvou jde při výměně filamentu jen se zvýšenou výplní. Nastavte „Výplň nad lemem“ nebo zvolte vícebarevnou tiskárnu.' });
   if (D.mode === 'one') {
-    const z0 = D.over === 'keep' ? 0 : zIn;
-    if (!O) { bodies.push({ m: letterSolid, role: 1, name: 'pismeno' }); }
-    else if (D.colors === 'swap') {
-      const m = T(MF.Manifold.union([letterSolid, ext(O, z0, Th + oh), ext(S, Th + oh - 0.3, Th + oh + th)]));
-      bodies.push({ m, role: 0, name: 'jmenovka', bands: [[0, 1], [Th, 2], [Th + oh, 3]] });
-      swaps.push([Th, 2], [Th + oh, 3]);
+    const zb = Th - d;
+    if (swap) {
+      const m = U([letterSolid, ext(S, full ? 0 : zb, Th + r), raised ? ext(inner, Th + r - 0.2, Th + r + fr) : null]);
+      const bands = [[0, 1], [Th, 2]]; swaps.push([Th, 2]); if (raised) { bands.push([Th + r, 3]); swaps.push([Th + r, 3]); }
+      bodies.push({ m, role: 0, name: 'jmenovka', bands });
     } else {
-      const col = T(ext(Lc, -1, zIn));
-      bodies.push({ m: T(letterSolid.subtract(ext(O, zIn, Th + oh + 1))), role: 1, name: 'pismeno' });
-      bodies.push({ m: T(ext(O, z0, Th + oh).subtract(col)), role: 2, name: 'obrys' });
-      bodies.push({ m: ext(S, Th + oh, Th + oh + th), role: 3, name: 'jmeno' });
+      const outside = full ? T(sub(ext(S, 0, zb + 0.3), ext(Lc, -1, Th + 1))) : null;
+      const NS = U([ext(S, zb, Th + r), outside && outside.volume() > 0.01 ? outside : null]);
+      bodies.push({ m: sub(letterSolid, ext(S, zb, Th + r + 1)), role: 1, name: 'pismeno' });
+      if (hasIn) {
+        const col = ext(inner, -1, Th + r + fr + 2);
+        bodies.push({ m: sub(NS, col), role: 2, name: 'lem' });
+        bodies.push({ m: U([T(NS.intersect(col)), raised ? ext(inner, Th + r - 0.2, Th + r + fr) : null]), role: 3, name: 'vypln' });
+      } else bodies.push({ m: NS, role: 2, name: 'jmeno' });
     }
-  } else { // zvlášť: písmeno s vybráním + plochá jmenovka
-    const pd = O ? clamp(D.pd, 0, 3) : 0, clr = 0.15;
-    let lm = letterSolid;
-    if (pd > 0) { const pk = cl(T(T(O.intersect(Lc)).offset(clr, 'Round'))); if (!empty(pk)) lm = T(lm.subtract(ext(pk, Th - pd, Th + 2))); }
-    bodies.push({ m: lm, role: 1, name: 'pismeno', at: [0, 0, 0] });
-    if (O) {
-      const pt = Math.max(1.2, pd + oh), ob = O.bounds(), dx = b.max[0] - ob.min[0] + 8, asm = [0, 0, Th - pd];
-      if (D.colors === 'swap') { bodies.push({ m: T(MF.Manifold.union([ext(O, 0, pt), ext(S, pt - 0.3, pt + th)])), role: 0, name: 'jmenovka', bands: [[0, 2], [pt, 3]], print: [dx, 0, 0], asm }); swaps.push([pt, 3, 'jmenovka']); }
-      else { bodies.push({ m: ext(O, 0, pt), role: 2, name: 'obrys', print: [dx, 0, 0], asm }); bodies.push({ m: ext(S, pt, pt + th), role: 3, name: 'jmeno', print: [dx, 0, 0], asm }); }
-      if (pd > 0 && D.over === 'keep') { const out = T(O.subtract(Lc)); if (!empty(out) && out.area() > 1) msgs.push({ lvl: 'info', msg: 'Jmenovka přesahuje písmeno, část mimo vybrání se jen přilepí.' }); }
+    const out = full ? T(S.subtract(Lc)) : null;
+    if (out && out.area() > 1) msgs.push({ lvl: 'info', msg: 'Část jména je mimo písmeno, tam je jméno vytištěné v celé tloušťce, takže drží a tiskne se bez podpěr.' });
+  } else { // jméno zvlášť a vsadit do vybrání
+    const clr = clamp(D.clr, 0, 0.6), h = d + r, ob = S.bounds(), dx = b.max[0] - ob.min[0] + 8, asm = [0, 0, Th - d];
+    bodies.push({ m: sub(letterSolid, ext(cl(T(S.offset(clr, 'Round'))), Th - d, Th + 1)), role: 1, name: 'pismeno' });
+    if (swap || !hasIn) {
+      const m = U([ext(S, 0, h), raised ? ext(inner, h - 0.2, h + fr) : null]);
+      bodies.push({ m, role: raised ? 0 : 2, name: 'jmeno', bands: raised ? [[0, 2], [h, 3]] : null, print: [dx, 0, 0], asm });
+      if (raised) swaps.push([h, 3]);
+    } else {
+      const col = ext(inner, -1, h + fr + 2);
+      bodies.push({ m: sub(ext(S, 0, h), col), role: 2, name: 'lem', print: [dx, 0, 0], asm });
+      bodies.push({ m: U([ext(inner, 0, h), raised ? ext(inner, h - 0.2, h + fr) : null]), role: 3, name: 'vypln', print: [dx, 0, 0], asm });
     }
+        msgs.push({ lvl: 'info', msg: `Jméno se tiskne zvlášť, ${fmtP(h)} mm vysoké, a vsadí se do vybrání hlubokého ${fmtP(d)} mm s vůlí ${fmtP(clr)} mm. Tečky a čárky nad písmeny jsou samostatné kousky.` });
   }
-  return { bodies, swaps, letter, name, H, Th, LW, LH, oh, th, lh, nameInfo };
+  return { bodies, swaps, letter, name, H, Th, LW, LH, lh };
 }
 
 /* ===== Ovládání ===== */
@@ -138,14 +163,16 @@ function syncUI() {
   updateUI();
 }
 function updateUI() {
-  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ pocket: D.mode === 'parts' })[el.dataset.show]; });
+  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ rim: +D.rw > 0, onePiece: D.mode === 'one', parts: D.mode === 'parts' })[el.dataset.show]; });
+  $('lblC2').textContent = +D.rw > 0 ? 'Lem' : 'Jméno';
   document.querySelectorAll('#fBig [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.fBig)));
   document.querySelectorAll('#fName [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.fName)));
   $('oW').textContent = D.nw + ' %'; $('oY').textContent = D.ny + ' %'; $('oX').textContent = (D.nx > 0 ? '+' : '') + D.nx + ' %'; $('oR').textContent = D.rot + '°';
   $('inLetter').placeholder = initialOf(D.name || '') || 'A';
+  const rim = +D.rw > 0;
   $('modeHint').textContent = D.mode === 'one'
-    ? (D.colors === 'swap' ? 'Jeden soubor. Barvy se mění podle výšky, stačí dvě výměny filamentu.' : 'Tři soubory se stejným umístěním: písmeno, obrys a jméno. Načtěte je najednou jako jeden objekt.')
-    : (D.colors === 'swap' ? 'Dva soubory: písmeno a jmenovka. Na jmenovce jedna výměna filamentu, pak ji vlepíte do písmene.' : 'Tři soubory: písmeno, obrys a jméno. Obrys se jménem tiskněte spolu, pak vlepte do písmene.');
+    ? (D.colors === 'swap' ? 'Jeden soubor. Jméno vystupuje nad písmeno a barva se mění podle výšky.' : `${rim ? 'Tři' : 'Dva'} soubory se stejným umístěním: písmeno a jméno${rim ? ' (lem a výplň)' : ''}. Načtěte je najednou jako jeden objekt.`)
+    : (D.colors === 'swap' ? 'Písmeno s vybráním a jméno zvlášť. Jméno vsadíte do vybrání, případně přilepíte.' : `Písmeno s vybráním a jméno${rim ? ' (lem a výplň jako dva díly jednoho objektu)' : ''} zvlášť.`);
 }
 (function () {
   const mk = (box, key, filt, sample) => { for (const id in FONTS) { if (!FONTS[id][filt]) continue; const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.v = id;

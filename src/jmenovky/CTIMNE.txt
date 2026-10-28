@@ -2,13 +2,15 @@ JMENOVKY – velké písmeno se jménem pro 3D tisk
 Created by Julius Andy Antoš
 
 CO UMÍ
-  Velké 3D písmeno (9 písem) a přes něj jméno psacím písmem (6 písem)
-  s obrysem jako samolepka. Nastavení výšky, tloušťky, zkosení hran,
-  rovné podstavy, šířky, polohy a natočení jména. Tisk vcelku s výměnou
-  filamentu (vypíše výšky a čísla vrstev), na vícebarevné tiskárně
-  (tři díly se společným umístěním) nebo po dílech s vybráním pro
-  vlepení. Používá knihovnu Manifold (Apache 2.0) a písma Google Fonts
-  a DejaVu (volné licence).
+  Velké 3D písmeno (9 písem) a jméno psacím písmem se spojenými písmeny
+  (8 písem) vsazené do jeho povrchu: vyřízne se do písmene a vyplní,
+  může vystupovat nad povrch. Volitelně vnitřní lem okrajů písmen jinou
+  barvou, zesílení tahů, zkosení hran, zarovnaný spodek a podstavec,
+  když by písmeno se jménem nestálo. Tisk vcelku s výměnou filamentu
+  (vypíše výšky a čísla vrstev), na vícebarevné tiskárně (díly se
+  společným umístěním), nebo jméno zvlášť na vsazení do vybrání.
+  Používá knihovnu Manifold (Apache 2.0) a písma Google Fonts a DejaVu
+  (licence SIL Open Font License).
 
 NAHRÁNÍ NA WEB
   Složku "jmenovky" nahrajte vedle ostatních nástrojů,

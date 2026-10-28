@@ -1,6 +1,6 @@
 /* Cookie Cutter Studio – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'cookie-20261028132027';
+const VERSION = 'cookie-20261028133304';
 const FONTS_CACHE = 'cookie-extra';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
