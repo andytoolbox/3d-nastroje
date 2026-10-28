@@ -1,0 +1,24 @@
+PANTY – panty pro 3D tisk
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Pant tištěný vcelku s čepem uvnitř (print-in-place), pant na kolík
+  z filamentu 1,75 / 2,85 mm, hřebík nebo šroub M3–M5, pružný pant
+  pro PP, PETG a TPU a zkušební sadu pantů s rostoucí vůlí a vyrytými
+  čísly. Nastavitelná délka, šířka, tloušťka, průměr kloubu, počet
+  článků, vůle a díry na šrouby se zahloubením. Díry v ose mají tvar
+  kapky, takže se tisknou bez podpěr. Náhled umí pant přehnout.
+  Používá knihovnu Manifold (Apache 2.0).
+
+NAHRÁNÍ NA WEB
+  Složku "panty" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/panty/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.

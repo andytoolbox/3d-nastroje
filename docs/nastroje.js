@@ -122,6 +122,15 @@ window.NASTROJE = [
     novinka: true
   },
   {
+    id: 'panty',
+    nazev: 'Panty',
+    popis: 'Pant tištěný vcelku, který se hned otáčí, pant na kolík z filamentu nebo šroub, pružný pant a zkušební sada pro nejmenší vůli.',
+    kategorie: 'Díly',
+    stitky: ['pant', 'kloub', 'víko', 'print-in-place', 'vůle'],
+    odkaz: 'panty/',
+    novinka: true
+  },
+  {
     id: 'elektronika',
     nazev: 'Elektronika – držáky a panely',
     popis: 'Podložky se sloupky pro Raspberry Pi, Arduino a ESP desky, kolébky pro desky bez děr, panely pro OLED a LCD displeje, LED a profily na LED pásky. Se šablonou otvorů.',

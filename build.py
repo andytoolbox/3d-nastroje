@@ -135,6 +135,12 @@ TOOLS = {
                       'lobster': 'GF-Lobster-Regular.sub.ttf', 'courgette': 'GF-Courgette-Regular.sub.ttf', 'caveat': 'GF-Caveat-Bold.sub.ttf', 'kalam': 'GF-Kalam-Bold.sub.ttf'}),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'jmenovky-app.js'},
     },
+    'panty': {
+        'page': 'panty.html', 'title': 'Panty',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'FONTS': lambda: font_set('PANTY_FONTS', {'sans': 'LiberationSans-Bold.sub.ttf'}),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'panty-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},
