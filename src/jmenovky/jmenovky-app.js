@@ -7,9 +7,9 @@ const FONTS = {
   pacifico: ['Pacifico', 0, 1], norican: ['Norican', 0, 1], damion: ['Damion', 0, 1], dancing: ['Dancing Script', 0, 1], lobster: ['Lobster', 0, 1],
   grandhotel: ['Grand Hotel', 0, 1], playball: ['Playball', 0, 1], greatvibes: ['Great Vibes', 0, 1],
 };
-const DEF = { name: 'Amélie', letter: '', fBig: 'playfair', fName: 'pacifico', H: 100, T: 16, ch: 1.6, base: 'auto', nw: 92, ny: 24, nx: 0, rot: 0, bold: 0.3, d: 1.2, r: 0.8, rw: 0.6, rh: 0.4, lemSame: true, out: 'full',
+const DEF = { name: 'Amélie', letter: '', fBig: 'playfair', fName: 'pacifico', H: 100, T: 16, ch: 1.6, base: 'auto', nw: 92, ny: 24, nx: 0, rot: 0, bold: 0.3, d: 1.2, r: 1, rw: 0.6, rh: 0.2, lemSame: true, pad: true, out: 'full',
   mode: 'one', colors: 'swap', clr: 0.15, c1: '#74c2a8', c2: '#f6f1e7', c3: '#e88fa6', lh: 0.2, bedX: 220, bedY: 220, bedZ: 250 };
-const STORE = 'jmenovky-v3';
+const STORE = 'jmenovky-v4';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
 if (!FONTS[D.fBig] || !FONTS[D.fBig][1]) D.fBig = DEF.fBig; if (!FONTS[D.fName] || !FONTS[D.fName][2]) D.fName = DEF.fName;
@@ -51,6 +51,11 @@ function textCS(fontId, text, size) {
   const polys = exToPaths(exs).map(p => p.map(q => [q.X / SC, q.Y / SC]));
   return { cs: T(T(new MF.CrossSection(polys, 'NonZero')).simplify(0.002)), exs, missing: L.missing };
 }
+// obrys bez děr (podklad pod jménem)
+function fillHoles(cs) {
+  const keep = cs.toPolygons().filter(p => { let a = 0; for (let i = 0, j = p.length - 1; i < p.length; j = i++) a += (p[j][0] - p[i][0]) * (p[j][1] + p[i][1]); return a > 0; });
+  return keep.length ? T(new MF.CrossSection(keep, 'NonZero')) : cs;
+}
 // těžiště plochy (pro kontrolu, jestli písmeno stojí)
 function centroid(cs) { let A = 0, cx = 0; for (const p of cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const f = p[j][0] * p[i][1] - p[i][0] * p[j][1]; A += f; cx += (p[j][0] + p[i][0]) * f; } return A ? cx / (3 * A) : 0; }
 
@@ -91,7 +96,7 @@ function build(msgs) {
     if (comps.length > 1) { const r0 = anchorIslands(Lc, comps[0], Math.max(2, H * 0.03)); Lc = r0.S; if (r0.n) msgs.push({ lvl: 'info', msg: 'Háček nebo čárka velkého písmene je k písmenu připojená můstkem, aby držela.' }); }
   }
   b = Lc.bounds(); let LW = b.max[0] - b.min[0], LH = b.max[1] - b.min[1];
-  const full = D.mode === 'one' && D.out === 'full';
+  const pad = D.mode === 'one' && D.pad, full = D.mode === 'one' && (pad || D.out === 'full');
 
   // jméno psacím písmem, zesílené a umístěné na písmeno
   let S = null, sc = 1;
@@ -104,6 +109,12 @@ function build(msgs) {
       S = T(T(T(T(N0.cs.translate([-(nb.min[0] + nb.max[0]) / 2, -(nb.min[1] + nb.max[1]) / 2])).scale([sc, sc])).rotate(clamp(D.rot, -30, 30))).translate([cx, cy]));
       if (bold > 0) S = T(S.offset(bold / 2, 'Round'));
       S = T(S.intersect(csBox(-1e4, 0, 1e4, 1e4)));
+      if (pad) { // podklad pod jménem v barvě písmene: celé jméno pak leží na těle písmene
+        const pc = fillHoles(cl(T(T(S.offset(Math.max(1.6, clamp(D.rw, 0, 3) + 1) + 0.137, 'Round')).intersect(csBox(-1e4, 0, 1e4, 1e4)))));
+        Lc = T(MF.CrossSection.union([Lc, pc]));
+        const comps = Lc.decompose().map(c => T(c)).sort((p, q) => q.area() - p.area());
+        if (comps.length > 1) Lc = anchorIslands(Lc, comps[0], Math.max(2, H * 0.03)).S;
+      }
       if (!full) { const before = S.area(); S = T(S.intersect(T(Lc.offset(-0.83, 'Round')))); if (S.area() < before * 0.97) msgs.push({ lvl: 'info', msg: 'Část jména leží mimo písmeno a je oříznutá. Zmenšete šířku jména nebo ho posuňte.' }); }
       S = cl(S); if (empty(S)) S = null;
       const loss = thinLoss(N0.exs, Math.max(0.1, 0.8 - bold) / sc);
@@ -154,7 +165,7 @@ function build(msgs) {
   // lem nad jménem: jméno se vytáhne o výšku lemu výš a výplň uvnitř lemu se vybere zpět dolů
   const cutIn = (z0, z1) => hasIn ? ext(inner, z0, z1) : null;
   if (swap && D.mode === 'one' && r < 0.4) { r = 0.4; msgs.push({ lvl: 'info', msg: 'Při výměně filamentu musí jméno vystupovat nad písmeno, výška je upravená na 0,4 mm. Zarovnané jméno jde vytisknout na vícebarevné tiskárně nebo zvlášť.' }); }
-  if (swap && hasRim && rh < 0.4) { rh = 0.4; msgs.push({ lvl: 'info', msg: 'Při výměně filamentu musí lem vystupovat nad jméno, aby měl svou barvu. Výška lemu je upravená na 0,4 mm.' }); }
+  if (swap && hasRim && rh < lh - 0.001) { rh = lh; msgs.push({ lvl: 'info', msg: `Při výměně filamentu musí lem vystupovat nad jméno aspoň o jednu vrstvu, výška lemu je upravená na ${fmtP(lh)} mm.` }); }
   const rimUp = hasRim && rh > 0;
   if (hasRim && !hasIn) msgs.push({ lvl: 'info', msg: 'Lem je na tahy písma moc široký, celé jméno je lemem. Zmenšete šířku lemu.' });
   if (D.mode === 'one') {
@@ -199,7 +210,7 @@ function syncUI() {
   updateUI();
 }
 function updateUI() {
-  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ rim: +D.rw > 0, rimCol: +D.rw > 0 && !D.lemSame, onePiece: D.mode === 'one', parts: D.mode === 'parts' })[el.dataset.show]; });
+  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ rim: +D.rw > 0, rimCol: +D.rw > 0 && !D.lemSame, onePiece: D.mode === 'one' && !D.pad, padRow: D.mode === 'one', parts: D.mode === 'parts' })[el.dataset.show]; });
   document.querySelectorAll('#fBig [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.fBig)));
   document.querySelectorAll('#fName [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.fName)));
   $('oW').textContent = D.nw + ' %'; $('oY').textContent = D.ny + ' %'; $('oX').textContent = (D.nx > 0 ? '+' : '') + D.nx + ' %'; $('oR').textContent = D.rot + '°';

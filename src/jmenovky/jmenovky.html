@@ -278,8 +278,9 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
       <label class="f"><span>Hloubka zapuštění</span><span class="num"><input type="number" data-k="d" min="0.4" max="10" step="0.2"><span>mm</span></span></label>
       <label class="f"><span>Výška nad písmenem<small>0 = zarovnané s povrchem</small></span><span class="num"><input type="number" data-k="r" min="0" max="5" step="0.2"><span>mm</span></span></label>
       <label class="f"><span>Lem okrajů písmen<small>šířka, 0 = bez lemu</small></span><span class="num"><input type="number" data-k="rw" min="0" max="3" step="0.1"><span>mm</span></span></label>
-      <label class="f" data-show="rim"><span>Lem nad jménem<small>o kolik lem vystupuje</small></span><span class="num"><input type="number" data-k="rh" min="0" max="3" step="0.2"><span>mm</span></span></label>
+      <label class="f" data-show="rim"><span>Lem nad jménem<small>o kolik lem vystupuje</small></span><span class="num"><input type="number" data-k="rh" min="0" max="3" step="0.1"><span>mm</span></span></label>
       <label class="check" data-show="rim"><input type="checkbox" data-k="lemSame">Lem stejnou barvou jako písmeno</label>
+      <label class="check" data-show="padRow"><input type="checkbox" data-k="pad">Podložit jméno barvou písmene<br><small style="color:var(--muted)">celé jméno leží na těle písmene, při tisku naležato se barvy nemíchají</small></label>
       <div class="lblrow" data-show="onePiece"><span>Části jména mimo písmeno</span></div>
       <div class="seg wide" role="radiogroup" aria-label="Části jména mimo písmeno" data-show="onePiece">
         <label><input type="radio" name="out" value="full">Podepřít celou tloušťkou</label>

@@ -1411,76 +1411,114 @@ async function build(msgs, job) {
   const M = SRC.M, CP = SRC.parts, multi = CP.length > 1;
   const bb = M.boundingBox(), W = bb.max[0] - bb.min[0], H = bb.max[1] - bb.min[1], Z = bb.max[2] - bb.min[2];
   if (Z > Math.min(W, H) * 0.5) msgs.push({ lvl: 'warn', msg: 'Model nevypadá plochý. Puzzle se řeže svisle přes celou výšku, u prostorových modelů to nebude fungovat. Zkuste ho jinak položit.' });
-  // u nepravidelného tvaru se mřížka zahustí podle toho, kolik obdélníku model skutečně zabírá
   await tick('Hledám obrys modelu…');
-  const sil0 = silhouette(M, bb.max[2] - bb.min[2]), N = Math.round(clamp(D.N, 2, 300)), m0 = 2;
+  const sil = silhouette(M, Z), N = Math.round(clamp(D.N, 2, 300)), m0 = 2;
+  const R0 = Math.round(clamp(D.seed, 1, 9999)), jit = clamp(D.jit, 0, 100) / 100, kerf = clamp(D.kerf, 0.1, 1), zmax = bb.max[2] + 1;
   const gridFor = (n) => { const c = Math.max(1, Math.round(Math.sqrt(n * W / H))); return [c, Math.max(1, Math.round(n / c))]; };
-  let [cols, rows] = gridFor(N);
-  if (sil0.area() < W * H * 0.9) { // vyzkouší hustší mřížky a vybere tu, která dá nejbližší počet dílků
+  // u nepravidelného tvaru se mřížka zahustí podle toho, kolik obdélníku model skutečně zabírá
+  let f0 = 1;
+  if (sil.area() < W * H * 0.9) {
     let best = 1e9;
     for (let f = 1; f <= 4.01; f += 0.15) {
       const [c, r] = gridFor(N * f), w = (W + 2 * m0) / c, h = (H + 2 * m0) / r; let n = 0;
-      for (let j = 0; j < r; j++) for (let i = 0; i < c; i++) { const a = T(sil0.intersect(T(T(MF.CrossSection.square([w, h])).translate([bb.min[0] - m0 + i * w, bb.min[1] - m0 + j * h])))).area(); if (a >= w * h * 0.22) n++; }
-      if (Math.abs(n - N) < best) { best = Math.abs(n - N); cols = c; rows = r; }
+      for (let j = 0; j < r; j++) for (let i = 0; i < c; i++) { const a = T(sil.intersect(T(T(MF.CrossSection.square([w, h])).translate([bb.min[0] - m0 + i * w, bb.min[1] - m0 + j * h])))).area(); if (a >= w * h * 0.22) n++; }
+      if (Math.abs(n - N) < best) { best = Math.abs(n - N); f0 = f; }
       if (n > N * 1.3) break;
     }
   }
-  const x0 = bb.min[0] - m0, y0 = bb.min[1] - m0, cw = (W + 2 * m0) / cols, ch = (H + 2 * m0) / rows, u = Math.min(cw, ch) * clamp(D.tab, 60, 120) / 100;
-  const R = rng(Math.round(clamp(D.seed, 1, 9999))), jit = clamp(D.jit, 0, 100) / 100, kerf = clamp(D.kerf, 0.1, 1);
-  if (u < 8) msgs.push({ lvl: 'warn', msg: `Dílky jsou malé (${fmtP(Math.round(Math.min(cw, ch)))} mm), zámky budou drobné a křehké. Zmenšete počet dílků.` });
-  const X = (i) => x0 + i * cw, Y = (j) => y0 + j * ch;
-  // vnitřní hrany se zámky: hE[j][i] vodorovná mezi řadou j-1 a j, vE[i][j] svislá mezi sloupcem i-1 a i
-  const hE = [], vE = [];
-  for (let j = 1; j < rows; j++) { hE[j] = []; for (let i = 0; i < cols; i++) hE[j][i] = tabEdge([X(i), Y(j)], [X(i + 1), Y(j)], u, R() < 0.5 ? 1 : -1, R, jit); }
-  for (let i = 1; i < cols; i++) { vE[i] = []; for (let j = 0; j < rows; j++) vE[i][j] = tabEdge([X(i), Y(j)], [X(i), Y(j + 1)], u, R() < 0.5 ? 1 : -1, R, jit); }
-  const cellPoly = (i, j) => {
-    const p = [];
-    const add = (pts) => { for (const q of pts) { const l = p[p.length - 1]; if (!l || Math.abs(l[0] - q[0]) > 1e-9 || Math.abs(l[1] - q[1]) > 1e-9) p.push(q); } };
-    add(j > 0 ? hE[j][i] : [[X(i), Y(j)], [X(i + 1), Y(j)]]);
-    add(i < cols - 1 ? vE[i + 1][j] : [[X(i + 1), Y(j)], [X(i + 1), Y(j + 1)]]);
-    add(j < rows - 1 ? hE[j + 1][i].slice().reverse() : [[X(i + 1), Y(j + 1)], [X(i), Y(j + 1)]]);
-    add(i > 0 ? vE[i][j].slice().reverse() : [[X(i), Y(j + 1)], [X(i), Y(j)]]);
-    if (p.length > 1 && Math.abs(p[0][0] - p[p.length - 1][0]) < 1e-9 && Math.abs(p[0][1] - p[p.length - 1][1]) < 1e-9) p.pop();
-    return T(new MF.CrossSection([p], 'NonZero'));
-  };
-  const cells = [], sil = sil0;
-  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const cs = cellPoly(i, j); cells.push({ i, j, cs, a: T(cs.intersect(sil)).area() }); }
-  // malé okrajové kousky připojit k sousedovi
-  const par = cells.map((_, k) => k), find = (k) => par[k] === k ? k : (par[k] = find(par[k]));
-  const area = (k) => cells.reduce((s, c, q) => s + (find(q) === find(k) ? c.a : 0), 0);
-  let merged = 0;
-  if (D.merge) {
-    const thr = cw * ch * 0.22;
-    for (let pass = 0; pass < 3; pass++) for (let k = 0; k < cells.length; k++) {
-      const c = cells[k]; if (c.a < 0.01) continue; const ga = area(k); if (ga >= thr) continue;
-      let best = -1, bestA = 0;
-      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = c.i + di, jj = c.j + dj; if (ii < 0 || jj < 0 || ii >= cols || jj >= rows) continue; const q = jj * cols + ii; if (find(q) === find(k) || cells[q].a < 0.01) continue; const qa = area(q); if (qa > bestA) { bestA = qa; best = q; } }
-      if (best >= 0) { par[find(k)] = find(best); merged++; }
-    }
+  let res = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const [cols, rows] = gridFor(N * f0);
+    res = await cutGrid(cols, rows);
+    if (res.groups.length >= N * 0.75 || cols * rows > 400) break;
+    f0 *= 1.35; // po sloučení vyšlo dílků moc málo: zkusí hustší mřížku
   }
-  const groups = new Map(); cells.forEach((c, k) => { if (c.a < 0.01) return; const r = find(k); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(c); });
-  // dílky: model ∩ oblast skupiny zmenšená o polovinu řezu
-  const pieces = [], zmax = bb.max[2] + 1, spread = D.lay2 === 'spread' ? u * 0.32 + 4 : 0;
-  let gi = 0, islands = 0, dropped = 0;
-  let done = 0; const total = groups.size;
-  for (const [, list] of groups) {
-    await tick(`Řežu dílek ${++done} z ${total}…`);
-    const reg = list.length > 1 ? T(MF.CrossSection.union(list.map(c => c.cs))) : list[0].cs;
-    const shr = cl(T(reg.offset(-kerf / 2, 'Round')));
-    const prism = ext(shr, -1, zmax);
-    let p = T(M.intersect(prism));
-    if (p.isEmpty() || p.volume() < 0.01) continue;
-    const ci = Math.min(...list.map(c => c.i)), cj = Math.min(...list.map(c => c.j));
-    if (multi) { // barevné díly se řežou každý zvlášť, aby si dílek nechal barvy modelu
-      const n = p.decompose().length; if (n > 1) islands += n - 1;
-      pieces.push({ m: p, ci, cj, g: gi, colors: CP.map(cp => ({ m: T(cp.m.intersect(prism)), color: cp.color })).filter(x => !x.m.isEmpty()) }); gi++; continue;
+  const { groups, cols, rows, cw, ch, u, moved, merged, lost } = res;
+
+  async function cutGrid(cols, rows) {
+    const x0 = bb.min[0] - m0, y0 = bb.min[1] - m0, cw = (W + 2 * m0) / cols, ch = (H + 2 * m0) / rows, u = Math.min(cw, ch) * clamp(D.tab, 60, 120) / 100;
+    const R = rng(R0), X = (i) => x0 + i * cw, Y = (j) => y0 + j * ch;
+    // vnitřní hrany se zámky: hE[j][i] vodorovná mezi řadou j-1 a j, vE[i][j] svislá mezi sloupcem i-1 a i
+    const hE = [], vE = [];
+    for (let j = 1; j < rows; j++) { hE[j] = []; for (let i = 0; i < cols; i++) hE[j][i] = tabEdge([X(i), Y(j)], [X(i + 1), Y(j)], u, R() < 0.5 ? 1 : -1, R, jit); }
+    for (let i = 1; i < cols; i++) { vE[i] = []; for (let j = 0; j < rows; j++) vE[i][j] = tabEdge([X(i), Y(j)], [X(i), Y(j + 1)], u, R() < 0.5 ? 1 : -1, R, jit); }
+    const cellPoly = (i, j) => {
+      const p = [];
+      const add = (pts) => { for (const q of pts) { const l = p[p.length - 1]; if (!l || Math.abs(l[0] - q[0]) > 1e-9 || Math.abs(l[1] - q[1]) > 1e-9) p.push(q); } };
+      add(j > 0 ? hE[j][i] : [[X(i), Y(j)], [X(i + 1), Y(j)]]);
+      add(i < cols - 1 ? vE[i + 1][j] : [[X(i + 1), Y(j)], [X(i + 1), Y(j + 1)]]);
+      add(j < rows - 1 ? hE[j + 1][i].slice().reverse() : [[X(i + 1), Y(j + 1)], [X(i), Y(j + 1)]]);
+      add(i > 0 ? vE[i][j].slice().reverse() : [[X(i), Y(j + 1)], [X(i), Y(j)]]);
+      if (p.length > 1 && Math.abs(p[0][0] - p[p.length - 1][0]) < 1e-9 && Math.abs(p[0][1] - p[p.length - 1][1]) < 1e-9) p.pop();
+      return T(new MF.CrossSection([p], 'NonZero'));
+    };
+    // skupiny = oblasti, z nichž vznikne jeden dílek (na začátku jedna buňka mřížky)
+    let G = [];
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const reg = cellPoly(i, j); if (T(reg.intersect(sil)).area() > 0.01) G.push({ reg, ci: i, cj: j }); }
+    const cut = async (g, k, n) => {
+      await tick(`Řežu dílek ${k} z ${n}…`);
+      g.prism = ext(cl(T(g.reg.offset(-kerf / 2, 'Round'))), -1, zmax);
+      g.p = T(M.intersect(g.prism)); g.vol = g.p.isEmpty() ? 0 : g.p.volume();
+      g.isl = g.vol > 0 ? g.p.decompose().map(x => T(x)).sort((a, b) => b.volume() - a.volume()) : [];
+    };
+    for (let k = 0; k < G.length; k++) await cut(G[k], k + 1, G.length);
+    G = G.filter(g => g.vol > 0.01);
+    // soused, jehož materiál modelu na daný kus přes řez navazuje (ne jen leží vedle)
+    const linked = (fp, self) => { const probe = ext(T(fp.offset(kerf + 0.6, 'Round')), -1, zmax), pb = probe.boundingBox(); let h = null, hv = 1e-3;
+      for (const q of G) { if (q === self || q.dead || q.vol <= 0) continue; const qb = q.p.boundingBox(); if (qb.max[0] < pb.min[0] || pb.max[0] < qb.min[0] || qb.max[1] < pb.min[1] || pb.max[1] < qb.min[1]) continue; const v = T(q.p.intersect(probe)).volume(); if (v > hv) { hv = v; h = q; } }
+      return h; };
+    const best = (fp, self) => { let b = null, ba = 0.05; for (const h of G) { if (h === self || h.dead) continue; const a = T(fp.intersect(h.reg)).area(); if (a > ba) { ba = a; b = h; } } return b; };
+    let moved = 0, merged = 0;
+    for (let pass = 0; pass < 8; pass++) {
+      const dirty = new Set();
+      // 1) odtržené kousky: každý dílek si nechá největší kus (kotvu), ostatní kusy se přes navazující materiál
+      //    (i přes další odtržené kusy) přidají k nejbližší kotvě, se kterou souvisejí
+      const frags = [];
+      for (const g of G) if (!g.dead) g.isl.forEach((I, i) => frags.push({ I, g, anchor: i === 0, bb: I.boundingBox(), fp: null }));
+      const loose = frags.filter(f => !f.anchor);
+      if (loose.length) {
+        await tick('Spojuji odtržené kousky…');
+        for (const f of frags) f.fp = T(f.I.project());
+        const near = (a, b) => a.bb.max[0] + kerf + 1 >= b.bb.min[0] && b.bb.max[0] + kerf + 1 >= a.bb.min[0] && a.bb.max[1] + kerf + 1 >= b.bb.min[1] && b.bb.max[1] + kerf + 1 >= a.bb.min[1];
+        const touch = (a, b) => near(a, b) && T(T(a.fp.offset(kerf + 0.4, 'Round')).intersect(b.fp)).area() > 0.01;
+        // hledání od kotev do šířky přes odtržené kusy
+        let front = frags.filter(f => f.anchor); front.forEach(f => { f.to = f.g; });
+        while (front.length) {
+          const next = [];
+          for (const f of front) for (const q of loose) { if (q.to || q.g === f.to && false) continue; if (touch(f, q)) { q.to = f.to; next.push(q); } }
+          front = next;
+        }
+        for (const q of loose) {
+          if (!q.to || q.to === q.g) continue;
+          const fr = cl(T(T(q.fp.offset(kerf / 2 + 0.25, 'Round')).intersect(q.g.reg)));
+          q.to.reg = cl(T(MF.CrossSection.union([q.to.reg, fr]))); q.g.reg = cl(T(q.g.reg.subtract(fr))); dirty.add(q.g); dirty.add(q.to); moved++;
+        }
+      }
+      // 2) příliš malé dílky sloučit se sousedem
+      const vols = G.filter(g => !g.dead).map(g => g.vol).sort((a, b) => a - b), med = vols[Math.floor(vols.length / 2)] || 0;
+      if (D.merge) for (const g of G) {
+        if (g.dead || dirty.has(g) || g.vol >= med * 0.3) continue;
+        const h = linked(T(g.p.project()), g) || best(T(g.reg.offset(1, 'Round')), g); if (!h) continue;
+        h.reg = cl(T(MF.CrossSection.union([h.reg, g.reg]))); h.ci = Math.min(h.ci, g.ci); h.cj = Math.min(h.cj, g.cj); g.dead = true; dirty.add(h); merged++;
+      }
+      G = G.filter(g => !g.dead);
+      if (!dirty.size) break;
+      let k = 0; for (const g of dirty) { if (!g.dead) await cut(g, ++k, dirty.size); }
+      G = G.filter(g => g.vol > 0.01);
     }
-    let parts = p.decompose().map(x => T(x)).sort((a, b) => b.volume() - a.volume());
-    // drobné úlomky (špička zámku uříznutá okrajem modelu) se vynechají
-    const keep = parts.filter((x, i) => i === 0 || x.volume() > parts[0].volume() * 0.08); dropped += parts.length - keep.length; parts = keep;
-    if (parts.length > 1) islands += parts.length - 1;
-    for (const part of parts) pieces.push({ m: part, ci, cj, g: gi, colors: [{ m: part, color: CP[0].color }] });
-    gi++;
+    // co zůstalo odtržené a je drobné (méně než 3 % průměrného dílku), se vynechá
+    const avg = G.reduce((a, g) => a + g.vol, 0) / Math.max(1, G.length); let lost = 0;
+    for (const g of G) { const keep = g.isl.filter((x, i) => i === 0 || x.volume() > avg * 0.03); lost += g.isl.length - keep.length; g.isl = keep; }
+    return { groups: G, cols, rows, cw, ch, u, moved, merged, lost };
+  }
+
+  // dílky
+  const pieces = [], spread = D.lay2 === 'spread' ? u * 0.32 + 4 : 0;
+  let islands = 0;
+  for (const g of groups) {
+    if (g.isl.length > 1) islands += g.isl.length - 1;
+    if (multi) { await tick('Barevné díly…'); pieces.push({ m: g.p, ci: g.ci, cj: g.cj, colors: CP.map(cp => ({ m: T(cp.m.intersect(g.prism)), color: cp.color })).filter(x => !x.m.isEmpty()) }); }
+    else for (const part of g.isl) pieces.push({ m: part, ci: g.ci, cj: g.cj, colors: [{ m: part, color: CP[0].color }] });
   }
   // čísla dílků zespodu (zrcadlově, aby se daly číst při pohledu zespodu)
   let numbered = 0;
@@ -1493,7 +1531,7 @@ async function build(msgs, job) {
       for (const f of [1, 0.7, 0.5]) {
         let lb = labelCS(String(k + 1), sz * f); const b = lb.bounds();
         lb = T(lb.translate([cx - (b.min[0] + b.max[0]) / 2, cy - (b.min[1] + b.max[1]) / 2]));
-        if (T(lb.intersect(inner)).area() >= lb.area() * 0.99 && Z > 1.2) { const cut = ext(lb, -1, Math.min(0.4, Z * 0.3)); pc.m = sub(pc.m, cut); pc.colors.forEach(c => { c.m = sub(c.m, cut); }); numbered++; break; }
+        if (T(lb.intersect(inner)).area() >= lb.area() * 0.99 && Z > 1.2) { const c = ext(lb, -1, Math.min(0.4, Z * 0.3)); pc.m = sub(pc.m, c); pc.colors.forEach(x => { x.m = sub(x.m, c); }); numbered++; break; }
       }
     }
     if (numbered < pieces.length) msgs.push({ lvl: 'info', msg: `Číslo se nevešlo na ${pieces.length - numbered} ${pieces.length - numbered === 1 ? 'dílek' : 'dílků'} (malá nebo nerovná spodní plocha).` });
@@ -1506,10 +1544,11 @@ async function build(msgs, job) {
     const clr = 0.5, wall = 2.4, tb = 1.2, tw = clamp(D.tw, 1, 20), outer = T(sil.offset(clr + wall, 'Round')), inner = T(sil.offset(clr, 'Round'));
     tray = sub(ext(outer, 0, tb + tw), ext(inner, tb, tb + tw + 1));
   }
-  if (dropped) msgs.push({ lvl: 'info', msg: `${dropped} ${dropped === 1 ? 'drobný úlomek na okraji modelu byl vynechán' : 'drobných úlomků na okraji modelu bylo vynecháno'} (špička zámku uříznutá okrajem).` });
-  if (merged) msgs.push({ lvl: 'info', msg: `${merged} ${merged === 1 ? 'malý okrajový kousek je připojený' : 'malých okrajových kousků je připojených'} k sousednímu dílku.` });
-  if (islands) msgs.push({ lvl: 'warn', msg: `${islands} ${islands === 1 ? 'dílek se rozpadl' : 'dílků se rozpadlo'} na víc částí (tvar modelu je v tom místě úzký). Zkuste jiný počet dílků nebo „Zamíchat“.` });
-  msgs.push({ lvl: 'info', msg: `${pieces.length} dílků v mřížce ${cols} × ${rows}, dílek asi ${fmtP(Math.round(cw))} × ${fmtP(Math.round(ch))} mm, řez ${fmtP(kerf)} mm.` });
+  if (moved) msgs.push({ lvl: 'info', msg: `${moved} ${moved === 1 ? 'odtržený kousek je připojený' : 'odtržených kousků je připojených'} k sousednímu dílku, se kterým souvisí.` });
+  if (merged) msgs.push({ lvl: 'info', msg: `${merged} ${merged === 1 ? 'malý dílek je sloučený' : 'malých dílků je sloučených'} se sousedem.` });
+  if (lost) msgs.push({ lvl: 'info', msg: `${lost} ${lost === 1 ? 'drobný úlomek na okraji modelu byl vynechán' : 'drobných úlomků na okraji modelu bylo vynecháno'}.` });
+  if (islands) msgs.push({ lvl: 'warn', msg: `${islands} ${islands === 1 ? 'kousek modelu zůstal samostatný' : 'kousků modelu zůstalo samostatných'} (v modelu nejsou s ničím spojené). Vytisknou se jako zvláštní dílky.` });
+  msgs.push({ lvl: 'info', msg: `${pieces.length} dílků, mřížka ${cols} × ${rows}, dílek asi ${fmtP(Math.round(cw))} × ${fmtP(Math.round(ch))} mm, řez ${fmtP(kerf)} mm.` });
   if (D.lay2 === 'asm' && kerf < 0.3) msgs.push({ lvl: 'warn', msg: 'Složené dílky s vůlí pod 0,3 mm se při tisku mohou slepit. Tiskněte je od sebe nebo vůli zvětšete.' });
   if (multi) msgs.push({ lvl: 'info', msg: `Model má ${CP.length} barevné díly, každý dílek puzzle si barvy nechá. Stáhne se jeden soubor pro každou barvu, ve sliceru je načtěte najednou jako jeden objekt s více díly.` });
   return { pieces, tray, cols, rows, W, H, Z, multi, cps: CP.map(c => c.color), name: D.src === 'file' && user ? user.name.replace(/\.(stl|obj|3mf)$/i, '') : `deska_${Math.round(W)}x${Math.round(H)}` };
