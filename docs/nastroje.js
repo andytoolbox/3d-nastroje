@@ -122,6 +122,15 @@ window.NASTROJE = [
     novinka: true
   },
   {
+    id: 'puzzle',
+    nazev: 'Puzzle z modelu',
+    popis: 'Rozřeže plochý model nebo desku na dílky puzzle s klasickými zámky. Počet dílků, velikost zámků, vůle, čísla zespodu a rámeček na skládání.',
+    kategorie: 'Dárky a drobnosti',
+    stitky: ['puzzle', 'skládačka', 'hra', 'dárek', 'reliéf'],
+    odkaz: 'puzzle/',
+    novinka: true
+  },
+  {
     id: 'panty',
     nazev: 'Panty',
     popis: 'Pant tištěný vcelku, který se hned otáčí, pant na kolík z filamentu nebo šroub, pružný pant a zkušební sada pro nejmenší vůli.',

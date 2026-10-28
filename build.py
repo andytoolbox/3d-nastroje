@@ -142,6 +142,12 @@ TOOLS = {
                   'FONTS': lambda: font_set('PANTY_FONTS', {'sans': 'LiberationSans-Bold.sub.ttf'}),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'panty-app.js'},
     },
+    'puzzle': {
+        'page': 'puzzle.html', 'title': 'Puzzle',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'FONTS': lambda: font_set('PUZZLE_FONTS', {'sans': 'LiberationSans-Bold.sub.ttf'}),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'puzzle-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},

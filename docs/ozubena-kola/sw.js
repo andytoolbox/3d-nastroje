@@ -1,6 +1,6 @@
 /* Ozubená kola – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'ozubena-kola-20261028134848';
+const VERSION = 'ozubena-kola-20261028135707';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {
