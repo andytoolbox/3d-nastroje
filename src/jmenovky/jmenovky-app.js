@@ -141,7 +141,12 @@ function build(msgs) {
   const bodies = [], swaps = [];
   if (!S) { bodies.push({ m: letterSolid, role: 1, name: 'pismeno' }); return { bodies, swaps, letter, name, H, Th, LW, LH, lh }; }
   const d = Math.min(clamp(D.d, 0.4, 10), Th - 1); let r = clamp(D.r, 0, 5);
-  const rw = clamp(D.rw, 0, 3); let rh = clamp(D.rh, 0, 3);
+  let rw = clamp(D.rw, 0, 3); let rh = clamp(D.rh, 0, 3);
+  if (rw > 0) { // lem nesmí sníst výplň: nejvýš asi pětina typické šířky tahu (2 × plocha / obvod)
+    let P = 0; for (const p of S.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) P += Math.hypot(p[i][0] - p[j][0], p[i][1] - p[j][1]);
+    const sw = P > 0 ? 2 * S.area() / P : 0, lim = Math.max(0.3, Math.round(sw * 0.2 * 10) / 10);
+    if (rw > lim + 0.01) { msgs.push({ lvl: 'info', msg: `Tahy písma jsou asi ${fmtP(Math.round(sw * 10) / 10)} mm široké, lem je proto zúžený na ${fmtP(lim)} mm, aby uprostřed písmen zůstala výplň. Pro širší lem zvětšete jméno nebo zesílení písma.` }); rw = lim; }
+  }
   const swap = D.colors === 'swap', rimRole = D.lemSame ? 1 : 3;
   // lem = pás podél okraje písmen jména; výplň = zbytek uvnitř
   const inner = rw > 0 ? cl(T(S.offset(-rw, 'Round'))) : null;

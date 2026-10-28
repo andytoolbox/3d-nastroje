@@ -1,6 +1,6 @@
 /* ===== Puzzle z modelu – rozřezání plochého modelu na dílky se zámky. Created by Julius Andy Antoš ===== */
 const $ = (id) => document.getElementById(id);
-const DEF = { src: 'plate', pw: 120, ph: 80, pt: 3, pr: 6, lay: 'z', N: 24, tab: 100, jit: 50, kerf: 0.25, seed: 7, merge: true, lay2: 'spread', nums: true, tray: false, tw: 3, bedX: 220, bedY: 220, bedZ: 250 };
+const DEF = { pv: 'model', src: 'plate', pw: 120, ph: 80, pt: 3, pr: 6, lay: 'z', N: 24, tab: 100, jit: 50, kerf: 0.25, seed: 7, merge: true, lay2: 'spread', nums: true, tray: false, tw: 3, bedX: 220, bedY: 220, bedZ: 250 };
 const STORE = 'puzzle-v1';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
@@ -33,8 +33,8 @@ function meshToManifold(pos, idx) {
 // náhodná čísla se zadaným semínkem, aby šlo rozložení zopakovat
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-/* ===== Načtení vlastního modelu (STL, OBJ, 3MF) ===== */
-let user = null; // { pos, idx, name }
+/* ===== Načtení vlastního modelu (STL, OBJ, 3MF, i vícebarevné) ===== */
+let user = null; // { parts: [{ pos, idx, color, name }], name }
 function parseObj(txt) {
   const v = [], out = [];
   for (const line of txt.split('\n')) { const p = line.trim().split(/\s+/);
@@ -42,22 +42,68 @@ function parseObj(txt) {
     else if (p[0] === 'f') { const id = p.slice(1).map(s => { const i = parseInt(s, 10); return i < 0 ? v.length + i : i - 1; }); for (let k = 1; k < id.length - 1; k++) for (const i of [id[0], id[k], id[k + 1]]) out.push(...v[i]); } }
   if (!out.length) throw new Error('obj'); return new Float32Array(out);
 }
-async function parse3mf(buf) {
-  const dv = new DataView(buf), u8 = new Uint8Array(buf), dec = new TextDecoder();
+async function unzipAll(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf), dec = new TextDecoder(), files = {};
   let e = -1; for (let i = u8.length - 22; i >= Math.max(0, u8.length - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
   if (e < 0) throw new Error('zip');
-  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const out = [];
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
   for (let k = 0; k < n && dv.getUint32(p, true) === 0x02014b50; k++) {
     const method = dv.getUint16(p + 10, true), cs = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl_ = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
     const name = dec.decode(u8.subarray(p + 46, p + 46 + nl)); p += 46 + nl + xl + cl_;
-    if (!/\.model$/i.test(name)) continue;
+    if (!/\.(model|config|rels)$/i.test(name)) continue;
     const ds = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true); let raw = u8.subarray(ds, ds + cs);
     if (method === 8) raw = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
-    const doc = new DOMParser().parseFromString(dec.decode(raw), 'application/xml');
-    doc.querySelectorAll('object').forEach(o => { const vs = [...o.querySelectorAll('mesh > vertices > vertex')].map(v => [+v.getAttribute('x'), +v.getAttribute('y'), +v.getAttribute('z')]);
-      o.querySelectorAll('mesh > triangles > triangle').forEach(t => { for (const a of ['v1', 'v2', 'v3']) out.push(...vs[+t.getAttribute(a)]); }); });
+    files['/' + name.replace(/^\//, '')] = dec.decode(raw);
   }
-  if (!out.length) throw new Error('3mf'); return new Float32Array(out);
+  return files;
+}
+// 3MF: rozloží objekty a díly (komponenty) včetně posunutí a zjistí jejich barvy (Bambu Studio, OrcaSlicer, PrusaSlicer, barvy materiálů)
+async function parse3mfParts(buf) {
+  const F = await unzipAll(buf), dp = new DOMParser(), objs = {}, mats = {};
+  const mul = (A, B) => { const r = new Array(12); for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) r[i * 3 + j] = (i < 3 ? 0 : B[9 + j]) + A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j]; return r; };
+  const I12 = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], tf = (s) => s ? s.trim().split(/\s+/).map(Number) : I12;
+  let root = Object.keys(F).find(k => /3dmodel\.model$/i.test(k) && /^\/3D\//i.test(k)) || Object.keys(F).find(k => /\.model$/i.test(k));
+  if (!root) throw new Error('3mf');
+  for (const path of Object.keys(F).filter(k => /\.model$/i.test(k))) {
+    const doc = dp.parseFromString(F[path], 'application/xml');
+    doc.querySelectorAll('basematerials').forEach(bm => { mats[path + '#' + bm.getAttribute('id')] = [...bm.querySelectorAll('base')].map(b => (b.getAttribute('displaycolor') || '').slice(0, 7)); });
+    doc.querySelectorAll('resources > object').forEach(o => {
+      const id = o.getAttribute('id'), mesh = o.querySelector(':scope > mesh'), comps = [...o.querySelectorAll(':scope > components > component')];
+      const rec = { path, id, pid: o.getAttribute('pid'), pindex: o.getAttribute('pindex'), comps: comps.map(c => ({ path: c.getAttribute('p:path') || c.getAttributeNS('http://schemas.microsoft.com/3dmanufacturing/production/2015/06', 'path') || path, id: c.getAttribute('objectid'), t: tf(c.getAttribute('transform')) })) };
+      if (mesh) { rec.v = [...mesh.querySelectorAll('vertices > vertex')].map(v => [+v.getAttribute('x'), +v.getAttribute('y'), +v.getAttribute('z')]); rec.t3 = [...mesh.querySelectorAll('triangles > triangle')].map(t => [+t.getAttribute('v1'), +t.getAttribute('v2'), +t.getAttribute('v3')]); }
+      objs[path + '#' + id] = rec;
+    });
+  }
+  // barvy podle extruderu (Bambu/Orca: model_settings.config + project_settings.config, Prusa: Slic3r_PE_model.config + Slic3r_PE.config)
+  let fcol = []; const ps = F['/Metadata/project_settings.config']; if (ps) { try { fcol = JSON.parse(ps).filament_colour || []; } catch (e) {} }
+  const pc = F['/Metadata/Slic3r_PE.config']; if (pc) { const m = pc.match(/filament_colour\s*=\s*([^\n]+)/); if (m) fcol = m[1].split(';').map(x => x.trim()); }
+  const ext = {}; const ms = F['/Metadata/model_settings.config'];
+  if (ms) { const d = dp.parseFromString(ms, 'application/xml'); d.querySelectorAll('object').forEach(o => { const oe = o.querySelector(':scope > metadata[key="extruder"]'); ext[o.getAttribute('id')] = { e: oe ? +oe.getAttribute('value') : 0, parts: {} };
+    o.querySelectorAll(':scope > part').forEach(p => { const pe = p.querySelector('metadata[key="extruder"]'); if (pe) ext[o.getAttribute('id')].parts[p.getAttribute('id')] = +pe.getAttribute('value'); }); }); }
+  const pv = {}; const pm = F['/Metadata/Slic3r_PE_model.config'];
+  if (pm) { const d = dp.parseFromString(pm, 'application/xml'); d.querySelectorAll('object').forEach(o => { pv[o.getAttribute('id')] = [...o.querySelectorAll(':scope > volume')].map(v => { const me = v.querySelector('metadata[key="extruder"]'); return { a: +v.getAttribute('firstid'), b: +v.getAttribute('lastid'), e: me ? +me.getAttribute('value') : 0 }; }); }); }
+  const parts = [];
+  const emit = (rec, M, key, color) => {
+    const vs = rec.v.map(([x, y, z]) => [x * M[0] + y * M[3] + z * M[6] + M[9], x * M[1] + y * M[4] + z * M[7] + M[10], x * M[2] + y * M[5] + z * M[8] + M[11]]);
+    const ranges = pv[rec.id] && rec.path === root && pv[rec.id].length > 1 ? pv[rec.id] : [{ a: 0, b: rec.t3.length - 1, e: 0 }];
+    for (const r of ranges) {
+      const out = new Float32Array((r.b - r.a + 1) * 9); let k = 0;
+      for (let i = r.a; i <= r.b && i < rec.t3.length; i++) for (const vi of rec.t3[i]) { out[k++] = vs[vi][0]; out[k++] = vs[vi][1]; out[k++] = vs[vi][2]; }
+      const c = r.e && fcol[r.e - 1] ? fcol[r.e - 1] : color;
+      parts.push({ soup: out.subarray(0, k), key: r.e ? 'e' + r.e : key, color: c });
+    }
+  };
+  const walk = (rec, M, top, depth) => {
+    if (!rec || depth > 8) return;
+    const mcol = rec.pid && mats[rec.path + '#' + rec.pid] ? mats[rec.path + '#' + rec.pid][+rec.pindex || 0] : null;
+    if (rec.v) { const pe = top && ext[top.oid] ? (ext[top.oid].parts[rec.id] || ext[top.oid].e) : 0; emit(rec, M, pe ? 'e' + pe : (mcol ? 'c' + mcol : 'o' + (top ? top.oid + '_' + rec.id : rec.id)), pe && fcol[pe - 1] ? fcol[pe - 1] : mcol); }
+    for (const c of rec.comps) walk(objs[c.path + '#' + c.id], mul(c.t, M), top || { oid: rec.id }, depth + 1);
+  };
+  const rd = dp.parseFromString(F[root], 'application/xml'), items = [...rd.querySelectorAll('build > item')];
+  if (items.length) for (const it of items) { const rec = objs[root + '#' + it.getAttribute('objectid')]; walk(rec, tf(it.getAttribute('transform')), { oid: it.getAttribute('objectid') }, 0); }
+  else for (const k in objs) if (objs[k].v) walk(objs[k], I12, null, 0);
+  if (!parts.length) throw new Error('3mf');
+  return parts;
 }
 function indexSoup(soup) {
   const map = new Map(), V = [], I = new Uint32Array(soup.length / 3);
@@ -67,35 +113,53 @@ function indexSoup(soup) {
   }
   return { pos: new Float32Array(V), idx: I };
 }
-async function loadUser(file) {
-  if (!file) return;
+const PART_COLS = ['#f4f1ea', '#262a2e', '#d9452b', '#2f6fb5', '#e8b923', '#3c9a5f', '#8e5aa8', '#e07a3f'];
+// více souborů najednou = více barevných dílů jednoho modelu
+async function loadUser(fileList) {
+  const files = [...(fileList || [])].filter(Boolean); if (!files.length) return;
   busy(true, 'Načítám model…'); await new Promise(r => setTimeout(r, 30));
   try {
-    const buf = await file.arrayBuffer(); let soup;
-    if (/\.obj$/i.test(file.name)) soup = parseObj(new TextDecoder().decode(buf));
-    else if (/\.3mf$/i.test(file.name)) soup = await parse3mf(buf);
-    else soup = parseStl(buf);
-    const p = indexSoup(soup), m = meshToManifold(p.pos, p.idx);
-    if (m.status() !== 'NoError' || m.isEmpty()) throw new Error('nm');
-    user = { pos: p.pos, idx: p.idx, name: file.name }; freeAll();
-    D.src = 'file'; $('fname').textContent = file.name; syncUI(); fitNext = true; saveState(); schedule(true);
+    const raw = [];
+    for (const file of files) {
+      const buf = await file.arrayBuffer();
+      if (/\.3mf$/i.test(file.name)) (await parse3mfParts(buf)).forEach(p => raw.push(p));
+      else raw.push({ soup: /\.obj$/i.test(file.name) ? parseObj(new TextDecoder().decode(buf)) : parseStl(buf), key: 'f' + raw.length + file.name, color: null, name: file.name });
+    }
+    // díly stejné barvy se sloučí
+    const by = new Map(); for (const p of raw) { const k = p.color ? 'c' + p.color.toLowerCase() : p.key; if (!by.has(k)) by.set(k, { soups: [], color: p.color, name: p.name }); by.get(k).soups.push(p.soup); }
+    const parts = []; let ci = 0;
+    for (const [, g] of by) {
+      const n = g.soups.reduce((a, s) => a + s.length, 0), soup = new Float32Array(n); let o = 0; for (const s of g.soups) { soup.set(s, o); o += s.length; }
+      const p = indexSoup(soup), m = meshToManifold(p.pos, p.idx);
+      if (m.status() !== 'NoError' || m.isEmpty()) throw new Error('nm');
+      parts.push({ pos: p.pos, idx: p.idx, color: g.color || PART_COLS[ci % PART_COLS.length] }); ci++;
+    }
+    const name = files.length > 1 ? files[0].name.replace(/\.(stl|obj|3mf)$/i, '') + '_a_dalsi' : files[0].name;
+    user = { parts, name }; freeAll();
+    D.src = 'file'; $('fname').textContent = files.map(f => f.name).join(', ') + (parts.length > 1 ? ` · ${parts.length} barevné díly` : ''); syncUI(); fitNext = true; saveState(); schedule(true);
   } catch (e) {
     console.error(e); freeAll();
-    showMsgs([{ lvl: 'bad', msg: e.message === 'nm' ? `Model „${file.name}“ není uzavřený a nejde rozřezat. Opravte ho nejdřív v Kontrole STL a stáhněte opravený.` : `Soubor „${file.name}“ se nepodařilo přečíst.` }]);
+    showMsgs([{ lvl: 'bad', msg: e.message === 'nm' ? 'Model (nebo některý jeho díl) není uzavřený a nejde rozřezat. Opravte ho nejdřív v Kontrole STL a stáhněte opravený.' : 'Soubor se nepodařilo přečíst.' }]);
   } finally { busy(false); }
 }
-// model položený na podložku a vystředěný
+// model položený na podložku a vystředěný: seznam barevných dílů a jejich sjednocení
 function sourceModel(msgs) {
   if (D.src === 'file') {
     if (!user) return null;
-    let m = meshToManifold(user.pos, user.idx);
     const R = { z: null, y: [90, 0, 0], x: [0, -90, 0], '-z': [180, 0, 0] }[D.lay];
-    if (R) m = T(m.rotate(R));
-    const b = m.boundingBox(); return T(m.translate([-(b.min[0] + b.max[0]) / 2, -(b.min[1] + b.max[1]) / 2, -b.min[2]]));
+    let parts = user.parts.map(p => { let m = meshToManifold(p.pos, p.idx); if (R) m = T(m.rotate(R)); return { m, color: p.color }; });
+    const M0 = parts.length > 1 ? U(parts.map(p => p.m)) : parts[0].m, b = M0.boundingBox(), t = [-(b.min[0] + b.max[0]) / 2, -(b.min[1] + b.max[1]) / 2, -b.min[2]];
+    parts = parts.map(p => ({ m: T(p.m.translate(t)), color: p.color }));
+    return { parts, M: T(M0.translate(t)) };
   }
   const w = clamp(D.pw, 20, 400), h = clamp(D.ph, 20, 400), t = clamp(D.pt, 1, 20), r = Math.min(clamp(D.pr, 0, 50), w / 2 - 1, h / 2 - 1);
   let cs = T(MF.CrossSection.square([w, h], true)); if (r > 0.1) cs = T(T(cs.offset(-r, 'Round')).offset(r, 'Round'));
-  return ext(cs, 0, t);
+  const m = ext(cs, 0, t); return { parts: [{ m, color: PART_COLS[0] }], M: m };
+}
+// obrys modelu shora: rychle z několika vodorovných řezů (průmět složitého povrchu by trval dlouho)
+function silhouette(M, Z) {
+  const hs = [0.05, 0.3, 0.6, 0.9].map(f => Math.max(0.05, Z * f)), sl = hs.map(z => T(M.slice(z))).filter(c => !c.isEmpty());
+  return sl.length ? T(T(MF.CrossSection.union(sl)).simplify(0.05)) : T(M.project());
 }
 
 /* ===== Hrana se zámkem ===== */
@@ -127,13 +191,18 @@ function labelCS(txt, h) {
   return T(T(new MF.CrossSection(exToPaths(unionEx(L.paths)).map(p => p.map(q => [q.X / SC, q.Y / SC])), 'NonZero')).simplify(0.002));
 }
 function centroidXY(cs) { let A = 0, cx = 0, cy = 0; for (const p of cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const f = p[j][0] * p[i][1] - p[i][0] * p[j][1]; A += f; cx += (p[j][0] + p[i][0]) * f; cy += (p[j][1] + p[i][1]) * f; } return A ? [cx / (3 * A), cy / (3 * A)] : [0, 0]; }
-function build(msgs) {
-  const M = sourceModel(msgs);
-  if (!M) { msgs.push({ lvl: 'info', msg: 'Nahrajte plochý model (STL, OBJ nebo 3MF), nebo zvolte desku.' }); return null; }
+async function build(msgs, job) {
+  // průběžně pustí prohlížeč ke slovu, aby nezamrzl, a skončí, když se mezitím změnilo nastavení
+  const tick = async (txt) => { if (job.cancel) throw new Error('cancel'); if (txt) busy(true, txt); await new Promise(r => setTimeout(r, 0)); if (job.cancel) throw new Error('cancel'); };
+  await tick('Připravuji model…');
+  const SRC = sourceModel(msgs);
+  if (!SRC) { msgs.push({ lvl: 'info', msg: 'Nahrajte plochý model (STL, OBJ nebo 3MF), nebo zvolte desku.' }); return null; }
+  const M = SRC.M, CP = SRC.parts, multi = CP.length > 1;
   const bb = M.boundingBox(), W = bb.max[0] - bb.min[0], H = bb.max[1] - bb.min[1], Z = bb.max[2] - bb.min[2];
   if (Z > Math.min(W, H) * 0.5) msgs.push({ lvl: 'warn', msg: 'Model nevypadá plochý. Puzzle se řeže svisle přes celou výšku, u prostorových modelů to nebude fungovat. Zkuste ho jinak položit.' });
   // u nepravidelného tvaru se mřížka zahustí podle toho, kolik obdélníku model skutečně zabírá
-  const sil0 = T(M.project()), N = Math.round(clamp(D.N, 2, 300)), m0 = 2;
+  await tick('Hledám obrys modelu…');
+  const sil0 = silhouette(M, bb.max[2] - bb.min[2]), N = Math.round(clamp(D.N, 2, 300)), m0 = 2;
   const gridFor = (n) => { const c = Math.max(1, Math.round(Math.sqrt(n * W / H))); return [c, Math.max(1, Math.round(n / c))]; };
   let [cols, rows] = gridFor(N);
   if (sil0.area() < W * H * 0.9) { // vyzkouší hustší mřížky a vybere tu, která dá nejbližší počet dílků
@@ -163,7 +232,7 @@ function build(msgs) {
     if (p.length > 1 && Math.abs(p[0][0] - p[p.length - 1][0]) < 1e-9 && Math.abs(p[0][1] - p[p.length - 1][1]) < 1e-9) p.pop();
     return T(new MF.CrossSection([p], 'NonZero'));
   };
-  const cells = [], sil = T(M.project());
+  const cells = [], sil = sil0;
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const cs = cellPoly(i, j); cells.push({ i, j, cs, a: T(cs.intersect(sil)).area() }); }
   // malé okrajové kousky připojit k sousedovi
   const par = cells.map((_, k) => k), find = (k) => par[k] === k ? k : (par[k] = find(par[k]));
@@ -182,39 +251,47 @@ function build(msgs) {
   // dílky: model ∩ oblast skupiny zmenšená o polovinu řezu
   const pieces = [], zmax = bb.max[2] + 1, spread = D.lay2 === 'spread' ? u * 0.32 + 4 : 0;
   let gi = 0, islands = 0, dropped = 0;
+  let done = 0; const total = groups.size;
   for (const [, list] of groups) {
+    await tick(`Řežu dílek ${++done} z ${total}…`);
     const reg = list.length > 1 ? T(MF.CrossSection.union(list.map(c => c.cs))) : list[0].cs;
     const shr = cl(T(reg.offset(-kerf / 2, 'Round')));
-    let p = T(M.intersect(ext(shr, -1, zmax)));
+    const prism = ext(shr, -1, zmax);
+    let p = T(M.intersect(prism));
     if (p.isEmpty() || p.volume() < 0.01) continue;
     const ci = Math.min(...list.map(c => c.i)), cj = Math.min(...list.map(c => c.j));
+    if (multi) { // barevné díly se řežou každý zvlášť, aby si dílek nechal barvy modelu
+      const n = p.decompose().length; if (n > 1) islands += n - 1;
+      pieces.push({ m: p, ci, cj, g: gi, colors: CP.map(cp => ({ m: T(cp.m.intersect(prism)), color: cp.color })).filter(x => !x.m.isEmpty()) }); gi++; continue;
+    }
     let parts = p.decompose().map(x => T(x)).sort((a, b) => b.volume() - a.volume());
     // drobné úlomky (špička zámku uříznutá okrajem modelu) se vynechají
     const keep = parts.filter((x, i) => i === 0 || x.volume() > parts[0].volume() * 0.08); dropped += parts.length - keep.length; parts = keep;
     if (parts.length > 1) islands += parts.length - 1;
-    for (const part of parts) pieces.push({ m: part, ci, cj, g: gi });
+    for (const part of parts) pieces.push({ m: part, ci, cj, g: gi, colors: [{ m: part, color: CP[0].color }] });
     gi++;
   }
   // čísla dílků zespodu (zrcadlově, aby se daly číst při pohledu zespodu)
   let numbered = 0;
   if (D.nums) {
     const sz = clamp(Math.min(cw, ch) * 0.2, 3, 8);
-    pieces.forEach((pc, k) => {
-      const bot = T(pc.m.slice(Math.min(0.2, Z * 0.3))); if (empty(bot)) return;
-      const inner = T(bot.offset(-0.8, 'Round')); if (empty(inner)) return;
+    for (let k = 0; k < pieces.length; k++) { const pc = pieces[k]; await tick(`Číslo dílku ${k + 1} z ${pieces.length}…`);
+      const bot = T(pc.m.slice(Math.min(0.2, Z * 0.3))); if (empty(bot)) continue;
+      const inner = T(bot.offset(-0.8, 'Round')); if (empty(inner)) continue;
       const [cx, cy] = centroidXY(inner);
       for (const f of [1, 0.7, 0.5]) {
         let lb = labelCS(String(k + 1), sz * f); const b = lb.bounds();
         lb = T(lb.translate([cx - (b.min[0] + b.max[0]) / 2, cy - (b.min[1] + b.max[1]) / 2]));
-        if (T(lb.intersect(inner)).area() >= lb.area() * 0.99 && Z > 1.2) { pc.m = sub(pc.m, ext(lb, -1, Math.min(0.4, Z * 0.3))); numbered++; return; }
+        if (T(lb.intersect(inner)).area() >= lb.area() * 0.99 && Z > 1.2) { const cut = ext(lb, -1, Math.min(0.4, Z * 0.3)); pc.m = sub(pc.m, cut); pc.colors.forEach(c => { c.m = sub(c.m, cut); }); numbered++; break; }
       }
-    });
+    }
     if (numbered < pieces.length) msgs.push({ lvl: 'info', msg: `Číslo se nevešlo na ${pieces.length - numbered} ${pieces.length - numbered === 1 ? 'dílek' : 'dílků'} (malá nebo nerovná spodní plocha).` });
   }
   pieces.forEach(pc => { pc.off = [pc.ci * spread, pc.cj * spread, 0]; });
   // rámeček na skládání
   let tray = null;
   if (D.tray) {
+    await tick('Rámeček…');
     const clr = 0.5, wall = 2.4, tb = 1.2, tw = clamp(D.tw, 1, 20), outer = T(sil.offset(clr + wall, 'Round')), inner = T(sil.offset(clr, 'Round'));
     tray = sub(ext(outer, 0, tb + tw), ext(inner, tb, tb + tw + 1));
   }
@@ -223,7 +300,8 @@ function build(msgs) {
   if (islands) msgs.push({ lvl: 'warn', msg: `${islands} ${islands === 1 ? 'dílek se rozpadl' : 'dílků se rozpadlo'} na víc částí (tvar modelu je v tom místě úzký). Zkuste jiný počet dílků nebo „Zamíchat“.` });
   msgs.push({ lvl: 'info', msg: `${pieces.length} dílků v mřížce ${cols} × ${rows}, dílek asi ${fmtP(Math.round(cw))} × ${fmtP(Math.round(ch))} mm, řez ${fmtP(kerf)} mm.` });
   if (D.lay2 === 'asm' && kerf < 0.3) msgs.push({ lvl: 'warn', msg: 'Složené dílky s vůlí pod 0,3 mm se při tisku mohou slepit. Tiskněte je od sebe nebo vůli zvětšete.' });
-  return { pieces, tray, cols, rows, W, H, Z, name: D.src === 'file' && user ? user.name.replace(/\.(stl|obj|3mf)$/i, '') : `deska_${Math.round(W)}x${Math.round(H)}` };
+  if (multi) msgs.push({ lvl: 'info', msg: `Model má ${CP.length} barevné díly, každý dílek puzzle si barvy nechá. Stáhne se jeden soubor pro každou barvu, ve sliceru je načtěte najednou jako jeden objekt s více díly.` });
+  return { pieces, tray, cols, rows, W, H, Z, multi, cps: CP.map(c => c.color), name: D.src === 'file' && user ? user.name.replace(/\.(stl|obj|3mf)$/i, '') : `deska_${Math.round(W)}x${Math.round(H)}` };
 }
 
 /* ===== Ovládání ===== */
@@ -238,7 +316,7 @@ function updateUI() {
   $('oTab').textContent = D.tab + ' %'; $('oJit').textContent = D.jit + ' %';
   $('srcHint').textContent = D.src === 'file' ? (user ? '' : 'Řeže se svisle přes celou tloušťku, hodí se ploché modely.') : 'Obyčejná deska, třeba pro dětské puzzle nebo na barevný tisk obrázku.';
 }
-function onChange(path) { if (/^(src|pw|ph|lay|lay2|tray)$/.test(path)) fitNext = true; updateUI(); saveState(); schedule(); }
+function onChange(path) { if (path === 'pv') { saveState(); recolor(); return; } if (/^(src|pw|ph|lay|lay2|tray)$/.test(path)) fitNext = true; updateUI(); saveState(); schedule(); }
 document.querySelectorAll('[data-k]').forEach(el => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
   const k = el.dataset.k; let v;
   if (el.type === 'checkbox') v = el.checked; else if (el.tagName === 'SELECT') v = el.value; else { v = parseFloat(el.value); if (!isFinite(v)) return; }
@@ -248,13 +326,15 @@ document.querySelectorAll('input[type=radio][name]').forEach(r => r.addEventList
 $('btnSeed').onclick = () => { D.seed = 1 + Math.floor(Math.random() * 9998); syncUI(); onChange('seed'); };
 const drop = $('drop'), fileIn = $('file');
 drop.onclick = () => fileIn.click(); drop.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.click(); } };
-fileIn.onchange = () => { loadUser(fileIn.files[0]); fileIn.value = ''; };
+fileIn.onchange = () => { loadUser(fileIn.files); fileIn.value = ''; };
 ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
 window.addEventListener('dragover', (e) => e.preventDefault());
-window.addEventListener('drop', (e) => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) loadUser(f); });
-let tmr = 0;
-function schedule(now) { clearTimeout(tmr); tmr = setTimeout(() => { if (!MF) return; busy(true, 'Řežu dílky…'); setTimeout(() => { try { rebuild(); } finally { busy(false); } }, 20); }, now ? 0 : 450); }
+window.addEventListener('drop', (e) => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files; if (f && f.length) loadUser(f); });
+let tmr = 0, running = null, pending = false;
+// výpočet běží po kouscích; změna nastavení rozpracovaný výpočet přeruší a spustí nový
+function schedule(now) { clearTimeout(tmr); tmr = setTimeout(() => { if (!MF) return; if (running) { running.cancel = true; pending = true; return; } start(); }, now ? 0 : 450); }
+async function start() { const job = { cancel: false }; running = job; try { await rebuild(job); } finally { running = null; busy(false); if (pending) { pending = false; start(); } } }
 function busy(on, txt) { $('busy').hidden = !on; if (txt) $('busy').textContent = txt; }
 
 /* ===== 3D scéna ===== */
@@ -305,13 +385,15 @@ cv.addEventListener('wheel', e => { e.preventDefault(); orbit.r = Math.min(6000,
 function showMsgs(list) { const bx = $('msgs'); bx.textContent = ''; for (const m of list) { const d = document.createElement('div'); d.className = 'msg ' + m.lvl; d.textContent = m.msg; bx.append(d); } }
 
 /* ===== Výpočet ===== */
-function rebuild() {
+async function rebuild(job) {
   const msgs = []; let r = null;
-  try { r = build(msgs); } catch (e) { console.error(e); msgs.push({ lvl: 'bad', msg: 'Model se nepodařilo rozřezat. Zkuste jiný počet dílků.' }); r = null; }
+  try { r = await build(msgs, job); } catch (e) { if (e && e.message === 'cancel') { freeAll(); return; } console.error(e); msgs.push({ lvl: 'bad', msg: 'Model se nepodařilo rozřezat. Zkuste jiný počet dílků.' }); r = null; }
   if (group) { scene && scene.remove(group); group.traverse(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); }); group = null; }
   if (!r || !r.pieces.length) { model = null; freeAll(); $('btnSave').disabled = true; showMsgs(msgs); $('stats').textContent = ''; $('dims').textContent = '–'; $('gridSpec').textContent = ''; draw(); return; }
   let vol = 0;
-  const items = r.pieces.map(pc => { vol += pc.m.volume(); const g = toGeom(pc.m); g.translate(...pc.off); return { g, col: PALETTE[(pc.ci + pc.cj * 3) % PALETTE.length] }; });
+  const items = [];
+  r.pieces.forEach(pc => { vol += pc.m.volume(); const pcol = PALETTE[(pc.ci + pc.cj * 3) % PALETTE.length];
+    pc.colors.forEach(c => { const g = toGeom(c.m); g.translate(...pc.off); items.push({ g, col: pcol, mcol: c.color, ck: r.cps.indexOf(c.color) }); }); });
   let trayG = null; if (r.tray) { vol += r.tray.volume(); trayG = toGeom(r.tray); }
   freeAll();
   const bb = new THREE.Box3(); for (const it of items) { it.g.computeBoundingBox(); bb.union(it.g.boundingBox); }
@@ -319,16 +401,18 @@ function rebuild() {
   for (const it of items) it.g.translate(-cx, -cy, 0); bb.translate(new THREE.Vector3(-cx, -cy, 0));
   if (trayG) { trayG.computeBoundingBox(); const tb = trayG.boundingBox; trayG.translate(bb.max.x + 10 - tb.min.x, -(tb.min.y + tb.max.y) / 2, 0); trayG.computeBoundingBox(); }
   const vb = bb.clone(); if (trayG) vb.union(trayG.boundingBox);
-  model = { items, trayG, bbox: vb, name: r.name };
+  model = { items, trayG, bbox: vb, name: r.name, multi: r.multi, cps: r.cps };
   group = new THREE.Group();
-  for (const it of items) { it.g.computeVertexNormals(); group.add(new THREE.Mesh(it.g, new THREE.MeshStandardMaterial({ color: new THREE.Color(it.col), roughness: 0.55, metalness: 0.03, flatShading: true }))); }
+  for (const it of items) { it.g.computeVertexNormals(); const mesh = new THREE.Mesh(it.g, new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.03, flatShading: true })); mesh.userData.it = it; group.add(mesh); }
+  recolor(); updateNote();
   if (trayG) { trayG.computeVertexNormals(); group.add(new THREE.Mesh(trayG, new THREE.MeshStandardMaterial({ color: new THREE.Color('#c9d1d4'), roughness: 0.6, flatShading: true }))); }
   if (renderer) scene.add(group);
   const sx = bb.max.x - bb.min.x, sy = bb.max.y - bb.min.y, sz = bb.max.z - bb.min.z;
   if (sx > D.bedX || sy > D.bedY) msgs.push({ lvl: 'warn', msg: `Dílky zabírají ${fmt(sx, 0)} × ${fmt(sy, 0)} mm a nevejdou se na tiskovou plochu najednou. Tiskněte je po částech, nebo je ve sliceru přeskládejte.` });
   showMsgs(msgs);
   $('gridSpec').innerHTML = `Mřížka <b>${r.cols} × ${r.rows}</b> · <b>${r.pieces.length}</b> dílků · model ${fmtP(Math.round(r.W))} × ${fmtP(Math.round(r.H))} × ${fmtP(Math.round(r.Z * 10) / 10)} mm`;
-  $('btnSave').disabled = false; $('btnSave').textContent = trayG ? 'Stáhnout STL (2 soubory)' : 'Stáhnout STL';
+  const nf = (r.multi ? r.cps.length : 1) + (trayG ? 1 : 0);
+  $('btnSave').disabled = false; $('btnSave').textContent = nf > 1 ? `Stáhnout STL (${nf} soubory)` : 'Stáhnout STL';
   $('dims').innerHTML = `<b>${fmt(sx)}</b> × <b>${fmt(sy)}</b> × <b>${fmt(sz)}</b> mm`;
   const grams = vol / 1000 * 1.24 * 0.9, hrs = grams / 9 + 0.15;
   const bx = $('stats'); bx.textContent = '';
@@ -338,16 +422,20 @@ function rebuild() {
   if (fitNext) { fit('persp'); fitNext = false; } else draw();
 }
 
+function recolor() { if (!group || !model) return; const byModel = model.multi && D.pv !== 'pieces'; group.children.forEach(m => { const it = m.userData.it; if (it) m.material.color = new THREE.Color(byModel ? it.mcol : it.col); }); $('pvRow').hidden = !model.multi; draw(); }
+
 /* ===== Stažení ===== */
 const inViewer = !!(window.claude && typeof window.claude.use === 'function');
 let dlCap = null;
 if (inViewer) window.claude.use('downloads').then(d => { dlCap = d; updateNote(); }).catch(() => updateNote());
-function updateNote() { $('saveNote').textContent = inViewer ? (dlCap ? 'Tady se soubory stáhnou zabalené v ZIP.' : 'Stahování je v tomto zobrazení nedostupné.') : 'Všechny dílky v jednom souboru, rozložené k tisku. Jednotky jsou milimetry.'; }
+function updateNote() { $('saveNote').textContent = inViewer ? (dlCap ? 'Tady se soubory stáhnou zabalené v ZIP.' : 'Stahování je v tomto zobrazení nedostupné.') : (model && model.multi ? 'Soubor pro každou barvu, všechny se stejným umístěním. Ve sliceru je načtěte najednou jako jeden objekt.' : 'Všechny dílky v jednom souboru, rozložené k tisku. Jednotky jsou milimetry.'); }
 $('btnSave').onclick = async () => {
   if (!model) return;
   const enc = (geoms) => { const u = stlBinary(geoms), head = 'Created by Julius Andy Antos | Puzzle z modelu | mm'; for (let i = 0; i < 80; i++) u[i] = i < head.length ? head.charCodeAt(i) : 32; return u; };
   const base = ('puzzle_' + model.name).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9_-]+/g, '_');
-  const files = [{ name: base + '.stl', data: enc(model.items.map(it => it.g)) }];
+  const files = model.multi
+    ? model.cps.map((c, k) => ({ name: `${base}_barva${k + 1}_${String(c).replace('#', '')}.stl`, data: enc(model.items.filter(it => it.ck === k).map(it => it.g)) })).filter(f => f.data.length > 84)
+    : [{ name: base + '.stl', data: enc(model.items.map(it => it.g)) }];
   if (model.trayG) { const g = model.trayG.clone(); g.computeBoundingBox(); const b = g.boundingBox; g.translate(-(b.min.x + b.max.x) / 2, -(b.min.y + b.max.y) / 2, 0); files.push({ name: base + '_ramecek.stl', data: enc([g]) }); }
   if (inViewer) { if (!dlCap) return; try { await dlCap.save({ filename: base + '.zip', data: makeZip(files) }); $('saveNote').textContent = 'ZIP je uložený.'; } catch (err) { if (err && err.code !== 'declined') $('saveNote').textContent = 'Soubor se nepodařilo uložit.'; } return; }
   for (const f of files) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([f.data], { type: 'model/stl' })); a.download = f.name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); if (files.length > 1) await new Promise(r => setTimeout(r, 300)); }

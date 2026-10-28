@@ -1,6 +1,6 @@
 /* Písmo do STL – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'pismo-20261028140439';
+const VERSION = 'pismo-20261028143201';
 const FONTS_CACHE = 'pismo-fonts';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 

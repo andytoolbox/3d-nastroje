@@ -239,8 +239,8 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <label><input type="radio" name="src" value="file">Vlastní model</label>
       </div>
       <div data-show="file" class="qf">
-        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Otevřít model"><b>Vyberte STL</b> nebo ho sem přetáhněte<br><small>STL, OBJ nebo 3MF · nic se neodesílá</small></div>
-        <input type="file" id="file" accept=".stl,.obj,.3mf" hidden>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Otevřít model"><b>Vyberte model</b> nebo ho sem přetáhněte<br><small>STL, OBJ nebo 3MF, i vícebarevný · více souborů = barevné díly</small></div>
+        <input type="file" id="file" accept=".stl,.obj,.3mf" multiple hidden>
         <div class="fname" id="fname"></div>
         <label class="f"><span>Položit</span><select data-k="lay"><option value="z">jak je (Z nahoru)</option><option value="y">osa Y nahoru</option><option value="x">osa X nahoru</option><option value="-z">převrátit</option></select></label>
       </div>
@@ -270,6 +270,8 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <label><input type="radio" name="lay2" value="spread">Dílky od sebe</label>
         <label><input type="radio" name="lay2" value="asm">Složené</label>
       </div>
+      <div id="pvRow" hidden class="qf"><div class="lblrow"><span>Barvy v náhledu</span></div>
+      <div class="seg wide" role="radiogroup" aria-label="Barvy v náhledu"><label><input type="radio" name="pv" value="model">Podle modelu</label><label><input type="radio" name="pv" value="pieces">Rozlišit dílky</label></div></div>
       <label class="check"><input type="checkbox" data-k="nums">Čísla dílků zespodu</label>
       <label class="check"><input type="checkbox" data-k="tray">Rámeček na skládání (samostatný soubor)</label>
       <label class="f" data-show="tray"><span>Výška okraje rámečku</span><span class="num"><input type="number" data-k="tw" min="1" max="20" step="0.5"><span>mm</span></span></label>
@@ -289,6 +291,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <ul>
           <li>Řeže se svisle přes celou tloušťku, proto se hodí ploché modely: reliéfy, cedulky, loga, svítící fotky, mapy nebo vícebarevné obrázky. Figurky a jiné prostorové modely nejdou.</li>
           <li>Model musí být uzavřený. Když nejde načíst, opravte ho nejdřív v Kontrole STL.</li>
+          <li>Vícebarevný model: nahrajte 3MF z Bambu Studia, OrcaSliceru nebo PrusaSliceru, nebo několik STL najednou (každý soubor jedna barva). Každý dílek si barvy nechá a stáhne se soubor pro každou barvu.</li>
         </ul>
         <h3>Vůle</h3>
         <ul>

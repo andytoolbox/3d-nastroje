@@ -1,6 +1,6 @@
 /* Elektronika – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'elektronika-20261028140439';
+const VERSION = 'elektronika-20261028143201';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {

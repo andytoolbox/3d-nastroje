@@ -8,7 +8,9 @@ CO UMÍ
   velikost a nepravidelnost zámků, náhodné rozložení, připojení malých
   okrajových kousků k sousedům, čísla dílků vyrytá zespodu a rámeček
   na skládání podle obrysu modelu. Dílky se rozloží od sebe nebo
-  zůstanou složené. Používá knihovnu Manifold (Apache 2.0).
+  zůstanou složené. Vícebarevné modely (3MF z Bambu Studia, OrcaSliceru,
+  PrusaSliceru nebo více STL najednou) si barvy nechají, stáhne se soubor
+  pro každou barvu. Používá knihovnu Manifold (Apache 2.0).
 
 NAHRÁNÍ NA WEB
   Složku "puzzle" nahrajte vedle ostatních nástrojů,
