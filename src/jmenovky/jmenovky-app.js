@@ -54,6 +54,27 @@ function textCS(fontId, text, size) {
 // těžiště plochy (pro kontrolu, jestli písmeno stojí)
 function centroid(cs) { let A = 0, cx = 0; for (const p of cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const f = p[j][0] * p[i][1] - p[i][0] * p[j][1]; A += f; cx += (p[j][0] + p[i][0]) * f; } return A ? cx / (3 * A) : 0; }
 
+// části jména, které neleží na písmenu (háčky, čárky, tečky, konec jména), by po postavení odpadly: připojí se můstkem
+function anchorIslands(S, Lc, w) {
+  const comps = S.decompose(), pts = (cs) => cs.toPolygons().flat();
+  const anchored = [], loose = [];
+  for (const c of comps) { T(c); const a = c.area(); if (a < 0.05) continue; const ov = T(c.intersect(Lc)).area(); (ov > Math.min(a * 0.15, 4) ? anchored : loose).push(c); }
+  if (!loose.length) return { S, n: 0 };
+  const bridges = [];
+  let target = pts(Lc).concat(...anchored.map(pts));
+  // nejdřív připojí kousky nejblíž k ukotveným, ty se pak samy stávají kotvou pro další
+  while (loose.length) {
+    let best = null;
+    loose.forEach((c, i) => { for (const p of pts(c)) for (const q of target) { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2; if (!best || d < best.d) best = { d, p, q, i }; } });
+    const c = loose.splice(best.i, 1)[0], [p, q] = [best.p, best.q], L = Math.sqrt(best.d);
+    if (L > 0.01) { const ux = (q[0] - p[0]) / L, uy = (q[1] - p[1]) / L, e = w * 0.8, nx = -uy * w / 2, ny = ux * w / 2;
+      const a = [p[0] - ux * e, p[1] - uy * e], b = [q[0] + ux * e, q[1] + uy * e];
+      bridges.push(T(new MF.CrossSection([[[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]]], 'NonZero'))); }
+    target = target.concat(pts(c));
+  }
+  return { S: cl(T(MF.CrossSection.union([S, ...bridges]))), n: bridges.length };
+}
+
 /* ===== Geometrie ===== */
 function initialOf(name) { const ch = [...name.trim()][0] || ''; return ch.toLocaleUpperCase('cs'); }
 function build(msgs) {
@@ -65,6 +86,10 @@ function build(msgs) {
   if (L0.missing.length || empty(L0.cs)) { msgs.push({ lvl: 'bad', msg: `Písmeno „${letter}“ toto písmo neumí. Zvolte jiné.` }); return null; }
   let b = L0.cs.bounds(), k = H / (b.max[1] - b.min[1]);
   let Lc = T(T(L0.cs.translate([-(b.min[0] + b.max[0]) / 2, -b.min[1]])).scale([k, k]));
+  { // háček nebo čárka velkého písmene (Š, Č, Á…) je samostatný kousek: připojí se k písmenu
+    const comps = Lc.decompose().map(c => T(c)).sort((p, q) => q.area() - p.area());
+    if (comps.length > 1) { const r0 = anchorIslands(Lc, comps[0], Math.max(2, H * 0.03)); Lc = r0.S; if (r0.n) msgs.push({ lvl: 'info', msg: 'Háček nebo čárka velkého písmene je k písmenu připojená můstkem, aby držela.' }); }
+  }
   b = Lc.bounds(); let LW = b.max[0] - b.min[0], LH = b.max[1] - b.min[1];
   const full = D.mode === 'one' && D.out === 'full';
 
@@ -105,6 +130,7 @@ function build(msgs) {
     if (S) { S = cl(T(T(S.translate([0, -cut])).intersect(csBox(-1e4, 0, 1e4, 1e4)))); if (empty(S)) S = null; }
     if (cut > 1) msgs.push({ lvl: 'info', msg: `Spodek písmene je zarovnaný o ${fmtP(Math.round(cut * 10) / 10)} mm, aby stálo.` });
   } else if (cut < 0) msgs.push({ lvl: 'warn', msg: 'Písmeno bez podstavce asi nebude stát. Zapněte podstavec nebo posuňte jméno.' });
+  if (S && full) { const r0 = anchorIslands(S, Lc, Math.max(1.2, clamp(D.bold, 0, 1.5) + 1)); S = r0.S; if (r0.n) msgs.push({ lvl: 'info', msg: r0.n === 1 ? 'Jedna část jména (háček, čárka nebo tečka) leží mimo písmeno, proto je k němu připojená tenkým můstkem, aby neodpadla.' : `${r0.n} části jména (háčky, čárky, tečky) leží mimo písmeno, proto jsou připojené tenkými můstky, aby neodpadly.` }); }
   b = Lc.bounds(); LW = b.max[0] - b.min[0]; LH = b.max[1] - b.min[1];
   // písmeno se zkosením (schody po výšce vrstvy)
   const parts = [ext(Lc, 0, Th - ch)];
@@ -223,7 +249,7 @@ function viewBox() { const bb = new THREE.Box3(); if (group) bb.setFromObject(gr
 function fit(view) {
   if (!group || !renderer) return; const b = viewBox(), sx = b.max.x - b.min.x, sy = b.max.y - b.min.y, sz = b.max.z - b.min.z;
   orbit.target.set((b.min.x + b.max.x) / 2, (b.min.y + b.max.y) / 2, sz / 2); const span = Math.max(sx, sy, sz, 20);
-  orbit.r = span / (2 * Math.tan(THREE.MathUtils.degToRad(30) / 2)) * Math.max(1.1, 1.5 / camera.aspect);
+  orbit.r = span / (2 * Math.tan(THREE.MathUtils.degToRad(30) / 2)) * Math.max(1.35, 1.7 / camera.aspect);
   if (view === 'front') { orbit.theta = -Math.PI / 2; orbit.phi = stand ? Math.PI / 2 - 0.03 : 0.001; } else { orbit.theta = -Math.PI / 2 - 0.5; orbit.phi = stand ? 1.25 : 0.85; }
   draw();
 }
