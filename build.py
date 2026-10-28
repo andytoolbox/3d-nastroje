@@ -126,6 +126,15 @@ TOOLS = {
         'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'elektronika-app.js'},
     },
+    'jmenovky': {
+        'page': 'jmenovky.html', 'title': 'Jmenovky',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'FONTS': lambda: font_set('JM_FONTS', {'playfair': 'GF-PlayfairDisplay-ExtraBold.sub.ttf', 'dejavu': 'DejaVuSerif-Bold.sub.ttf', 'anton': 'GF-Anton-Regular.sub.ttf',
+                      'bebas': 'GF-BebasNeue-Regular.sub.ttf', 'poppins': 'Poppins-Bold.sub.ttf', 'baloo': 'GF-Baloo2-ExtraBold.sub.ttf', 'bungee': 'GF-Bungee-Regular.sub.ttf',
+                      'righteous': 'GF-Righteous-Regular.sub.ttf', 'lobsterB': 'GF-Lobster-Regular.sub.ttf', 'dancing': 'GF-DancingScript-Bold.sub.ttf', 'pacifico': 'GF-Pacifico-Regular.sub.ttf',
+                      'lobster': 'GF-Lobster-Regular.sub.ttf', 'courgette': 'GF-Courgette-Regular.sub.ttf', 'caveat': 'GF-Caveat-Bold.sub.ttf', 'kalam': 'GF-Kalam-Bold.sub.ttf'}),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'jmenovky-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},

@@ -113,6 +113,15 @@ window.NASTROJE = [
     novinka: true
   },
   {
+    id: 'jmenovky',
+    nazev: 'Jmenovky – písmeno se jménem',
+    popis: 'Velké 3D písmeno a přes něj jméno psacím písmem s obrysem. Tisk vcelku s výměnou filamentu, na vícebarevné tiskárně nebo po dílech.',
+    kategorie: 'Text a písmo',
+    stitky: ['jmenovka', 'písmeno', 'jméno', 'dárek', 'vícebarevný tisk'],
+    odkaz: 'jmenovky/',
+    novinka: true
+  },
+  {
     id: 'elektronika',
     nazev: 'Elektronika – držáky a panely',
     popis: 'Podložky se sloupky pro Raspberry Pi, Arduino a ESP desky, kolébky pro desky bez děr, panely pro OLED a LCD displeje, LED a profily na LED pásky. Se šablonou otvorů.',

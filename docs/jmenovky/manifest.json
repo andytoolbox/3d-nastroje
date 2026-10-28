@@ -1,0 +1,37 @@
+{
+  "name": "Jmenovky – písmeno se jménem",
+  "short_name": "Jmenovky",
+  "description": "Velké 3D písmeno se vsazeným jménem psacím písmem, tisk vcelku nebo po dílech. Created by Julius Andy Antoš.",
+  "lang": "cs",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e9eef0",
+  "theme_color": "#0b7a72",
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

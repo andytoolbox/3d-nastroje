@@ -22,6 +22,7 @@ Bezplatné nástroje pro 3D tisk v češtině. Všechno se počítá přímo v p
 | <img src="docs/img/ozubena-kola-ikona.png" width="32"> | **Ozubená kola** | Evolventní kola a pastorky (rovné, šikmé, šípové), vnitřní věnce, hřebeny, dvojice kol a planetové převodovky. |
 | <img src="docs/img/mrizky-ikona.png" width="32"> | **Mřížky na ventilátor** | Mřížky na ventilátory 25–140 mm, různé vzory, rovné nebo vyklenuté (kužel, kopule), s výpočtem volné plochy. |
 | <img src="docs/img/elektronika-ikona.png" width="32"> | **Elektronika – držáky a panely** | Podložky se sloupky pro Raspberry Pi, Arduino a ESP desky, kolébky pro desky bez děr, panely pro OLED a LCD, LED panely a objímky, profily na LED pásky, šablona otvorů v SVG. |
+| <img src="docs/img/jmenovky-ikona.png" width="32"> | **Jmenovky – písmeno se jménem** | Velké 3D písmeno se vsazeným jménem psacím písmem a obrysem, tisk vcelku (výměna filamentu nebo AMS) i po dílech na slepení. |
 | <img src="docs/img/kalibrace-ikona.png" width="32"> | **Kalibrační testy** | Kostka, teplotní věž, převisy, mosty, vůle a vlasení, s návodem na vyhodnocení. |
 | <img src="docs/img/kontrola-stl-ikona.png" width="32"> | **Kontrola STL** | Prohlížeč STL, OBJ a 3MF: rozměry, hmotnost, cena, kontrola děr a převisů, oprava, zjednodušení, převod formátů a nejlepší natočení k tisku. |
 | <img src="docs/img/kalkulacka-tisku-ikona.png" width="32"> | **Kalkulačka ceny tisku** | Cena výtisku včetně vícebarevného tisku: filament, odpad z výměn barev, elektřina, opotřebení, práce, marže a DPH. Načte čas a gramy z G-code nebo .gcode.3mf. |

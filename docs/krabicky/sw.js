@@ -1,6 +1,6 @@
 /* Krabičky a organizéry – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'krabicky-20261023113951';
+const VERSION = 'krabicky-20261028130503';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {
