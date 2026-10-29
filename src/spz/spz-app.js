@@ -71,9 +71,11 @@ function build(msgs) {
   const swap = D.colors === 'swap';
   // ve výměnném režimu: pruh 2 vrstvy, znaky a lem aspoň o 2 vrstvy výš
   const hb = swap ? 2 * lh : 0, h = Math.max(clamp(D.h, 0.4, 3), swap ? hb + 2 * lh : 0);
-  const rc = Math.max(1, H * 0.09), m1 = Math.max(0.8, H * 0.04), bw = D.frame ? Math.max(1, H * 0.05) : 0;
+  // oblé rohy jako na skutečné značce: obrys, lem i bílé pole (vnitřní rohy zůstávají viditelně zaoblené)
+  const rc = Math.max(1.5, H * 0.16), m1 = Math.max(0.8, H * 0.04), bw = D.frame ? Math.max(1, H * 0.05) : 0;
   const outer = rrect(W, H, rc);
-  const fieldOut = T(outer.offset(-m1, 'Round', 2, 64)), field = D.frame ? T(outer.offset(-m1 - bw, 'Round', 2, 64)) : fieldOut;
+  const inset = (d) => rrect(W - 2 * d, H - 2 * d, Math.max(rc - d, rc * 0.55));
+  const fieldOut = inset(m1), field = D.frame ? inset(m1 + bw) : fieldOut;
   const frame = D.frame ? cl(T(fieldOut.subtract(field))) : null;
   const fb = field.bounds(), fx0 = fb.min[0], fx1 = fb.max[0], fy0 = fb.min[1], fy1 = fb.max[1], fh = fy1 - fy0;
   const code = codeText(), hasBand = D.cc !== 'none';

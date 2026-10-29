@@ -1,6 +1,6 @@
 /* Puzzle – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'puzzle-20261029184641';
+const VERSION = 'puzzle-20261029185305';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {
