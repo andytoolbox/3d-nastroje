@@ -1,0 +1,26 @@
+MEDAILE – medaile a odznaky pro 3D tisk
+Created by Julius Andy Antoš
+
+CO UMÍ
+  Medaile a odznaky v tvaru kruhu, kokardy, ozubeného kola, šestiúhelníku,
+  štítu, hvězdy, srdce a oválu. Velký nápis uprostřed (1., 2., 3., Vítěz,
+  Za účast, Čestné uznání… nebo vlastní), texty po obvodu nahoře a dole,
+  ozdoby (pohár, hvězda, koruna, míč, kolo, nota, šachy, plavání…),
+  vavřínový věnec, okraj, průvlak na stuhu, očko nebo díra, vyrytý text
+  na zadní straně a sada 1.–3. místo najednou ve zlaté, stříbrné
+  a bronzové. Tisk s výměnou filamentu (vypíše vrstvu) nebo na
+  vícebarevné tiskárně. Používá knihovnu Manifold (Apache 2.0)
+  a písma Google Fonts (SIL Open Font License).
+
+NAHRÁNÍ NA WEB
+  Složku "medaile" nahrajte vedle ostatních nástrojů,
+  tedy do www/3d-nastroje/ → https://www.vas-web.cz/3d-nastroje/medaile/
+
+INSTALACE JAKO APLIKACE
+  Android (Chrome): tlačítko „Nainstalovat aplikaci“ nebo menu ⋮ → Nainstalovat aplikaci.
+  Počítač (Chrome/Edge): ikona instalace vpravo v adresním řádku.
+  iPhone (Safari): Sdílet → Přidat na plochu.
+  Aplikace funguje i offline. Při aktualizaci nahrajte vždy index.html i sw.js.
+
+SOUKROMÍ
+  Vše se počítá jen v prohlížeči, na server se nic neodesílá.

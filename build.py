@@ -148,6 +148,19 @@ TOOLS = {
                   'FONTS': lambda: font_set('PUZZLE_FONTS', {'sans': 'LiberationSans-Bold.sub.ttf'}),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'puzzle-app.js'},
     },
+    'medaile': {
+        'page': 'medaile.html', 'title': 'Medaile',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'FONTS': lambda: font_set('MD_FONTS', {'poppins': 'Poppins-Bold.sub.ttf', 'anton': 'GF-Anton-Regular.sub.ttf', 'bebas': 'GF-BebasNeue-Regular.sub.ttf',
+                      'baloo': 'GF-Baloo2-ExtraBold.sub.ttf', 'playfair': 'GF-PlayfairDisplay-ExtraBold.sub.ttf', 'lobster': 'GF-Lobster-Regular.sub.ttf'}),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'medaile-app.js'},
+    },
+    'braille': {
+        'page': 'braille.html', 'title': 'Braille',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'FONTS': lambda: font_set('BR_FONTS', {'sans': 'Poppins-Bold.sub.ttf'}),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'braille-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},

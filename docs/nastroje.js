@@ -122,6 +122,24 @@ window.NASTROJE = [
     novinka: true
   },
   {
+    id: 'braille',
+    nazev: 'Braillovo písmo – štítky',
+    popis: 'Štítky, přívěsky a pásky s českým Braillovým písmem podle normy: háčky, čárky, velká písmena i čísla. K tomu zkušební kartička s celou abecedou.',
+    kategorie: 'Text a písmo',
+    stitky: ['Braillovo písmo', 'nevidomí', 'štítek', 'přístupnost', 'hmatové písmo'],
+    odkaz: 'braille/',
+    novinka: true
+  },
+  {
+    id: 'medaile',
+    nazev: 'Medaile',
+    popis: 'Medaile a odznaky: kruh, kokarda, ozubené kolo, štít, hvězda, srdce. Nápis uprostřed, texty po obvodu, ozdoby, vavřín, průvlak na stuhu a sada 1.–3. místo.',
+    kategorie: 'Dárky a drobnosti',
+    stitky: ['medaile', 'soutěž', 'závod', 'odznak', 'ocenění'],
+    odkaz: 'medaile/',
+    novinka: true
+  },
+  {
     id: 'puzzle',
     nazev: 'Puzzle z modelu',
     popis: 'Rozřeže plochý model nebo desku na dílky puzzle s klasickými zámky. Počet dílků, velikost zámků, vůle, čísla zespodu a rámeček na skládání.',

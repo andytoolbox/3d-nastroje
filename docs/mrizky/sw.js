@@ -1,6 +1,6 @@
 /* Mřížky na ventilátor – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'mrizky-20261028145631';
+const VERSION = 'mrizky-20261029105846';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {
