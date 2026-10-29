@@ -1,6 +1,6 @@
 /* SVG Studio – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'studio-20261029105846';
+const VERSION = 'studio-20261029184641';
 const FONTS_CACHE = 'studio-extra';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 

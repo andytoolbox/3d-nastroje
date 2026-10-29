@@ -133,10 +133,19 @@ window.NASTROJE = [
   {
     id: 'medaile',
     nazev: 'Medaile',
-    popis: 'Medaile a odznaky: kruh, kokarda, ozubené kolo, štít, hvězda, srdce. Nápis uprostřed, texty po obvodu, ozdoby, vavřín, průvlak na stuhu a sada 1.–3. místo.',
+    popis: 'Medaile a odznaky: kruh, kokarda, ozubené kolo, štít, hvězda, srdce. Motivy pohár s číslem, velké číslo, vavřín nebo místo na emblém, průvlak na stuhu a sada 1.–3. místo.',
     kategorie: 'Dárky a drobnosti',
     stitky: ['medaile', 'soutěž', 'závod', 'odznak', 'ocenění'],
     odkaz: 'medaile/',
+    novinka: true
+  },
+  {
+    id: 'spz',
+    nazev: 'SPZ přívěsek',
+    popis: 'Přívěsek na klíče jako poznávací značka: vlastní SPZ nebo text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.',
+    kategorie: 'Dárky a drobnosti',
+    stitky: ['spz', 'přívěsek', 'klíče', 'značka', 'auto', 'dárek'],
+    odkaz: 'spz/',
     novinka: true
   },
   {

@@ -236,7 +236,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
 <div class="app">
   <header class="top">
     <h1>Medaile</h1>
-    <p>Medaile a odznaky pro soutěže, závody i oslavy: různé tvary, velký nápis uprostřed, texty po obvodu, ozdoby a vavřínový věnec, očko nebo průvlak na stuhu. Celá sada 1. až 3. místo jedním kliknutím.</p>
+    <p>Medaile a odznaky pro soutěže, závody i oslavy: různé tvary a motivy, velký nápis nebo číslo, pohár a další ozdoby, vavřínový věnec, místo na emblém, očko nebo průvlak na stuhu. Celá sada 1. až 3. místo jedním kliknutím.</p>
     <button type="button" id="btnInstall" class="install" hidden>Nainstalovat aplikaci</button>
   </header>
 
@@ -251,7 +251,13 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
     </section>
 
     <section class="card">
-      <h2><span><span class="step">2</span>Nápis uprostřed</span></h2>
+      <h2><span><span class="step">2</span>Motiv</span></h2>
+      <div class="picks shapes4" role="radiogroup" aria-label="Motiv" id="motifs"></div>
+      <label class="f" data-show="pocket"><span>Průměr emblému</span><span class="num"><input type="number" data-k="pd" min="10" max="60" step="1"><span>mm</span></span></label>
+    </section>
+
+    <section class="card" data-show="txt">
+      <h2><span><span class="step">3</span>Nápis</span></h2>
       <div class="chipsel" id="presets" role="group" aria-label="Předvolby nápisu"></div>
       <input type="text" class="word" data-k="txt" maxlength="30" autocomplete="off" aria-label="Nápis uprostřed">
       <label class="check"><input type="checkbox" data-k="set">Sada 1., 2. a 3. místo najednou</label>
@@ -261,18 +267,9 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
     </section>
 
     <section class="card">
-      <h2><span><span class="step">3</span>Texty po obvodu</span></h2>
-      <label class="wlbl"><span>Nahoře</span><small>název akce</small></label>
-      <input type="text" data-k="top" maxlength="40" autocomplete="off" style="width:100%;padding:7px 8px">
-      <label class="wlbl"><span>Dole</span><small>rok, místo</small></label>
-      <input type="text" data-k="bot" maxlength="40" autocomplete="off" style="width:100%;padding:7px 8px">
-      <div class="slider"><span>Velikost písma</span><output id="oAs"></output><input type="range" data-k="as" min="50" max="150" step="5"></div>
-    </section>
-
-    <section class="card">
       <h2><span><span class="step">4</span>Ozdoba</span></h2>
       <div class="picks shapes4" role="radiogroup" aria-label="Ozdoba" id="icons"></div>
-      <label class="check"><input type="checkbox" data-k="laurel">Vavřínový věnec</label>
+      <label class="check" data-show="classic"><input type="checkbox" data-k="laurel">Vavřínový věnec</label>
     </section>
 
     <section class="card">
@@ -320,7 +317,7 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
         <ul>
           <li>Medaile se tiskne naležato, reliéfem nahoru, bez podpěr. Zlatá, stříbrná nebo bronzová barva s lesklým (silk) filamentem vypadá nejlépe.</li>
           <li>Výměna filamentu: v náhledu sliceru přidejte změnu barvy na vrstvu z výpisu vpravo, reliéf pak bude jinou barvou než medaile.</li>
-          <li>Text po obvodu potřebuje aspoň 0,8 mm silné tahy. U malých medailí volte tučné písmo a méně textu.</li>
+          <li>Nápis potřebuje aspoň 0,8 mm silné tahy. U malých medailí volte tučné písmo a krátký text.</li>
         </ul>
         <h3>Stuha</h3>
         <ul>

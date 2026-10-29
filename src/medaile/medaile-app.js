@@ -1,7 +1,11 @@
-/* ===== Medaile – tvary, nápisy, texty po obvodu, ozdoby. Created by Julius Andy Antoš ===== */
+/* ===== Medaile – tvary, motivy, nápisy, ozdoby. Created by Julius Andy Antoš ===== */
 const $ = (id) => document.getElementById(id);
 const FONTS = { poppins: 'Poppins', anton: 'Anton', bebas: 'Bebas Neue', baloo: 'Baloo', playfair: 'Playfair', lobster: 'Lobster' };
 const PRESETS = ['1.', '2.', '3.', 'Vítěz', 'Za účast', 'Čestné uznání', 'Mistr', 'Šampion'];
+const MOTIFS = [['classic', 'Nápis a vavřín', '<circle cx="17" cy="15" r="12"/><path d="M9 21c-3-5-2-11 2-14M25 21c3-5 2-11-2-14M14 17h6M17 11v8"/>'],
+  ['cupnum', 'Pohár a číslo', '<circle cx="17" cy="15" r="12"/><path d="M8 10h6v3a3 3 0 0 1-6 0zM11 16v3M9 19h4M22 9v12M28 9a7 7 0 1 0 0 12"/>'],
+  ['bignum', 'Velké číslo', '<circle cx="17" cy="15" r="12"/><path d="M19 9l3-2v16M7 19c3-2 5-2 8 0M7 15c3-2 5-2 8 0M8 11c3-2 4-2 7 0"/>'],
+  ['insert', 'Místo na emblém', '<circle cx="17" cy="15" r="12"/><circle cx="12" cy="15" r="5"/><path d="M21 11h5v3a2.5 2.5 0 0 1-5 0zM23.5 16.5v2.5M22 19h3"/>']];
 const METALS = [['Zlatá', '#d4a72c'], ['Stříbrná', '#b9c0c6'], ['Bronzová', '#b06f3c']];
 const SHAPES = [['circle', 'Kruh', '<circle cx="17" cy="15" r="11"/>'], ['rosette', 'Kokarda', '<path d="M17 3l3 3 4-1 1 4 4 1-1 4 3 3-3 3 1 4-4 1-1 4-4-1-3 3-3-3-4 1-1-4-4-1 1-4-3-3 3-3-1-4 4-1 1-4 4 1z"/>'],
   ['gear', 'Ozubené kolo', '<path d="M15 3h4l1 3 3 1 2-2 3 3-2 2 1 3 3 1v4l-3 1-1 3 2 2-3 3-2-2-3 1-1 3h-4l-1-3-3-1-2 2-3-3 2-2-1-3-3-1v-4l3-1 1-3-2-2 3-3 2 2 3-1z"/>'],
@@ -26,9 +30,9 @@ const IC = (() => {
     ['paw', 'Tlapka', p(g.tlapka.d)],
   ];
 })();
-const DEF = { shape: 'circle', D: 60, t: 3, rim: 2.5, rh: 1.2, txt: '1.', set: false, font: 'poppins', ts: 100, top: 'ZÁVOD 2026', bot: '', as: 100, icon: 'none', laurel: true, hang: 'slot', rib: 22, back: '',
+const DEF = { shape: 'circle', D: 60, t: 3, rim: 2.5, rh: 1.2, motif: 'classic', pd: 25, txt: '1.', set: false, font: 'poppins', ts: 100, icon: 'cup', laurel: true, hang: 'slot', rib: 22, back: '',
   colors: 'swap', c1: '#d4a72c', c2: '#7a4f12', lh: 0.2, bedX: 220, bedY: 220, bedZ: 250 };
-const STORE = 'medaile-v1';
+const STORE = 'medaile-v2';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
 if (!FONTS[D.font]) D.font = DEF.font;
@@ -112,11 +116,12 @@ function shapeCS(kind, Dm) {
 function inRadius(cs) { let r = 1e9; for (const p of cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const [ax, ay] = p[j], [bx, by] = p[i], dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = L ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / L)) : 0; r = Math.min(r, Math.hypot(ax + t * dx, ay + t * dy)); } return r; }
 
 /* ===== Vavřín ===== */
-function laurelCS(r, from, to, size) {
+function laurelCS(r, from, to, size, cross) {
   const parts = [], w = size * 0.07, n = Math.max(5, Math.round((to - from) * r / (size * 0.42)));
   for (const side of [1, -1]) {
     const pts = [], pts2 = [];
-    for (let i = 0; i <= 40; i++) { const a = from + (to - from) * i / 40; pts.push([side * r * Math.cos(a), r * Math.sin(a)]); }
+    const f0 = cross ? -Math.PI / 2 - 0.2 : from; // zkřížené stonky dole
+    for (let i = 0; i <= 40; i++) { const a = f0 + (to - f0) * i / 40; pts.push([side * r * Math.cos(a), r * Math.sin(a)]); }
     // stonek jako tenký pás podél oblouku
     const o = pts.map(([x, y]) => { const l = Math.hypot(x, y); return [x / l, y / l]; });
     const outer = pts.map(([x, y], i) => [x + o[i][0] * w / 2, y + o[i][1] * w / 2]), inner = pts.map(([x, y], i) => [x - o[i][0] * w / 2, y - o[i][1] * w / 2]).reverse();
@@ -149,36 +154,47 @@ function medal(msgs, text, warnOnce) {
   const rIn = inRadius(rim > 0 ? inner : shape) - 0.6;
   const relief = [];
   if (rim > 0) relief.push(T(shape.subtract(inner)));
-  // texty po obvodu
-  const asz = clamp(Dm * 0.075 * clamp(D.as, 50, 150) / 100, 2.5, 14), arcs = { top: 0, bot: 0 };
-  let rText = rIn - 1.2;
-  for (const [key, top] of [['top', true], ['bot', false]]) {
-    const s = String(D[key] || '').trim(); if (!s) continue;
-    const r = top ? rText - asz : rText, a = arcText(D.font, s, asz, r, top);
-    if (!a || !a.cs) continue;
-    if (a.span > Math.PI * 0.95 && warnOnce) msgs.push({ lvl: 'warn', msg: `Text „${s}“ je na obvod moc dlouhý. Zkraťte ho nebo zmenšete písmo.` });
-    relief.push(a.cs); arcs[key] = a.span;
-  }
-  const hasArc = arcs.top || arcs.bot, core = hasArc ? rIn - asz - 2.4 : rIn;
-  // ozdoba a velký nápis
+  const core = rIn, M = D.motif;
   const hasIcon = D.icon !== 'none';
-  if (hasIcon) { const ih = core * 0.48, ic = iconCS(D.icon, ih); if (ic) relief.push(T(ic.translate([0, core * 0.5]))); }
-  const tx = String(text || '').trim();
-  if (tx) {
-    const maxW = core * (D.laurel ? 1.15 : 1.5), maxH = core * (hasIcon ? 0.62 : 0.85) * clamp(D.ts, 40, 130) / 100;
+  // nápis do obdélníku maxW × maxH se středem v (cx, cy)
+  const place = (tx, maxW, maxH, cx, cy) => {
+    tx = String(tx || '').trim(); if (!tx) return null;
     let T1 = textCS(D.font, tx, 10), b = T1.cs.isEmpty() ? null : T1.cs.bounds();
     if (T1.missing.length && warnOnce) msgs.push({ lvl: 'warn', msg: `Písmo neumí znaky: ${T1.missing.join(' ')}` });
-    if (b) {
-      let k = Math.min(maxW / (b.max[0] - b.min[0]), maxH / (b.max[1] - b.min[1]));
-      // dlouhý text se dvěma slovy zkusí na dva řádky
-      if (/\s/.test(tx) && k * 10 < maxH * 0.42) { const words = tx.split(/\s+/), mid = Math.ceil(words.length / 2), T2 = textCS(D.font, words.slice(0, mid).join(' ') + '\n' + words.slice(mid).join(' '), 10), b2 = T2.cs.bounds(), k2 = Math.min(maxW / (b2.max[0] - b2.min[0]), maxH / (b2.max[1] - b2.min[1])); if (k2 > k) { T1 = T2; b = b2; k = k2; } }
-      const cy = hasIcon ? -core * 0.2 : 0;
-      relief.push(T(T(T(T1.cs.translate([-(b.min[0] + b.max[0]) / 2, -(b.min[1] + b.max[1]) / 2])).scale([k, k])).translate([0, cy])));
-      const stroke = 2 * T1.cs.area() * k * k / Math.max(1, (() => { let P = 0; for (const p of T1.cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) P += Math.hypot(p[i][0] - p[j][0], p[i][1] - p[j][1]); return P * k; })());
-      if (stroke < 1 && warnOnce) msgs.push({ lvl: 'info', msg: 'Nápis uprostřed má tenké tahy. Zvolte tučnější písmo nebo kratší text.' });
-    }
+    if (!b) return null;
+    let k = Math.min(maxW / (b.max[0] - b.min[0]), maxH / (b.max[1] - b.min[1]));
+    // dlouhý text se dvěma slovy zkusí na dva řádky
+    if (/\s/.test(tx) && k * 10 < maxH * 0.42) { const words = tx.split(/\s+/), mid = Math.ceil(words.length / 2), T2 = textCS(D.font, words.slice(0, mid).join(' ') + '\n' + words.slice(mid).join(' '), 10), b2 = T2.cs.bounds(), k2 = Math.min(maxW / (b2.max[0] - b2.min[0]), maxH / (b2.max[1] - b2.min[1])); if (k2 > k) { T1 = T2; b = b2; k = k2; } }
+    let P = 0; for (const p of T1.cs.toPolygons()) for (let i = 0, j = p.length - 1; i < p.length; j = i++) P += Math.hypot(p[i][0] - p[j][0], p[i][1] - p[j][1]);
+    if (2 * T1.cs.area() * k / Math.max(1, P) < 1 && warnOnce) msgs.push({ lvl: 'info', msg: 'Nápis má tenké tahy. Zvolte tučnější písmo nebo kratší text.' });
+    return T(T(T(T1.cs.translate([-(b.min[0] + b.max[0]) / 2, -(b.min[1] + b.max[1]) / 2])).scale([k, k])).translate([cx, cy]));
+  };
+  const arcBand = (cx, cy, r, w, a0, a1) => { const P = [], n = 64; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; P.push([cx + (r + w / 2) * Math.cos(a), cy + (r + w / 2) * Math.sin(a)]); } for (let i = n; i >= 0; i--) { const a = a0 + (a1 - a0) * i / n; P.push([cx + (r - w / 2) * Math.cos(a), cy + (r - w / 2) * Math.sin(a)]); } return cl(poly(P)); };
+  const ts = clamp(D.ts, 40, 130) / 100;
+  let pocket = null;
+  if (M === 'cupnum') { // pohár vlevo, číslo vpravo, oblouk mezi nimi
+    const ic = iconCS(hasIcon ? D.icon : 'cup', core * 0.72); if (ic) { const ib = ic.bounds(); relief.push(T(ic.translate([-core * 0.3 - ib.max[0], 0]))); }
+    const nt = place(text, core * 0.56, core * 0.82 * ts, core * 0.42, 0); if (nt) relief.push(nt);
+    relief.push(arcBand(core * 0.4, 0, core * 0.52, core * 0.07, Math.PI * 0.3, Math.PI * 1.7), arcBand(core * 0.4, 0, core * 0.64, core * 0.035, Math.PI * 0.38, Math.PI * 1.62));
+  } else if (M === 'insert') { // místo na emblém (kulatá prohlubeň) a pohár, nahoře a dole lístky
+    const pr = Math.min(clamp(D.pd, 10, 60) / 2, core * 0.46), px = -core + pr + 1.6;
+    pocket = T(T(MF.CrossSection.circle(pr, 96)).translate([px, 0]));
+    relief.push(T(T(T(MF.CrossSection.circle(pr + 0.9, 96)).subtract(T(MF.CrossSection.circle(pr, 96)))).translate([px, 0])));
+    const ic = iconCS(hasIcon ? D.icon : 'cup', core * 0.82); if (ic) { const ib = ic.bounds(), cx = (px + pr + core) / 2 + 0.5; relief.push(T(ic.translate([cx - (ib.min[0] + ib.max[0]) / 2, 0]))); }
+    for (const sy of [1, -1]) for (let i = 0; i < 5; i++) { const a = sy * (Math.PI / 2 + (i - 2) * 0.32), L = core * (i === 2 ? 0.34 : 0.28), W = L * 0.42, r = core * 0.82;
+      const leaf = T(T(T(T(MF.CrossSection.circle(1, 32)).scale([L / 2, W / 2])).rotate(a * 180 / Math.PI + 90)).translate([r * Math.cos(a), r * Math.sin(a)]));
+      relief.push(T(leaf.subtract(T(T(leaf.offset(-Math.max(0.7, W * 0.18), 'Round')))))); }
+    if (warnOnce) msgs.push({ lvl: 'info', msg: `Kulatá prohlubeň má průměr ${fmtP(Math.round(pr * 20) / 10)} mm a hloubku 1 mm. Vlepte do ní emblém, fotku nebo vytištěný znak.` });
+  } else if (M === 'bignum') { // velké číslo a vlnité čáry na pozadí
+    const nt = place(text, core * 1.0, core * 1.45 * ts, core * 0.2, 0);
+    const waves = []; for (let r = core * 0.45; r < core * 2.4; r += core * 0.14) waves.push(arcBand(-core * 1.05, -core * 0.35, r, Math.max(0.8, core * 0.045), -Math.PI * 0.5, Math.PI * 0.5));
+    let wv = CU(waves); if (wv && nt) wv = T(wv.subtract(T(nt.offset(Math.max(1.5, core * 0.06), 'Round'))));
+    if (wv) relief.push(wv); if (nt) relief.push(nt);
+  } else { // klasická: ozdoba nahoře, nápis, vavřín se zkříženými stonky
+    if (hasIcon) { const ic = iconCS(D.icon, core * (D.laurel ? 0.45 : 0.5)); if (ic) relief.push(T(ic.translate([0, core * 0.46]))); }
+    const nt = place(text, core * (D.laurel ? 1.12 : 1.5), core * (hasIcon ? 0.6 : 0.85) * ts, 0, hasIcon ? -core * 0.2 : 0); if (nt) relief.push(nt);
+    if (D.laurel) relief.push(laurelCS(core * 0.84, -Math.PI / 2 + 0.24, Math.PI / 2 - 0.42, core * 0.32, true));
   }
-  if (D.laurel) { const lr = core * 0.84, from = -Math.PI / 2 + (arcs.bot ? Math.max(0.35, arcs.bot / 2 + 0.12) : 0.22), to = Math.PI / 2 - (arcs.top ? Math.max(0.5, arcs.top / 2 + 0.1) : 0.45); if (to > from + 0.4) relief.push(laurelCS(lr, from, to, core * 0.32)); }
   // zavěšení
   const top = sb.max[1], baseParts = [shape], holes = [];
   if (D.hang === 'loop') { const ro = Math.max(4, Dm * 0.08), ri = ro * 0.5, cy = top + ro - Math.max(1.5, rim * 0.6); baseParts.push(T(T(MF.CrossSection.circle(ro, 48)).translate([0, cy]))); holes.push(T(T(MF.CrossSection.circle(ri, 40)).translate([0, cy]))); }
@@ -189,7 +205,9 @@ function medal(msgs, text, warnOnce) {
   let rel = CU(relief); if (rel) { rel = T(rel.intersect(T(shape.offset(-0.031, 'Round'))));   // nepatrně uvnitř, aby stěny reliéfu a medaile neležely v jedné rovině
  if (holeCS) rel = T(rel.subtract(T(holeCS.offset(1.2, 'Round')))); rel = cl(rel); }
   if (holeCS) base = T(base.subtract(holeCS));
+  if (pocket && rel) rel = cl(T(rel.subtract(pocket)));
   let B = ext(base, 0, t), Rl = rel && !empty(rel) ? ext(rel, t - 0.3, t + rh) : null;
+  if (pocket) B = sub(B, ext(T(pocket.offset(0.037, 'Round')), t - Math.min(1, t - 0.8), t + 1));   // o chlup širší, aby stěny nesplynuly s reliéfem
   // zadní strana: zrcadlový text vyrytý zespodu
   const back = String(D.back || '').trim();
   if (back) {
@@ -216,19 +234,21 @@ function syncUI() {
   updateUI();
 }
 function updateUI() {
-  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ slot: D.hang === 'slot', single: !D.set })[el.dataset.show]; });
+  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ slot: D.hang === 'slot', single: !D.set, classic: D.motif === 'classic', pocket: D.motif === 'insert', txt: D.motif !== 'insert' })[el.dataset.show]; });
   document.querySelectorAll('#shapes [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.shape)));
   document.querySelectorAll('#icons [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.icon)));
   document.querySelectorAll('#fonts [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.font)));
   document.querySelectorAll('#presets button').forEach(b => b.setAttribute('aria-pressed', String(!D.set && b.textContent === D.txt)));
   document.querySelectorAll('#metals button').forEach(b => b.setAttribute('aria-pressed', String(!D.set && b.dataset.c === D.c1)));
   $('metals').hidden = D.set; document.querySelector('[data-k=txt]').disabled = D.set;
-  $('oTs').textContent = D.ts + ' %'; $('oAs').textContent = D.as + ' %';
+  $('oTs').textContent = D.ts + ' %';
+  document.querySelectorAll('#motifs [data-v]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === D.motif)));
   $('modeHint').textContent = (D.set ? 'Tři medaile vedle sebe, ve zlaté, stříbrné a bronzové. ' : '') + (D.colors === 'swap' ? 'Reliéf jinou barvou: jedna výměna filamentu na začátku reliéfu.' : 'Medaile a reliéf jako dva díly jednoho objektu, každý své barvy.');
 }
 (function () {
   const mk = (box, list, key, svgFn) => { for (const [v, n, svg] of list) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.v = v; b.innerHTML = svgFn(svg) + n; b.onclick = () => { D[key] = v; syncUI(); onChange(key); }; box.append(b); } };
   mk($('shapes'), SHAPES, 'shape', (s) => `<svg viewBox="0 0 34 30">${s}</svg>`);
+  mk($('motifs'), MOTIFS, 'motif', (s) => `<svg viewBox="0 0 34 30">${s}</svg>`);
   mk($('icons'), IC, 'icon', (s) => s ? `<svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none">${s.replace(/stroke="#000"/g, 'stroke="currentColor"')}</svg>` : '<svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" style="fill:none;stroke:currentColor;stroke-width:1.5"/></svg>');
   const fb = $('fonts'); for (const id in FONTS) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.v = id; b.innerHTML = `<span style="font-family:'md-${id}',var(--f-ui)">1. Vítěz</span><small>${FONTS[id]}</small>`; b.onclick = () => { D.font = id; syncUI(); onChange('font'); }; fb.append(b); }
   if (window.FontFace) for (const id in FONTS) { try { const f = new FontFace('md-' + id, fontBuf(id)); f.load().then(ff => document.fonts.add(ff)).catch(() => {}); } catch (e) {} }
