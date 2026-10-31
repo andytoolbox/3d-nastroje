@@ -241,8 +241,13 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
   <aside>
     <section class="card">
       <h2><span><span class="step">1</span>Značka</span></h2>
+      <div class="seg wide" role="radiogroup" aria-label="Podoba">
+        <label><input type="radio" name="kind" value="spz">Skutečná SPZ</label>
+        <label><input type="radio" name="kind" value="text">Vlastní text</label>
+      </div>
       <input type="text" class="word" data-k="text" maxlength="12" autocomplete="off" spellcheck="false" aria-label="Text značky" style="text-transform:uppercase;letter-spacing:.08em">
       <p class="hint" id="fmtHint"></p>
+      <label class="check" data-show="spzKind"><input type="checkbox" data-k="stk">Šestiúhelník na nálepku STK mezi skupinami znaků</label>
       <div class="lblrow"><span>Modrý pruh</span></div>
       <div class="seg wide" role="radiogroup" aria-label="Kód státu">
         <label><input type="radio" name="cc" value="CZ">CZ</label>

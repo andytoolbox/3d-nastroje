@@ -167,6 +167,14 @@ TOOLS = {
                   'FONTS': lambda: font_set('SPZ_FONTS', {'plate': 'GF-BarlowSemiCondensed-SemiBold.sub.ttf'}),
                   'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'spz-app.js'},
     },
+    'zapichy': {
+        'page': 'zapichy.html', 'title': 'Zápichy',
+        'parts': {'MANIFOLD': lambda: rd('vendor', 'manifold.js') + '\nconst MANIFOLD_WASM_B64 = "%s";' % b64('vendor', 'manifold.wasm'),
+                  'FONTS': lambda: font_set('ZP_FONTS', {'greatvibes': 'GF-GreatVibes-Regular.sub.ttf', 'dancing': 'GF-DancingScript-Bold.sub.ttf', 'pacifico': 'GF-Pacifico-Regular.sub.ttf',
+                      'lobster': 'GF-Lobster-Regular.sub.ttf', 'playball': 'GF-Playball-Regular.sub.ttf', 'norican': 'GF-Norican-Regular.sub.ttf', 'grandhotel': 'GF-GrandHotel-Regular.sub.ttf',
+                      'damion': 'GF-Damion-Regular.sub.ttf', 'baloo': 'GF-Baloo2-ExtraBold.sub.ttf', 'poppins': 'Poppins-Bold.sub.ttf', 'playfair': 'GF-PlayfairDisplay-ExtraBold.sub.ttf', 'anton': 'GF-Anton-Regular.sub.ttf'}),
+                  'CORE': 'shared/core.js', 'DILNA': 'shared/dilna-core.js', 'APP': 'zapichy-app.js'},
+    },
     'kalkulacka-tisku': {
         'page': 'kalkulacka.html', 'title': 'Cena tisku',
         'parts': {'APP': 'kalkulacka-app.js'},

@@ -142,10 +142,19 @@ window.NASTROJE = [
   {
     id: 'spz',
     nazev: 'SPZ přívěsek',
-    popis: 'Přívěsek na klíče jako poznávací značka: vlastní SPZ nebo text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.',
+    popis: 'Přívěsek na klíče jako poznávací značka: SPZ 3 + 4 znaky s místem na nálepku STK nebo vlastní text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.',
     kategorie: 'Dárky a drobnosti',
     stitky: ['spz', 'přívěsek', 'klíče', 'značka', 'auto', 'dárek'],
     odkaz: 'spz/',
+    novinka: true
+  },
+  {
+    id: 'zapichy',
+    nazev: 'Zápichy do dortu',
+    popis: 'Ozdobný nápis psacím písmem se srdíčky, ornamentem nebo korunkou a zápichem. Nebo destička s věkem a jménem, do které se vlepí zvlášť vytištěné znaky jinou barvou.',
+    kategorie: 'Dárky a drobnosti',
+    stitky: ['dort', 'zápich', 'narozeniny', 'svatba', 'výročí', 'oslava'],
+    odkaz: 'zapichy/',
     novinka: true
   },
   {

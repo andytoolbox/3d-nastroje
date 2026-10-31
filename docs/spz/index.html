@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="author" content="Julius Andy Antoš">
-<meta name="description" content="Přívěsek na klíče jako poznávací značka: vlastní SPZ nebo text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.">
+<meta name="description" content="Přívěsek na klíče jako poznávací značka: SPZ 3 + 4 znaky s místem na nálepku STK nebo vlastní text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.">
 <link rel="canonical" href="https://andytoolbox.github.io/3d-nastroje/spz/">
 <meta property="og:title" content="SPZ přívěsek">
-<meta property="og:description" content="Přívěsek na klíče jako poznávací značka: vlastní SPZ nebo text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.">
+<meta property="og:description" content="Přívěsek na klíče jako poznávací značka: SPZ 3 + 4 znaky s místem na nálepku STK nebo vlastní text, černý lem, modrý pruh CZ/SK a díra na kroužek. Pro vícebarevnou tiskárnu i výměnu filamentu.">
 <meta property="og:image" content="https://andytoolbox.github.io/3d-nastroje/img/spz.jpg">
 <meta property="og:type" content="website">
 
@@ -261,8 +261,13 @@ textarea.txt { width: 100%; min-height: 54px; padding: 7px 8px; font: 15px var(-
   <aside>
     <section class="card">
       <h2><span><span class="step">1</span>Značka</span></h2>
+      <div class="seg wide" role="radiogroup" aria-label="Podoba">
+        <label><input type="radio" name="kind" value="spz">Skutečná SPZ</label>
+        <label><input type="radio" name="kind" value="text">Vlastní text</label>
+      </div>
       <input type="text" class="word" data-k="text" maxlength="12" autocomplete="off" spellcheck="false" aria-label="Text značky" style="text-transform:uppercase;letter-spacing:.08em">
       <p class="hint" id="fmtHint"></p>
+      <label class="check" data-show="spzKind"><input type="checkbox" data-k="stk">Šestiúhelník na nálepku STK mezi skupinami znaků</label>
       <div class="lblrow"><span>Modrý pruh</span></div>
       <div class="seg wide" role="radiogroup" aria-label="Kód státu">
         <label><input type="radio" name="cc" value="CZ">CZ</label>
@@ -1225,9 +1230,9 @@ function filamentEstimate(st, o) {
 
 /* ===== SPZ přívěsek – poznávací značka jako přívěsek na klíče. Created by Julius Andy Antoš ===== */
 const $ = (id) => document.getElementById(id);
-const DEF = { text: '1A2 3456', cc: 'CZ', code: 'D', prop: 'tag', W: 70, t: 2, h: 0.6, frame: true, hole: 'band', stars: false,
+const DEF = { kind: 'spz', stk: true, text: '1A2 3456', cc: 'CZ', code: 'D', prop: 'tag', W: 70, t: 2, h: 0.6, frame: true, hole: 'band', stars: false,
   colors: 'ams', cW: '#f4f4f0', cK: '#1a1a1a', cB: '#1f3f9a', cY: '#f5c518', lh: 0.2, bedX: 220, bedY: 220, bedZ: 250 };
-const STORE = 'spz-v1';
+const STORE = 'spz-v2';
 const D = Object.assign({}, DEF);
 try { const s = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const k in DEF) if (k in s && typeof s[k] === typeof DEF[k]) D[k] = s[k]; } catch (e) {}
 const saveState = () => { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch (e) {} };
@@ -1279,14 +1284,25 @@ function starCS(r) { const P = []; for (let i = 0; i < 10; i++) { const a = Math
 
 /* ===== Formát ===== */
 const plateText = () => String(D.text || '').toUpperCase().replace(/\s+/g, ' ').trim();
+// skutečná SPZ: jen písmena bez diakritiky a číslice, nejvýš 8 znaků
+const spzChars = () => plateText().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9]/g, '').slice(0, 8);
+const spzGroups = () => { const s = spzChars(), n = D.cc === 'SK' ? 2 : 3; return [s.slice(0, n), s.slice(n)]; };
 const codeText = () => D.cc === 'custom' ? String(D.code || '').toUpperCase().trim().slice(0, 3) : D.cc === 'none' ? '' : D.cc;
 function formatHint() {
+  if (D.kind === 'spz') {
+    const raw = plateText().replace(/\s/g, ''), s = spzChars(), notes = [];
+    if (!s) return { lvl: '', msg: 'Napište znaky značky, např. 1A2 3456. Rozdělí se na 3 + 4 znaky jako na skutečné SPZ.' };
+    if (raw.length !== s.length) notes.push('Skutečná SPZ má jen písmena bez diakritiky a číslice, ostatní znaky jsou vynechané.');
+    if (!/[0-9]/.test(s)) return { lvl: 'warn', msg: 'SPZ musí obsahovat aspoň jednu číslici.' };
+    if (s.length < 5) return { lvl: 'warn', msg: 'SPZ má nejméně 5 znaků (běžná 7, na přání 5 až 8).' };
+    if (D.cc === 'SK' && /^[A-Z]{2}[0-9]{3}[A-Z]{2}$/.test(s)) notes.unshift('Tvar slovenské značky (2 + 5 znaků).');
+    else if (/^[0-9][A-Z][0-9A-Z][0-9]{4}$/.test(s)) notes.unshift('Tvar běžné české značky (3 + 4 znaky).');
+    else notes.unshift('SPZ na přání: 5 až 8 znaků, aspoň jedna číslice.');
+    return { lvl: '', msg: notes.join(' ') };
+  }
   const s = plateText();
-  if (!s) return 'Napište čísla a písmena značky, nebo vlastní text velkými písmeny.';
-  if (/^[0-9][A-Z][0-9A-Z] ?[0-9]{4}$/.test(s)) return 'Tvar české značky (např. 1A2 3456).';
-  if (/^[A-Z]{2}[ -]?[0-9]{3}[A-Z]{2}$/.test(s)) return 'Tvar slovenské značky (např. BA 123AB).';
-  if (/^[A-Z]{2}[ -]?[0-9]{3}[A-Z]{2}$|^[A-Z]{2}[ -]?[0-9]{3}[0-9A-Z]{2}$/.test(s)) return 'Tvar slovenské značky.';
-  return 'Vlastní text: vypíše se písmem jako na SPZ. Krátký text (do 8 znaků) je nejčitelnější.';
+  if (!s) return { lvl: '', msg: 'Napište libovolný text velkými písmeny.' };
+  return { lvl: '', msg: 'Vlastní text: vypíše se písmem jako na SPZ. Krátký text (do 8 znaků) je nejčitelnější.' };
 }
 
 /* ===== Stavba ===== */
@@ -1331,18 +1347,37 @@ function build(msgs) {
     if (sr < 0.9) msgs.push({ lvl: 'info', msg: 'Hvězdy jsou na tisk hodně drobné. Hodí se tryska 0,2 mm nebo větší přívěsek.' });
   }
   // znaky
-  const tx0 = (hasBand ? bx1 : fx0) + Math.max(1, fh * 0.1), tx1 = fx1 - Math.max(1, fh * 0.1);
-  const txt = plateText(); let charsCS = null;
-  if (txt) {
-    const r = fitText(txt, tx1 - tx0, fh * 0.72, (tx0 + tx1) / 2, (fy0 + fy1) / 2);
-    if (r.missing.length) msgs.push({ lvl: 'warn', msg: `Písmo neumí znaky: ${r.missing.join(' ')}` });
+  const tx0 = (hasBand ? bx1 : fx0) + Math.max(1, fh * 0.1), tx1 = fx1 - Math.max(1, fh * 0.1), tcx = (tx0 + tx1) / 2, tcy = (fy0 + fy1) / 2;
+  const txt = D.kind === 'spz' ? spzGroups().filter(Boolean).join(' ') : plateText(); let charsCS = null, chH = 0, missing = [];
+  if (D.kind === 'spz' && txt) {
+    // skupiny znaků s mezerou; v mezeře volitelně šestiúhelník na nálepku STK
+    const [g1, g2] = spzGroups(), a = textCS(g1), b2 = g2 ? textCS(g2) : null; missing = a.missing.concat(b2 ? b2.missing : []);
+    const ba = a.cs.bounds(), bb = b2 ? b2.cs.bounds() : null;
+    const th = Math.max(ba.max[1], bb ? bb.max[1] : 0) - Math.min(ba.min[1], bb ? bb.min[1] : 0);
+    const wa = (ba.max[0] - ba.min[0]) / th, wb = bb ? (bb.max[0] - bb.min[0]) / th : 0;   // šířky v násobcích výšky znaku
+    const stk = !!(D.stk && b2), gapR = b2 ? (stk ? 0.86 + 0.36 : 0.5) : 0, avail = tx1 - tx0, cmax = fh * 0.72;
+    let sx = 1, c = Math.min(cmax, avail / ((wa + wb) * sx + gapR));
+    if (c < cmax * 0.98) { sx = Math.max(0.78, avail / cmax - gapR > 0 ? (avail / cmax - gapR) / (wa + wb) : 0.78); c = Math.min(cmax, avail / ((wa + wb) * sx + gapR)); }
+    chH = c;
+    const k = c / th, total = (wa + wb) * c * sx + gapR * c, x0 = tcx - total / 2, yb = tcy - c / 2 - Math.min(ba.min[1], bb ? bb.min[1] : 0) * k;
+    const place = (cs, bnd, x) => T(T(T(cs.translate([-bnd.min[0], 0])).scale([k * sx, k])).translate([x, yb]));
+    const parts = [place(a.cs, ba, x0)];
+    if (b2) parts.push(place(b2.cs, bb, x0 + wa * c * sx + gapR * c));
+    if (stk) { const R = c * 0.43, hx = x0 + wa * c * sx + gapR * c / 2, wr = Math.max(0.8, c * 0.07);
+      const hex = (r) => T(T(T(MF.CrossSection.circle(r, 6)).rotate(90)).translate([hx, tcy]));
+      parts.push(T(hex(R).subtract(hex(R - wr / Math.cos(Math.PI / 6))))); }
+    charsCS = cl(T(CU(parts).intersect(T(field.offset(-0.3, 'Round')))));
+  } else if (txt) {
+    const r = fitText(txt, tx1 - tx0, fh * 0.72, tcx, tcy); missing = r.missing;
     if (r.cs) {
       charsCS = cl(T(r.cs.intersect(T(field.offset(-0.3, 'Round')))));
       if (r.shrink < 0.99) msgs.push({ lvl: 'info', msg: `Text je dlouhý, znaky jsou menší (${Math.round(r.shrink * 100)} % výšky).` });
-      const chH = fh * 0.72 * Math.min(1, r.shrink);
-      if (chH < 5) msgs.push({ lvl: 'info', msg: `Znaky jsou vysoké ${fmtP(Math.round(chH * 10) / 10)} mm. Tahy písma vyjdou kolem ${fmtP(Math.round(chH * 1.6) / 10)} mm, hodí se tryska 0,2 mm.` });
+      chH = fh * 0.72 * Math.min(1, r.shrink);
     }
   } else msgs.push({ lvl: 'info', msg: 'Bez textu vznikne prázdná značka.' });
+  if (missing.length) msgs.push({ lvl: 'warn', msg: `Písmo neumí znaky: ${missing.join(' ')}` });
+  if (charsCS && chH < 5) msgs.push({ lvl: 'info', msg: `Znaky jsou vysoké ${fmtP(Math.round(chH * 10) / 10)} mm. Tahy písma vyjdou kolem ${fmtP(Math.round(chH * 1.6) / 10)} mm, hodí se tryska 0,2 mm.` });
+  if (D.kind === 'spz') { const f = formatHint(); if (f.lvl) msgs.push(f); }
 
   const holeCyl = hole ? ext(hole, -1, t + h + 1) : null;
   const cut = (m) => m && holeCyl ? T(m.subtract(holeCyl)) : m;
@@ -1371,8 +1406,8 @@ function syncUI() {
 }
 function updateUI() {
   const starsOk = D.cc !== 'none' && D.hole === 'none' && D.colors === 'ams';
-  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ ccCustom: D.cc === 'custom', stars: starsOk, starCol: starsOk && D.stars })[el.dataset.show]; });
-  $('fmtHint').textContent = formatHint();
+  document.querySelectorAll('[data-show]').forEach(el => { el.hidden = !({ spzKind: D.kind === 'spz', ccCustom: D.cc === 'custom', stars: starsOk, starCol: starsOk && D.stars })[el.dataset.show]; });
+  $('fmtHint').textContent = formatHint().msg;
   const W = clamp(D.W, 30, 300);
   $('propHint').textContent = D.prop === 'law' ? `Poměr stran skutečné značky 520 × 110 mm, tedy ${fmt(W, 0)} × ${fmt(W * 110 / 520, 1)} mm. Na přívěsek je nízká, znaky vyjdou drobné.` : `Vyšší a lépe čitelná: ${fmt(W, 0)} × ${fmt(W * 0.27, 1)} mm.`;
   $('modeHint').textContent = D.colors === 'swap' ? 'Jedno těleso, barvy se mění podle výšky: bílá, modrá, černá. Kód státu je vyřezaný do modrého pruhu až na bílý podklad.' : 'Každá barva je samostatný soubor se stejným umístěním: načtěte je najednou jako jeden objekt s více díly.';
