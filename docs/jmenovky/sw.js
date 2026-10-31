@@ -1,6 +1,6 @@
 /* Jmenovky – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'jmenovky-20261031194416';
+const VERSION = 'jmenovky-20261031195054';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {

@@ -18,6 +18,8 @@ import base64, json, os, re, shutil, sys, time
 
 # Adresa webu: pro vyhledávače (sitemap.xml, kanonické odkazy). Při přesunu na vlastní doménu stačí změnit tady.
 SITE = 'https://andytoolbox.github.io/3d-nastroje/'
+# ID aplikace na Facebooku (nepovinné, developers.facebook.com → Moje aplikace). Prázdné = značka fb:app_id se nevloží.
+FB_APP_ID = ''
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, 'src')
@@ -229,11 +231,13 @@ def build_tool(tid, cfg, stamp):
     web = doc.replace('<meta name="author" content="Julius Andy Antoš">', '<meta name="author" content="Julius Andy Antoš">\n' + pwa, 1)
     # vyhledávače: popis, kanonická adresa a náhled při sdílení
     nm, ds = tool_texts().get(tid, (cfg['title'], ''))
-    seo = ('<meta name="description" content="%s">\n<link rel="canonical" href="%s%s/">\n'
-           '<meta property="og:title" content="%s">\n<meta property="og:description" content="%s">\n'
-           '<meta property="og:image" content="%simg/%s.jpg">\n<meta property="og:image:width" content="640">\n<meta property="og:image:height" content="400">\n'
-           '<meta property="og:image:alt" content="%s">\n<meta property="og:url" content="%s%s/">\n<meta property="og:locale" content="cs_CZ">\n<meta property="og:type" content="website">\n'
-           '<meta name="twitter:card" content="summary_large_image">\n' % (esc(ds), SITE, tid, esc(nm), esc(ds), SITE, tid, esc(nm), SITE, tid))
+    url, img = '%s%s/' % (SITE, tid), '%simg/%s.jpg' % (SITE, tid)
+    seo = ('<meta name="description" content="%s">\n<link rel="canonical" href="%s">\n' % (esc(ds), url)
+           + '<meta property="og:title" content="%s">\n<meta property="og:description" content="%s">\n' % (esc(nm), esc(ds))
+           + '<meta property="og:url" content="%s">\n<meta property="og:site_name" content="3D nástroje">\n<meta property="og:locale" content="cs_CZ">\n<meta property="og:type" content="website">\n' % url
+           + '<meta property="og:image" content="%s">\n<meta property="og:image:width" content="640">\n<meta property="og:image:height" content="400">\n<meta property="og:image:alt" content="%s">\n' % (img, esc(nm))
+           + '<meta name="twitter:card" content="summary_large_image">\n'
+           + ('<meta property="fb:app_id" content="%s">\n' % FB_APP_ID if FB_APP_ID else ''))
     web = web.replace('<meta name="author" content="Julius Andy Antoš">', '<meta name="author" content="Julius Andy Antoš">\n' + seo, 1)
     out = os.path.join(DOCS, tid)
     shutil.rmtree(out, ignore_errors=True); os.makedirs(out)
@@ -252,6 +256,10 @@ def build_hub():
         s, d = os.path.join(SRC, 'hub', name), os.path.join(DOCS, name)
         if os.path.isdir(s): shutil.rmtree(d, ignore_errors=True); shutil.copytree(s, d)
         else: shutil.copy(s, d)
+    if FB_APP_ID:
+        ix = os.path.join(DOCS, 'index.html'); h = open(ix, encoding='utf-8').read()
+        h = h.replace('<meta property="og:type"', '<meta property="fb:app_id" content="%s">\n<meta property="og:type"' % FB_APP_ID, 1)
+        open(ix, 'w', encoding='utf-8').write(h)
     open(os.path.join(DOCS, '.nojekyll'), 'w').close()  # GitHub Pages: soubory brát tak, jak jsou
     # mapa webu pro Google a další vyhledávače
     day = time.strftime('%Y-%m-%d')
