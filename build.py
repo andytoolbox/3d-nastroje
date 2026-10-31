@@ -231,7 +231,9 @@ def build_tool(tid, cfg, stamp):
     nm, ds = tool_texts().get(tid, (cfg['title'], ''))
     seo = ('<meta name="description" content="%s">\n<link rel="canonical" href="%s%s/">\n'
            '<meta property="og:title" content="%s">\n<meta property="og:description" content="%s">\n'
-           '<meta property="og:image" content="%simg/%s.jpg">\n<meta property="og:type" content="website">\n' % (esc(ds), SITE, tid, esc(nm), esc(ds), SITE, tid))
+           '<meta property="og:image" content="%simg/%s.jpg">\n<meta property="og:image:width" content="640">\n<meta property="og:image:height" content="400">\n'
+           '<meta property="og:image:alt" content="%s">\n<meta property="og:url" content="%s%s/">\n<meta property="og:locale" content="cs_CZ">\n<meta property="og:type" content="website">\n'
+           '<meta name="twitter:card" content="summary_large_image">\n' % (esc(ds), SITE, tid, esc(nm), esc(ds), SITE, tid, esc(nm), SITE, tid))
     web = web.replace('<meta name="author" content="Julius Andy Antoš">', '<meta name="author" content="Julius Andy Antoš">\n' + seo, 1)
     out = os.path.join(DOCS, tid)
     shutil.rmtree(out, ignore_errors=True); os.makedirs(out)
