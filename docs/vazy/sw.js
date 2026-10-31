@@ -1,6 +1,6 @@
 /* Vázy a lampy – offline režim aplikace (service worker)
  * Created by Julius Andy Antoš */
-const VERSION = 'vazy-20261031195054';
+const VERSION = 'vazy-20261031200108';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', (e) => {
